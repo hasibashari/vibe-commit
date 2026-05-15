@@ -61,6 +61,35 @@ export default function App() {
     }
   };
 
+  const handleImportData = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+
+      if (!data.user || !data.goals) {
+        throw new Error('Invalid backup format');
+      }
+
+      const res = await fetch(`/api/user/${user.id}/import`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      
+      if (!res.ok) throw new Error('Failed to import on server');
+      
+      window.location.reload();
+    } catch (e) {
+      console.error('Import failed', e);
+      alert('Error importing data: ' + (e instanceof Error ? e.message : 'Unknown error'));
+    }
+    
+    event.target.value = '';
+  };
+
   const handleCompleteOnboarding = () => {
     setHasCompletedOnboarding(true);
     localStorage.setItem('hasCompletedOnboarding', 'true');
@@ -123,6 +152,7 @@ export default function App() {
               isOpen={isSettingsOpen} 
               onClose={() => setIsSettingsOpen(false)} 
               onExport={handleExportData} 
+              onImport={handleImportData}
               onResetProgress={resetProfile}
             />
             <QuestEditorModal 

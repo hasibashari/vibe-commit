@@ -36,7 +36,6 @@ interface AppContextType {
   questToEdit: Goal | null;
   setQuestToEdit: React.Dispatch<React.SetStateAction<Goal | null>>;
   handleLogAction: (goalId: string) => Promise<void>;
-  handleBranch: (parent: Goal) => Promise<void>;
   handleSaveQuest: (data: Partial<Goal>) => Promise<void>;
   confirmDeleteQuest: (goalId: string) => void;
   executeDeleteQuest: (setGoals: React.Dispatch<React.SetStateAction<Goal[]>>) => Promise<void>;

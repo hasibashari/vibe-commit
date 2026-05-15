@@ -7,10 +7,11 @@ interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   onExport: () => void;
+  onImport: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onResetProgress: () => Promise<void>;
 }
 
-export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onExport, onResetProgress }) => {
+export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onExport, onImport, onResetProgress }) => {
   const [settings, setSettings] = useState({
     language: 'id',
     animations: true,
@@ -142,6 +143,23 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
             <Download className="w-4 h-4" />
             Export Local Backup
           </Button>
+          
+          <div className="relative w-full">
+            <input 
+              type="file" 
+              accept=".json"
+              onChange={onImport}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              title="Import Local Backup"
+            />
+            <Button 
+              variant="secondary"
+              className="w-full gap-2 pointer-events-none"
+            >
+              <Download className="w-4 h-4 rotate-180" />
+              Import Local Backup
+            </Button>
+          </div>
         </div>
 
         <div className="flex flex-col gap-4 pt-6 border-t border-white/5">
