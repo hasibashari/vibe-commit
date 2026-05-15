@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Target, RotateCcw, BrainCircuit, ChevronRight, Crown, Calendar, Bookmark, FlaskConical, ChevronDown, ChevronUp } from 'lucide-react';
 import { QuestItem } from './QuestItem';
 import type { Goal } from '../../../app/App';
+import { groupQuests, calculateExpMultiplier } from '../utils/questUtils';
 
 interface QuestPanelProps {
   goals: Goal[];
@@ -39,11 +40,8 @@ export function QuestPanel({
     setCollapsedCategories(prev => ({ ...prev, [cat]: !prev[cat] }));
   };
   
-  const mainQuests = goals.filter(g => g.category === 'Main Quest' && !g.is_experimental);
-  const dailyQuests = goals.filter(g => g.category === 'Daily Quest' && !g.is_experimental);
-  // Any legacy category that is not Main or Daily is considered a Side Quest
-  const sideQuests = goals.filter(g => g.category !== 'Main Quest' && g.category !== 'Daily Quest' && !g.is_experimental);
-  const experimentQuests = goals.filter(g => g.is_experimental);
+  const { mainQuests, dailyQuests, sideQuests, experimentQuests } = groupQuests(goals);
+  const expMultiplier = calculateExpMultiplier(goals);
 
   return (
     <div className="flex flex-col gap-4 md:gap-6 pb-6">
@@ -79,7 +77,7 @@ export function QuestPanel({
           <div className="flex items-center gap-2">
             <span className="text-[10px] text-slate-500">EXP Multiplier:</span>
             <span className="text-sm font-black text-amber-500 tabular-nums">
-              {(goals.reduce((acc, curr) => acc + curr.reward_alpha, 0) / (goals.length || 1)).toFixed(2)}x
+              {expMultiplier}x
             </span>
           </div>
         </div>

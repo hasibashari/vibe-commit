@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { Goal } from '../../../app/App';
 import { calculateProbability, adjustDifficultyBayesian } from '../../../shared/services/vibeService';
+import { logQuestActionApi, updateQuestDifficultyApi, createExperimentalBranchApi, updateQuestApi, createQuestApi, deleteQuestApi } from '../services/questApi';
 
 export function useQuest(
   goals: Goal[], 
@@ -24,22 +25,14 @@ export function useQuest(
     }
 
     const logId = crypto.randomUUID();
-    await fetch('/api/logs', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: logId, goalId, vibeScore: 8, notes: 'Auto-logged from dashboard' })
-    });
+    await logQuestActionApi(goalId, logId);
 
     if (goal) {
       const prob = calculateProbability(goal.repetition_count + 1, goal.difficulty, goal.reward_alpha);
       const newD = adjustDifficultyBayesian(prob, goal.difficulty);
       
       if (newD !== goal.difficulty) {
-        await fetch(`/api/goals/${goalId}/difficulty`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ difficulty: newD })
-        });
+        await updateQuestDifficultyApi(goalId, newD);
         console.log(`Bayesian adjustment: D shifted from ${goal.difficulty} to ${newD}`);
       }
     }
@@ -49,55 +42,18 @@ export function useQuest(
 
   const handleBranch = async (parent: Goal) => {
     const id = crypto.randomUUID();
-    await fetch('/api/goals', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        id,
-        userId: 'user123',
-        title: `${parent.title} (Exp)`,
-        description: `Experimental branch of: ${parent.title}`,
-        difficulty: Math.min(10, parent.difficulty * 1.2),
-        rewardAlpha: parent.reward_alpha,
-        parentId: parent.id,
-        isExperimental: true,
-        category: 'Experiment'
-      })
-    });
+    await createExperimentalBranchApi(parent, id);
     fetchData();
   };
 
   const handleSaveQuest = async (questData: Partial<Goal>) => {
     if (questToEdit) {
-      await fetch(`/api/goals/${questToEdit.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: questData.title,
-          description: questData.description,
-          difficulty: questData.difficulty,
-          rewardAlpha: questData.reward_alpha,
-          category: questData.category
-        })
-      });
+      await updateQuestApi(questToEdit.id, questData);
       if (selectedGoal?.id === questToEdit.id) {
         setSelectedGoal({ ...selectedGoal, ...questData } as Goal);
       }
     } else {
-      await fetch('/api/goals', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: crypto.randomUUID(),
-          userId: 'user123',
-          title: questData.title,
-          description: questData.description,
-          difficulty: questData.difficulty,
-          rewardAlpha: questData.reward_alpha,
-          category: questData.category,
-          isExperimental: false
-        })
-      });
+      await createQuestApi(questData, crypto.randomUUID());
     }
     setIsQuestEditorOpen(false);
     setQuestToEdit(null);
@@ -111,10 +67,7 @@ export function useQuest(
   const executeDeleteQuest = async (setGoals: React.Dispatch<React.SetStateAction<Goal[]>>) => {
     if (!questToDelete) return;
     try {
-      const response = await fetch(`/api/goals/${questToDelete}`, { method: 'DELETE' });
-      if (!response.ok) {
-        throw new Error('Failed to delete node from server');
-      }
+      await deleteQuestApi(questToDelete);
       
       if (selectedGoal?.id === questToDelete) {
         setSelectedGoal(null);

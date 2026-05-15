@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { analyzeBrainDump } from '../../../shared/services/vibeService';
+import { saveBrainDumpApi, saveQuestsFromBrainDumpApi } from '../services/brainDumpApi';
 
 export function useBrainDump(fetchData: () => Promise<void>) {
   const [isBrainDumpOpen, setIsBrainDumpOpen] = useState(false);
@@ -12,37 +13,8 @@ export function useBrainDump(fetchData: () => Promise<void>) {
     try {
       const result = await analyzeBrainDump(draftContent);
       
-      await fetch('/api/brain-dump', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: crypto.randomUUID(),
-          userId: 'user123',
-          rawContent: draftContent,
-          analysis: {
-            anxietyLevel: result.anxietyLevel,
-            anxietyScore: result.anxietyScore,
-            summary: result.analysisSummary
-          }
-        })
-      });
-
-      for (const res of result.quests) {
-        await fetch('/api/goals', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            id: crypto.randomUUID(),
-            userId: 'user123',
-            title: res.title,
-            description: res.description,
-            difficulty: res.difficulty,
-            rewardAlpha: res.rewardAlpha,
-            category: res.category,
-            isExperimental: false
-          })
-        });
-      }
+      await saveBrainDumpApi(draftContent, result);
+      await saveQuestsFromBrainDumpApi(result.quests);
       
       setAnalysisResult(result);
       fetchData();
