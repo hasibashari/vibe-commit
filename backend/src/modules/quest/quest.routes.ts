@@ -9,11 +9,11 @@ router.get('/:userId', (req, res) => {
 });
 
 router.post('/', (req, res) => {
-  const { id, userId, title, description, difficulty, rewardAlpha, parentId, isExperimental, category } = req.body;
+  const { id, userId, title, description, difficulty, rewardAlpha, category } = req.body;
   db.prepare(`
-    INSERT INTO goals (id, user_id, title, description, difficulty, reward_alpha, parent_id, is_experimental, category)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(id, userId, title, description, difficulty, rewardAlpha, parentId, isExperimental ? 1 : 0, category);
+    INSERT INTO goals (id, user_id, title, description, difficulty, reward_alpha, category)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `).run(id, userId, title, description, difficulty, rewardAlpha, category);
   res.json({ success: true });
 });
 
@@ -30,26 +30,13 @@ router.put('/:id', (req, res) => {
 router.delete('/:id', (req, res) => {
   try {
     const id = req.params.id;
-    // Perform cascading delete (deep first)
-    const getDescendants = (parentId: string): string[] => {
-      const childrenRes = db.prepare('SELECT id FROM goals WHERE parent_id = ?').all(parentId) as { id: string }[];
-      let allDescendants: string[] = [];
-      for (const child of childrenRes) {
-        allDescendants.push(...getDescendants(child.id), child.id);
-      }
-      return allDescendants;
-    };
-    
-    const idsToDelete = [...getDescendants(id), id];
     
     const deleteLogs = db.prepare('DELETE FROM quest_logs WHERE goal_id = ?');
     const deleteGoal = db.prepare('DELETE FROM goals WHERE id = ?');
     
     const transaction = db.transaction(() => {
-      for (const targetId of idsToDelete) {
-        deleteLogs.run(targetId);
-        deleteGoal.run(targetId);
-      }
+      deleteLogs.run(id);
+      deleteGoal.run(id);
     });
     
     transaction();

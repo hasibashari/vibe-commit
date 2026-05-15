@@ -17,24 +17,6 @@ export const updateQuestDifficultyApi = async (goalId: string, newDifficulty: nu
   });
 };
 
-export const createExperimentalBranchApi = async (parent: Goal, branchId: string) => {
-  await fetch('/api/goals', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      id: branchId,
-      userId: DEFAULT_USER_ID,
-      title: `${parent.title} (Exp)`,
-      description: `Experimental branch of: ${parent.title}`,
-      difficulty: Math.min(10, parent.difficulty * 1.2),
-      rewardAlpha: parent.reward_alpha,
-      parentId: parent.id,
-      isExperimental: true,
-      category: 'Experiment'
-    })
-  });
-};
-
 export const updateQuestApi = async (questId: string, questData: Partial<Goal>) => {
   await fetch(`/api/goals/${questId}`, {
     method: 'PUT',
@@ -60,8 +42,7 @@ export const createQuestApi = async (questData: Partial<Goal>, id: string) => {
       description: questData.description,
       difficulty: questData.difficulty,
       rewardAlpha: questData.reward_alpha,
-      category: questData.category,
-      isExperimental: false
+      category: questData.category
     })
   });
 };

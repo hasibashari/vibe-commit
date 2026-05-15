@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import type { Goal } from '../../../shared/types/goal';
 import { calculateProbability, adjustDifficultyBayesian } from '../../../shared/utils/vibeMath';
-import { logQuestActionApi, updateQuestDifficultyApi, createExperimentalBranchApi, updateQuestApi, createQuestApi, deleteQuestApi } from '../services/questApi';
+import { logQuestActionApi, updateQuestDifficultyApi, updateQuestApi, createQuestApi, deleteQuestApi } from '../services/questApi';
 import { useToast } from '../../../shared/components/Toast';
 
 export function useQuest(
@@ -53,19 +53,6 @@ export function useQuest(
         description: desc,
         type: 'error'
       });
-    }
-  };
-
-  const handleBranch = async (parent: Goal) => {
-    try {
-      const id = crypto.randomUUID();
-      await createExperimentalBranchApi(parent, id);
-      fetchData();
-      toast({ title: "Branching Berhasil", description: `Variasi dari '${parent.title}' dibuat.`, type: 'success' });
-    } catch(e: unknown) {
-      let desc = "Terjadi kesalahan";
-      if (e instanceof Error) desc = e.message;
-      toast({ title: "Gagal Branching", description: desc, type: 'error' });
     }
   };
 
@@ -126,7 +113,6 @@ export function useQuest(
     questToEdit,
     setQuestToEdit,
     handleLogAction,
-    handleBranch,
     handleSaveQuest,
     confirmDeleteQuest,
     executeDeleteQuest

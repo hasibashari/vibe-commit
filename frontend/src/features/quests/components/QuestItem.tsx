@@ -1,5 +1,5 @@
 import React from 'react';
-import { Target, Check, ChevronRight, FlaskConical, Settings2, Trash2 } from 'lucide-react';
+import { Target, Check, ChevronRight, Settings2, Trash2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import type { Goal } from '../../../shared/types/goal';
 
@@ -7,7 +7,6 @@ interface QuestItemProps {
   key?: React.Key;
   goal: Goal;
   onLog: () => void;
-  onBranch: (goal: Goal) => void;
   onEdit: (goal: Goal) => void;
   onDrop: (goalId: string) => void;
   isSelected: boolean;
@@ -15,7 +14,7 @@ interface QuestItemProps {
   onClick: () => void;
 }
 
-export function QuestItem({ goal, onLog, onBranch, onEdit, onDrop, isSelected, isCompleted = false, onClick }: QuestItemProps) {
+export function QuestItem({ goal, onLog, onEdit, onDrop, isSelected, isCompleted = false, onClick }: QuestItemProps) {
   return (
     <motion.div 
       layout
@@ -34,7 +33,6 @@ export function QuestItem({ goal, onLog, onBranch, onEdit, onDrop, isSelected, i
         <div className="space-y-2 flex-1">
           <div className="flex items-center gap-2">
             <p className="text-xs font-mono uppercase tracking-widest text-slate-500">{goal.category}</p>
-            {goal.is_experimental && <span className="text-xs bg-purple-900/30 text-purple-400 px-1.5 py-0.5 rounded border border-purple-800 font-mono uppercase font-bold tracking-wider">Experimental</span>}
             {isCompleted && <span className="text-xs bg-emerald-900/30 text-emerald-400 px-1.5 py-0.5 rounded border border-emerald-800 font-mono uppercase font-bold tracking-wider flex items-center gap-1"><Check className="w-3 h-3"/> Completed</span>}
           </div>
           <h3 className={`text-base font-bold tracking-tight transition-colors ${
@@ -57,15 +55,6 @@ export function QuestItem({ goal, onLog, onBranch, onEdit, onDrop, isSelected, i
           >
             <Check className="w-6 h-6 md:w-5 md:h-5 stroke-[2.5]" />
           </motion.button>
-          {!isCompleted && (
-            <button 
-              onClick={(e) => { e.stopPropagation(); onBranch(goal); }}
-              title="Branch Experiment"
-              className="w-12 h-12 md:w-10 md:h-10 rounded border border-slate-700 bg-slate-950 text-slate-500 flex items-center justify-center transition-all hover:bg-purple-900/50 hover:border-purple-500 hover:text-purple-400 shrink-0"
-            >
-              <FlaskConical className="w-5 h-5 md:w-4 md:h-4" />
-            </button>
-          )}
         </div>
       </div>
 

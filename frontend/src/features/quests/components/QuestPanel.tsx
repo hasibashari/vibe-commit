@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Target, RotateCcw, BrainCircuit, ChevronRight, Crown, Calendar, Bookmark, FlaskConical, ChevronDown, ChevronUp } from 'lucide-react';
+import { Target, RotateCcw, BrainCircuit, ChevronRight, Crown, Calendar, Bookmark, ChevronDown, ChevronUp } from 'lucide-react';
 import { QuestItem } from './QuestItem';
 import { Button } from '../../../shared/components/Button';
 import type { Goal } from '../../../shared/types/goal';
@@ -11,7 +11,6 @@ interface QuestPanelProps {
   latestDump: { summary: string; anxietyLevel: string; anxietyScore: number } | null;
   onSelectGoal: (goal: Goal) => void;
   onLogAction: (goalId: string) => void;
-  onBranch: (goal: Goal) => void;
   onEdit: (goal: Goal) => void;
   onDrop: (goalId: string) => void;
   onOpenBrainDump: () => void;
@@ -25,7 +24,6 @@ export function QuestPanel({
   latestDump,
   onSelectGoal,
   onLogAction,
-  onBranch,
   onEdit,
   onDrop,
   onOpenBrainDump,
@@ -39,7 +37,7 @@ export function QuestPanel({
     setExpandedCategory(prev => prev === cat ? '' : cat);
   };
   
-  const { mainQuests, dailyQuests, sideQuests, experimentQuests } = groupQuests(goals);
+  const { mainQuests, dailyQuests, sideQuests } = groupQuests(goals);
   const expMultiplier = calculateExpMultiplier(goals);
 
   React.useEffect(() => {
@@ -47,7 +45,6 @@ export function QuestPanel({
       if (mainQuests.some(q => q.id === selectedGoal.id)) setExpandedCategory('Main Quest');
       else if (dailyQuests.some(q => q.id === selectedGoal.id)) setExpandedCategory('Daily Quest');
       else if (sideQuests.some(q => q.id === selectedGoal.id)) setExpandedCategory('Side Quest');
-      else if (experimentQuests.some(q => q.id === selectedGoal.id)) setExpandedCategory('Experiments');
     }
   }, [selectedGoal?.id]);
 
@@ -108,7 +105,6 @@ export function QuestPanel({
                 key={goal.id}
                 goal={goal}
                 onLog={() => onLogAction(goal.id)}
-                onBranch={onBranch}
                 onEdit={onEdit}
                 onDrop={onDrop}
                 isSelected={selectedGoal?.id === goal.id}
@@ -143,7 +139,6 @@ export function QuestPanel({
                 key={goal.id}
                 goal={goal}
                 onLog={() => onLogAction(goal.id)}
-                onBranch={onBranch}
                 onEdit={onEdit}
                 onDrop={onDrop}
                 isSelected={selectedGoal?.id === goal.id}
@@ -178,7 +173,6 @@ export function QuestPanel({
                 key={goal.id}
                 goal={goal}
                 onLog={() => onLogAction(goal.id)}
-                onBranch={onBranch}
                 onEdit={onEdit}
                 onDrop={onDrop}
                 isSelected={selectedGoal?.id === goal.id}
@@ -194,43 +188,6 @@ export function QuestPanel({
             )}
           </div>
         </div>
-
-        {/* Experiments */}
-        {experimentQuests.length > 0 && (
-          <div className="flex flex-col gap-3 pt-3 border-t border-slate-800/50 transition-all duration-300">
-            <button 
-              onClick={() => toggleCategory('Experiments')}
-              className="flex items-center justify-between px-1 group"
-            >
-              <h3 className={`text-xs font-bold uppercase tracking-[0.2em] flex items-center gap-2 transition-colors ${expandedCategory === 'Experiments' ? 'text-purple-300' : 'text-purple-400/70 group-hover:text-purple-300'}`}>
-                <FlaskConical className="w-3 h-3" /> Branch Eksperimen ({experimentQuests.length})
-              </h3>
-              {expandedCategory !== 'Experiments' ? <ChevronUp className="w-4 h-4 text-slate-500 group-hover:text-purple-400/70" /> : <ChevronDown className="w-4 h-4 text-slate-500 group-hover:text-purple-400/70" />}
-            </button>
-            
-            <div className={`space-y-3 overflow-hidden transition-all duration-300 ${expandedCategory === 'Experiments' ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0 pointer-events-none'}`}>
-              {experimentQuests.map(goal => (
-                <div 
-                  key={goal.id} 
-                  onClick={() => onSelectGoal(goal)}
-                  className={`p-4 border-l-2 bg-slate-800/20 rounded-r transition-all cursor-pointer ${
-                    selectedGoal?.id === goal.id 
-                    ? 'border-purple-500 bg-purple-500/5 translate-x-1' 
-                    : 'border-slate-700 opacity-60 hover:opacity-100 hover:border-slate-500'
-                  }`}
-                >
-                  <p className={`text-xs font-bold ${selectedGoal?.id === goal.id ? 'text-white' : 'text-slate-400'}`}>Exp: {goal.title}</p>
-                  <div className="mt-3 h-1 bg-slate-950 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-purple-500 transition-all duration-1000" 
-                      style={{ width: `${Math.min(100, (goal.repetition_count / (goal.difficulty * 1.5)) * 100)}%` }}
-                    ></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Action Buttons */}
         <div className="mt-4 pt-4 border-t border-slate-800/50 space-y-3">

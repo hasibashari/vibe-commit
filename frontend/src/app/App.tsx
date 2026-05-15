@@ -67,7 +67,7 @@ export default function App() {
   };
 
   const coins = user?.level * 100 + goals.reduce((acc, goal) => acc + (goal.logs?.length || 0), 0) * 10;
-  const commits = goals.reduce((acc, goal) => acc + (goal.logs?.length || 0), 0);
+
 
   if (isLoading) {
     return (
@@ -98,7 +98,6 @@ export default function App() {
           <VibeEnvironment 
             anxietyScore={latestDump?.anxietyScore || 5} 
             sigmaVariance={user.mana} 
-            commits={commits} 
           />
         }
         header={<RPGHeader hp={user.hp} mana={user.mana} level={user.level} exp={user.exp} coins={coins} user={user} onOpenProfile={() => setIsProfileOpen(true)} onOpenSettings={() => setIsSettingsOpen(true)} />}
@@ -169,7 +168,6 @@ export default function App() {
                 setSelectedGoal(goal);
               }}
               onLogAction={handleLogAction}
-              onBranch={handleBranch}
               onEdit={(goal) => { setQuestToEdit(goal); setIsQuestEditorOpen(true); }}
               onDrop={confirmDeleteQuest}
               onOpenBrainDump={() => setIsBrainDumpOpen(true)}

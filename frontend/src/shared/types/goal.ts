@@ -10,7 +10,6 @@ export interface Goal {
   category: string;
   difficulty: number;
   reward_alpha: number;
-  is_experimental: boolean;
   repetition_count: number;
   createdAt?: string;
   updatedAt?: string;

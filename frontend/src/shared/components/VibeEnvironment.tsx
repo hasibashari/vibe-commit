@@ -1,16 +1,14 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { motion } from 'motion/react';
 
 interface VibeEnvironmentProps {
   anxietyScore?: number;
   sigmaVariance?: number;
-  commits?: number;
 }
 
 export const VibeEnvironment: React.FC<VibeEnvironmentProps> = ({ 
   anxietyScore = 5, 
-  sigmaVariance = 1.0, 
-  commits = 10 
+  sigmaVariance = 1.0
 }) => {
   // If Anxiety score is LOW (i.e., Anxiety Reduction Rate is HIGH), it's bright and lush.
   const isLush = anxietyScore <= 5;
@@ -18,17 +16,6 @@ export const VibeEnvironment: React.FC<VibeEnvironmentProps> = ({
   // High variance (sigma) implies procrastination risk -> add procedural fog
   // Variance mapping: Assuming typical sigma ranges 0 to 5
   const fogOpacity = Math.min(0.8, sigmaVariance * 0.15);
-
-  // Generate procedural "trees/commits" based on heatmap logs
-  const vegetation = useMemo(() => {
-    return Array.from({ length: Math.min(commits, 80) }).map((_, i) => ({
-      height: 10 + Math.random() * 30, // 10% to 40% height of the foreground base
-      left: Math.random() * 100, // 0 to 100% left position
-      width: 2 + Math.random() * 4,
-      color: isLush ? 'bg-emerald-500/30 shadow-[0_0_8px_rgba(16,185,129,0.3)]' : 'bg-slate-700/40 shadow-[0_0_8px_rgba(51,65,85,0.3)]',
-      delay: Math.random() * 2
-    }));
-  }, [commits, isLush]);
 
   return (
     <div className="fixed inset-0 z-[-1] pointer-events-none overflow-hidden transition-colors duration-[2000ms] bg-[#020617]">
@@ -71,31 +58,7 @@ export const VibeEnvironment: React.FC<VibeEnvironmentProps> = ({
         </React.Fragment>
       )}
 
-      {/* 4. Foreground: LifeCommit Terrain Base & Growth */}
-      <div className="absolute bottom-0 w-full h-[12vh] border-t border-slate-500/10 flex items-end overflow-hidden transition-all duration-1000"
-           style={{ 
-             background: isLush 
-               ? 'linear-gradient(to top, rgba(2,44,34,0.6), rgba(6,78,59,0.1))' 
-               : 'linear-gradient(to top, rgba(2,6,23,0.8), rgba(15,23,42,0.1))' 
-           }}>
-        
-        {/* Render a block for each commit (Vegetation integration) */}
-        {vegetation.map((veg, i) => (
-          <motion.div 
-            key={i} 
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: `${veg.height}%`, opacity: 1 }}
-            transition={{ duration: 1.5, delay: veg.delay, ease: "easeOut" }}
-            className={`absolute bottom-0 rounded-t-[2px] transition-colors duration-[2000ms] ${veg.color}`}
-            style={{ 
-              left: `${veg.left}%`,
-              width: `${veg.width}px`
-            }}
-          />
-        ))}
-        
-        <div className="absolute bottom-0 w-full h-[2px] bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent opacity-50" />
-      </div>
+
     </div>
   );
 };

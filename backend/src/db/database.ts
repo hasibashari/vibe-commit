@@ -18,6 +18,8 @@ export function initDb() {
   
   try { db.exec("ALTER TABLE users ADD COLUMN title TEXT DEFAULT 'Novice Operative'"); } catch (e) {}
   try { db.exec("ALTER TABLE users ADD COLUMN avatar_color TEXT DEFAULT 'indigo'"); } catch (e) {}
+  try { db.exec("ALTER TABLE goals DROP COLUMN is_experimental"); } catch (e) {}
+  try { db.exec("ALTER TABLE goals DROP COLUMN parent_id"); } catch (e) {}
 
   db.exec(`
     CREATE TABLE IF NOT EXISTS goals (
@@ -27,11 +29,8 @@ export function initDb() {
       description TEXT,
       difficulty REAL DEFAULT 1.0,
       reward_alpha REAL DEFAULT 0.5,
-      parent_id TEXT,
-      is_experimental BOOLEAN DEFAULT 0,
       category TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY(parent_id) REFERENCES goals(id)
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 
     CREATE TABLE IF NOT EXISTS quest_logs (

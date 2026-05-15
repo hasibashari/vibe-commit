@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, ReactNode } from 'react';
 import type { Goal } from '../../shared/types/goal';
 import type { UserStats } from '../../shared/types/user';
 import type { Achievement } from '../../features/dashboard/utils/dashboardUtils';
+import type { BurnoutPrediction } from '../../shared/services/analyticsService';
 import { useDashboardState } from '../../features/dashboard/hooks/useDashboardState';
 import { useQuest } from '../../features/quests/hooks/useQuest';
 import { useBrainDump } from '../../features/brainDump/hooks/useBrainDump';
@@ -15,7 +16,7 @@ interface AppContextType {
   user: UserStats;
   achievements: Achievement[];
   latestDump: { summary: string; anxietyLevel: string; anxietyScore: number } | null;
-  burnoutMonitor: { burnoutScore: number; riskLevel: string; triggers: string[] } | null;
+  burnoutMonitor: BurnoutPrediction | null;
   expPopups: {id: string, exp: number}[];
   setExpPopups: React.Dispatch<React.SetStateAction<{id: string, exp: number}[]>>;
   fetchData: () => Promise<void>;
