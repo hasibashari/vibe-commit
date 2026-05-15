@@ -8,7 +8,7 @@ export const VariableCharts: React.FC<{ goals: { category: string }[] }> = ({ go
   const COLORS = ['#06b6d4', '#8b5cf6', '#10b981', '#f59e0b', '#f43f5e', '#3b82f6'];
 
   return (
-    <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-8 w-full">
+    <div className="flex flex-col xl:flex-row items-center justify-center gap-6 w-full">
       <div className="w-full max-w-[180px] aspect-square relative shrink-0">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
@@ -43,11 +43,10 @@ export const VariableCharts: React.FC<{ goals: { category: string }[] }> = ({ go
       
       <div className="w-full max-w-sm space-y-3">
          {data.slice(0, 5).map((d, i) => (
-           <div key={d.name} className="flex justify-between items-center text-xs font-mono">
-             <div className="flex items-center gap-3">
-               <div className="w-2.5 h-2.5 rounded-[2px] shrink-0" style={{ backgroundColor: COLORS[i % COLORS.length] }}></div>
-               <span className="text-slate-400 truncate w-32 md:w-40 capitalize">{d.name}</span>
-             </div>
+           <div key={d.name} className="flex items-center text-xs font-mono w-full">
+             <div className="w-2.5 h-2.5 rounded-[2px] shrink-0 mr-3" style={{ backgroundColor: COLORS[i % COLORS.length] }}></div>
+             <span className="text-slate-400 capitalize whitespace-nowrap">{d.name}</span>
+             <div className="flex-1 border-b border-dashed border-slate-700 mx-3 opacity-50 relative top-[1px]"></div>
              <span className="text-white font-bold">{d.value}</span>
            </div>
          ))}

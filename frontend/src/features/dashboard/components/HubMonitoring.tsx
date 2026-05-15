@@ -24,7 +24,7 @@ export function HubMonitoring({ goals }: HubMonitoringProps) {
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="flex flex-col gap-6 h-full pb-6 min-w-0"
+      className="@container flex flex-col gap-6 h-full pb-6 min-w-0"
     >
       <div className="flex flex-col gap-1 mb-2">
         <h3 className="text-lg md:text-xl font-bold text-white tracking-tight flex items-center gap-2">
@@ -44,7 +44,7 @@ export function HubMonitoring({ goals }: HubMonitoringProps) {
         />
       ) : (
         <>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4">
+          <div className="grid grid-cols-2 @[600px]:grid-cols-4 gap-2 md:gap-4">
             <StatCard 
               icon={<CheckCircle2 className="w-4 h-4 text-slate-400" />}
               label="Selesai"
@@ -107,9 +107,7 @@ export function HubMonitoring({ goals }: HubMonitoringProps) {
                   Distribusi area fokus saat ini.
                 </p>
               </div>
-              <div className="bg-[#0A0C10] border border-white/5 rounded-xl p-4 md:p-5">
-                <VariableCharts goals={goals} />
-              </div>
+              <VariableCharts goals={goals} />
             </div>
           </div>
         </>
