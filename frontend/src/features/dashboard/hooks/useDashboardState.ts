@@ -1,18 +1,22 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { Goal } from '../../../app/App';
-import { calculateStochasticNudges, analyzeBurnoutRisk, BurnoutPrediction } from '../../../shared/services/vibeService';
+import { calculateStochasticNudges, analyzeBurnoutRisk, BurnoutPrediction } from '../../../shared/services/analyticsService';
 import { fetchDashboardData, updateProfileData, resetProfileData, UserStats } from '../services/dashboardApi';
-import { calculateRPGStats, getCompletedIdsToday } from '../utils/dashboardUtils';
+import { calculateRPGStats, getCompletedIdsToday, calculateAchievements, Achievement } from '../utils/dashboardUtils';
+import { useToast } from '../../../shared/components/Toast';
 
 export function useDashboardState() {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [user, setUser] = useState<UserStats>({ hp: 100, mana: 100, level: 1, exp: 0 });
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [latestDump, setLatestDump] = useState<{ summary: string; anxietyLevel: string; anxietyScore: number } | null>(null);
+
   const [burnoutMonitor, setBurnoutMonitor] = useState<BurnoutPrediction | null>(null);
   const [expPopups, setExpPopups] = useState<{id: string, exp: number}[]>([]);
   const [nudge, setNudge] = useState<{ optimalHour: number; suggestion: string } | null>(null);
   const [recentlyCompletedIds, setRecentlyCompletedIds] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const { toast } = useToast();
 
   const fetchData = useCallback(async () => {
     try {
@@ -36,19 +40,27 @@ export function useDashboardState() {
       
       const calculatedUser = calculateRPGStats(allLogs, userData, 100, 100);
       setUser(calculatedUser);
-    } catch (e) {
-      console.error('Failed to fetch dashboard data:', e);
+      
+      const newAchievements = calculateAchievements(allLogs, calculatedUser.level);
+      setAchievements(newAchievements);
+    } catch (e: any) {
+      toast({
+        title: "Koneksi Terputus",
+        description: "Gagal memuat data dari server.",
+        type: 'error'
+      });
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [toast]);
 
   const updateProfile = async (data: { name: string, title: string, avatar_color: string }) => {
     try {
       const updatedUser = await updateProfileData('user123', data);
       setUser(prev => ({ ...prev, ...updatedUser }));
-    } catch (e) {
-      console.error('Failed to update profile', e);
+      toast({ title: "Profil Disimpan", type: 'success' });
+    } catch (e: any) {
+      toast({ title: "Gagal Menyimpan Profil", type: 'error' });
     }
   };
 
@@ -62,8 +74,10 @@ export function useDashboardState() {
       setRecentlyCompletedIds([]);
       setNudge(null);
       setUser({ hp: 100, mana: 100, level: 1, exp: 0 });
-    } catch (e) {
-      console.error('Failed to reset profile', e);
+      setAchievements(calculateAchievements([], 1));
+      toast({ title: "Data Direset", description: "Semua progres telah dihapus.", type: 'info' });
+    } catch (e: any) {
+      toast({ title: "Gagal Mereset Data", type: 'error' });
     }
   };
 
@@ -75,6 +89,7 @@ export function useDashboardState() {
     goals,
     setGoals,
     user,
+    achievements,
     latestDump,
     burnoutMonitor,
     expPopups,

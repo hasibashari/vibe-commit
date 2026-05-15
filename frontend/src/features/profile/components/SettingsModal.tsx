@@ -75,7 +75,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
                 <div className="flex flex-col gap-3">
                   <div className="flex items-center gap-2 text-slate-400">
                     <Globe className="w-3.5 h-3.5" />
-                    <h4 className="text-[10px] font-bold uppercase tracking-widest">Localization</h4>
+                    <h4 className="text-xs font-bold uppercase tracking-widest">Localization</h4>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <button 
@@ -101,12 +101,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
                 <div className="flex flex-col gap-3">
                   <div className="flex items-center gap-2 text-slate-400">
                     <Sparkles className="w-3.5 h-3.5" />
-                    <h4 className="text-[10px] font-bold uppercase tracking-widest">Visual Effects</h4>
+                    <h4 className="text-xs font-bold uppercase tracking-widest">Visual Effects</h4>
                   </div>
                   <div className="flex items-center justify-between bg-slate-900 border border-slate-800 p-3 rounded-lg">
                     <div className="flex flex-col">
                       <span className="text-sm font-bold text-slate-300">Enable Animations</span>
-                      <span className="text-[10px] text-slate-500">Smooth transitions & visual popups</span>
+                      <span className="text-xs text-slate-500">Smooth transitions & visual popups</span>
                     </div>
                     <button 
                       onClick={() => updateSetting('animations', !settings.animations)}
@@ -121,7 +121,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
                 <div className="flex flex-col gap-3">
                   <div className="flex items-center gap-2 text-slate-400">
                     <Activity className="w-3.5 h-3.5" />
-                    <h4 className="text-[10px] font-bold uppercase tracking-widest">System Nudge Intensity</h4>
+                    <h4 className="text-xs font-bold uppercase tracking-widest">System Nudge Intensity</h4>
                   </div>
                   <div className="flex flex-col gap-2">
                     {['relaxed', 'normal', 'strict'].map((level) => (
@@ -139,7 +139,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
                           <span className={`text-xs font-bold uppercase tracking-wider ${settings.nudgeIntensity === level ? 'text-indigo-300' : 'text-slate-400'}`}>
                             {level}
                           </span>
-                          <span className="text-[10px] text-slate-500">
+                          <span className="text-xs text-slate-500">
                             {level === 'relaxed' && 'Minimal reminders, low stress'}
                             {level === 'normal' && 'Balanced reminders & motivation'}
                             {level === 'strict' && 'Aggressive tracking & high discipline'}
@@ -152,7 +152,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
 
                 {/* Data Management */}
                 <div className="flex flex-col gap-3 pt-4 border-t border-slate-800/50">
-                  <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Data Management</h4>
+                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Data Management</h4>
                   <button 
                     onClick={onExport}
                     className="flex items-center justify-center gap-2 w-full py-2.5 rounded text-xs font-bold uppercase tracking-wider border border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
@@ -163,7 +163,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
                 </div>
 
                 <div className="flex flex-col gap-4 pt-4 border-t border-slate-800/50">
-                  <h4 className="text-[10px] font-bold text-rose-500 uppercase tracking-widest">Danger Zone</h4>
+                  <h4 className="text-xs font-bold text-rose-500 uppercase tracking-widest">Danger Zone</h4>
                   
                   {!isResetConfirm ? (
                     <button 

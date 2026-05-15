@@ -92,7 +92,8 @@ export const StatusScene: React.FC<StatsProps> = ({ hp, mana, level, goals, nudg
       <AIChatModal 
         isOpen={isChatOpen} 
         onClose={() => setIsChatOpen(false)} 
-        user={{ name: userName, hp, mana, level }} 
+        user={{ name: userName, hp, mana, level }}
+        goals={goals}
       />
     </div>
   );

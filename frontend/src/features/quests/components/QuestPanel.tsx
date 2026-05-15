@@ -56,11 +56,11 @@ export function QuestPanel({
       {/* Brain Dump Action Panel - Promoted to top for easier access */}
       <div className="bg-indigo-900/20 border border-indigo-500/30 p-4 md:p-5 rounded-lg flex flex-col shadow-lg shadow-indigo-900/10">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-[10px] font-bold text-indigo-300 uppercase tracking-widest decoration-indigo-500/50 flex items-center gap-2">
+          <h3 className="text-xs font-bold text-indigo-300 uppercase tracking-widest decoration-indigo-500/50 flex items-center gap-2">
             <BrainCircuit className="w-3.5 h-3.5" /> Brain Dump
           </h3>
           {latestDump && (
-            <span className={`text-[9px] font-mono uppercase px-2 py-0.5 rounded-full border ${
+            <span className={`text-xs font-mono uppercase px-2 py-0.5 rounded-full border ${
               latestDump.anxietyScore > 7 ? 'text-rose-400 border-rose-400/30 bg-rose-400/10' : 'text-indigo-400 border-indigo-400/30 bg-indigo-400/10'
             }`}>
               Level: {latestDump.anxietyLevel}
@@ -80,9 +80,9 @@ export function QuestPanel({
 
       <div className="bg-slate-900/50 border border-slate-800 p-4 md:p-5 rounded-lg flex flex-col gap-5">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Quest Log</h3>
+          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest px-1">Quest Log</h3>
           <div className="flex items-center gap-2">
-            <span className="text-[10px] text-slate-500">EXP Multiplier:</span>
+            <span className="text-xs text-slate-500">EXP Multiplier:</span>
             <span className="text-sm font-black text-amber-500 tabular-nums">
               {expMultiplier}x
             </span>
@@ -95,7 +95,7 @@ export function QuestPanel({
             onClick={() => toggleCategory('Main Quest')}
             className="flex items-center justify-between px-1 group"
           >
-            <h3 className={`text-[11px] font-bold uppercase tracking-[0.2em] flex items-center gap-2 transition-colors ${expandedCategory === 'Main Quest' ? 'text-amber-300' : 'text-amber-400/70 group-hover:text-amber-300'}`}>
+            <h3 className={`text-xs font-bold uppercase tracking-[0.2em] flex items-center gap-2 transition-colors ${expandedCategory === 'Main Quest' ? 'text-amber-300' : 'text-amber-400/70 group-hover:text-amber-300'}`}>
               <Crown className="w-4 h-4" /> Main Quest ({mainQuests.length})
             </h3>
             {expandedCategory !== 'Main Quest' ? <ChevronUp className="w-4 h-4 text-slate-500 group-hover:text-amber-400/70" /> : <ChevronDown className="w-4 h-4 text-slate-500 group-hover:text-amber-400/70" />}
@@ -118,7 +118,7 @@ export function QuestPanel({
             {mainQuests.length === 0 && (
               <div className="px-4 py-8 text-center border border-dashed border-slate-700 bg-slate-800/20 rounded-lg flex flex-col items-center justify-center gap-2">
                 <Target className="w-5 h-5 text-slate-500 opacity-50" />
-                <p className="text-[10px] font-mono uppercase tracking-widest text-slate-500">Belum ada target utama</p>
+                <p className="text-xs font-mono uppercase tracking-widest text-slate-500">Belum ada target utama</p>
               </div>
             )}
           </div>
@@ -130,7 +130,7 @@ export function QuestPanel({
             onClick={() => toggleCategory('Daily Quest')}
             className="flex items-center justify-between px-1 group"
           >
-            <h3 className={`text-[11px] font-bold uppercase tracking-[0.2em] flex items-center gap-2 transition-colors ${expandedCategory === 'Daily Quest' ? 'text-cyan-300' : 'text-cyan-400/70 group-hover:text-cyan-300'}`}>
+            <h3 className={`text-xs font-bold uppercase tracking-[0.2em] flex items-center gap-2 transition-colors ${expandedCategory === 'Daily Quest' ? 'text-cyan-300' : 'text-cyan-400/70 group-hover:text-cyan-300'}`}>
               <Calendar className="w-4 h-4" /> Daily Quest ({dailyQuests.length})
             </h3>
             {expandedCategory !== 'Daily Quest' ? <ChevronUp className="w-4 h-4 text-slate-500 group-hover:text-cyan-400/70" /> : <ChevronDown className="w-4 h-4 text-slate-500 group-hover:text-cyan-400/70" />}
@@ -153,7 +153,7 @@ export function QuestPanel({
             {dailyQuests.length === 0 && (
               <div className="px-4 py-8 text-center border border-dashed border-slate-700 bg-slate-800/20 rounded-lg flex flex-col items-center justify-center gap-2">
                 <Calendar className="w-5 h-5 text-slate-500 opacity-50" />
-                <p className="text-[10px] font-mono uppercase tracking-widest text-slate-500">Belum ada target harian</p>
+                <p className="text-xs font-mono uppercase tracking-widest text-slate-500">Belum ada target harian</p>
               </div>
             )}
           </div>
@@ -165,7 +165,7 @@ export function QuestPanel({
             onClick={() => toggleCategory('Side Quest')}
             className="flex items-center justify-between px-1 group"
           >
-            <h3 className={`text-[11px] font-bold uppercase tracking-[0.2em] flex items-center gap-2 transition-colors ${expandedCategory === 'Side Quest' ? 'text-emerald-300' : 'text-emerald-400/70 group-hover:text-emerald-300'}`}>
+            <h3 className={`text-xs font-bold uppercase tracking-[0.2em] flex items-center gap-2 transition-colors ${expandedCategory === 'Side Quest' ? 'text-emerald-300' : 'text-emerald-400/70 group-hover:text-emerald-300'}`}>
               <Bookmark className="w-4 h-4" /> Side Quest ({sideQuests.length})
             </h3>
             {expandedCategory !== 'Side Quest' ? <ChevronUp className="w-4 h-4 text-slate-500 group-hover:text-emerald-400/70" /> : <ChevronDown className="w-4 h-4 text-slate-500 group-hover:text-emerald-400/70" />}
@@ -188,7 +188,7 @@ export function QuestPanel({
             {sideQuests.length === 0 && (
               <div className="px-4 py-8 text-center border border-dashed border-slate-700 bg-slate-800/20 rounded-lg flex flex-col items-center justify-center gap-2">
                 <Bookmark className="w-5 h-5 text-slate-500 opacity-50" />
-                <p className="text-[10px] font-mono uppercase tracking-widest text-slate-500">Belum ada tugas tambahan</p>
+                <p className="text-xs font-mono uppercase tracking-widest text-slate-500">Belum ada tugas tambahan</p>
               </div>
             )}
           </div>
@@ -201,7 +201,7 @@ export function QuestPanel({
               onClick={() => toggleCategory('Experiments')}
               className="flex items-center justify-between px-1 group"
             >
-              <h3 className={`text-[10px] font-bold uppercase tracking-[0.2em] flex items-center gap-2 transition-colors ${expandedCategory === 'Experiments' ? 'text-purple-300' : 'text-purple-400/70 group-hover:text-purple-300'}`}>
+              <h3 className={`text-xs font-bold uppercase tracking-[0.2em] flex items-center gap-2 transition-colors ${expandedCategory === 'Experiments' ? 'text-purple-300' : 'text-purple-400/70 group-hover:text-purple-300'}`}>
                 <FlaskConical className="w-3 h-3" /> Branch Eksperimen ({experimentQuests.length})
               </h3>
               {expandedCategory !== 'Experiments' ? <ChevronUp className="w-4 h-4 text-slate-500 group-hover:text-purple-400/70" /> : <ChevronDown className="w-4 h-4 text-slate-500 group-hover:text-purple-400/70" />}

@@ -37,13 +37,13 @@ export const VariableCharts: React.FC<{ goals: { category: string }[] }> = ({ go
         {/* Center label */}
         <div className="absolute inset-0 flex items-center justify-center flex-col pointer-events-none">
           <span className="text-2xl font-bold text-white leading-none font-mono tabular-nums">{goals.length}</span>
-          <span className="text-[10px] font-mono text-slate-500 uppercase mt-1">Quest</span>
+          <span className="text-xs font-mono text-slate-500 uppercase mt-1">Quest</span>
         </div>
       </div>
       
       <div className="w-full max-w-sm space-y-3">
          {data.slice(0, 5).map((d, i) => (
-           <div key={d.name} className="flex justify-between items-center text-[11px] font-mono">
+           <div key={d.name} className="flex justify-between items-center text-xs font-mono">
              <div className="flex items-center gap-3">
                <div className="w-2.5 h-2.5 rounded-[2px] shrink-0" style={{ backgroundColor: COLORS[i % COLORS.length] }}></div>
                <span className="text-slate-400 truncate w-32 md:w-40 capitalize">{d.name}</span>
@@ -52,7 +52,7 @@ export const VariableCharts: React.FC<{ goals: { category: string }[] }> = ({ go
            </div>
          ))}
          {data.length === 0 && (
-           <div className="text-[11px] text-slate-500 text-center font-mono uppercase">Belum Ada Quest</div>
+           <div className="text-xs text-slate-500 text-center font-mono uppercase">Belum Ada Quest</div>
          )}
       </div>
     </div>

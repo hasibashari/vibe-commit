@@ -13,13 +13,13 @@ export const fetchDashboardData = async (userId: string = 'user123') => {
   const gRes = await fetch(`/api/goals/${userId}`);
   const goalsData = await gRes.json();
 
-  const goalsWithCounts = await Promise.all(
-    goalsData.map(async (g: any) => {
-      const lRes = await fetch(`/api/logs/${g.id}`);
-      const logs = await lRes.json();
-      return { ...g, repetition_count: logs.length, logs };
-    })
-  );
+  const lRes = await fetch(`/api/logs/user/${userId}`);
+  const allLogsData = await lRes.json();
+
+  const goalsWithCounts = goalsData.map((g: any) => {
+    const logs = allLogsData.filter((log: any) => log.goal_id === g.id);
+    return { ...g, repetition_count: logs.length, logs };
+  });
 
   const dumpsRes = await fetch(`/api/brain-dump/${userId}`);
   const dumpsData = await dumpsRes.json();
@@ -27,7 +27,12 @@ export const fetchDashboardData = async (userId: string = 'user123') => {
   const userRes = await fetch(`/api/user/${userId}`);
   const userData = await userRes.json();
 
-  return { goalsWithCounts, dumpsData, userData };
+  return { 
+    goalsWithCounts: goalsWithCounts, 
+    rawGoalsData: goalsData,
+    dumpsData, 
+    userData 
+  };
 };
 
 export const updateProfileData = async (

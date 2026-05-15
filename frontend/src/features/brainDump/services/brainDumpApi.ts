@@ -1,4 +1,4 @@
-import { analyzeBrainDump } from '../../../shared/services/vibeService';
+import { analyzeBrainDump } from '../../../shared/services/aiService';
 
 export const analyzeBrainDumpApi = async (draftContent: string) => {
   const result = await analyzeBrainDump(draftContent);

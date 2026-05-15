@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import type { Goal } from '../../../app/App';
-import { calculateProbability, adjustDifficultyBayesian } from '../../../shared/services/vibeService';
+import { calculateProbability, adjustDifficultyBayesian } from '../../../shared/utils/vibeMath';
 import { logQuestActionApi, updateQuestDifficultyApi, createExperimentalBranchApi, updateQuestApi, createQuestApi, deleteQuestApi } from '../services/questApi';
+import { useToast } from '../../../shared/components/Toast';
 
 export function useQuest(
   goals: Goal[], 
@@ -12,6 +13,7 @@ export function useQuest(
   const [isQuestEditorOpen, setIsQuestEditorOpen] = useState(false);
   const [questToDelete, setQuestToDelete] = useState<string | null>(null);
   const [questToEdit, setQuestToEdit] = useState<Goal | null>(null);
+  const { toast } = useToast();
 
   const handleLogAction = async (goalId: string) => {
     const goal = goals.find(g => g.id === goalId);
@@ -24,40 +26,63 @@ export function useQuest(
       }, 2500);
     }
 
-    const logId = crypto.randomUUID();
-    await logQuestActionApi(goalId, logId);
+    try {
+      const logId = crypto.randomUUID();
+      await logQuestActionApi(goalId, logId);
 
-    if (goal) {
-      const prob = calculateProbability(goal.repetition_count + 1, goal.difficulty, goal.reward_alpha);
-      const newD = adjustDifficultyBayesian(prob, goal.difficulty);
-      
-      if (newD !== goal.difficulty) {
-        await updateQuestDifficultyApi(goalId, newD);
-        console.log(`Bayesian adjustment: D shifted from ${goal.difficulty} to ${newD}`);
+      if (goal) {
+        const prob = calculateProbability(goal.repetition_count + 1, goal.difficulty, goal.reward_alpha);
+        const newD = adjustDifficultyBayesian(prob, goal.difficulty);
+        
+        if (newD !== goal.difficulty) {
+          await updateQuestDifficultyApi(goalId, newD);
+          toast({
+            title: "Kalibrasi",
+            description: `Tingkat kesulitan '${goal.title}' disesuaikan.`,
+            type: 'info'
+          });
+        }
       }
-    }
 
-    fetchData();
+      fetchData();
+    } catch(e: any) {
+      toast({
+        title: "Gagal Melog Quest",
+        description: e.message || "Pastikan koneksi lancar.",
+        type: 'error'
+      });
+    }
   };
 
   const handleBranch = async (parent: Goal) => {
-    const id = crypto.randomUUID();
-    await createExperimentalBranchApi(parent, id);
-    fetchData();
+    try {
+      const id = crypto.randomUUID();
+      await createExperimentalBranchApi(parent, id);
+      fetchData();
+      toast({ title: "Branching Berhasil", description: `Variasi dari '${parent.title}' dibuat.`, type: 'success' });
+    } catch(e: any) {
+      toast({ title: "Gagal Branching", description: e.message, type: 'error' });
+    }
   };
 
   const handleSaveQuest = async (questData: Partial<Goal>) => {
-    if (questToEdit) {
-      await updateQuestApi(questToEdit.id, questData);
-      if (selectedGoal?.id === questToEdit.id) {
-        setSelectedGoal({ ...selectedGoal, ...questData } as Goal);
+    try {
+      if (questToEdit) {
+        await updateQuestApi(questToEdit.id, questData);
+        if (selectedGoal?.id === questToEdit.id) {
+          setSelectedGoal({ ...selectedGoal, ...questData } as Goal);
+        }
+        toast({ title: "Quest Diperbarui", type: 'success' });
+      } else {
+        await createQuestApi(questData, crypto.randomUUID());
+        toast({ title: "Quest Baru Dibuat", type: 'success' });
       }
-    } else {
-      await createQuestApi(questData, crypto.randomUUID());
+      setIsQuestEditorOpen(false);
+      setQuestToEdit(null);
+      fetchData();
+    } catch (e: any) {
+      toast({ title: "Gagal Menyimpan Quest", description: e.message, type: 'error' });
     }
-    setIsQuestEditorOpen(false);
-    setQuestToEdit(null);
-    fetchData();
   };
 
   const confirmDeleteQuest = (goalId: string) => {
@@ -75,9 +100,11 @@ export function useQuest(
       setGoals(prev => prev.filter(g => g.id !== questToDelete));
       setQuestToDelete(null);
       await fetchData();
-    } catch (e) {
+      toast({ title: "Quest Dihapus", type: 'info' });
+    } catch (e: any) {
       console.error(e);
       setQuestToDelete(null);
+      toast({ title: "Gagal Menghapus Quest", description: e.message, type: 'error' });
     }
   };
 

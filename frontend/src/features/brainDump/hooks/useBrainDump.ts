@@ -1,12 +1,14 @@
 import { useState } from 'react';
-import { analyzeBrainDump } from '../../../shared/services/vibeService';
+import { analyzeBrainDump } from '../../../shared/services/aiService';
 import { saveBrainDumpApi, saveQuestsFromBrainDumpApi } from '../services/brainDumpApi';
+import { useToast } from '../../../shared/components/Toast';
 
 export function useBrainDump(fetchData: () => Promise<void>) {
   const [isBrainDumpOpen, setIsBrainDumpOpen] = useState(false);
   const [draftContent, setDraftContent] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<any>(null);
+  const { toast } = useToast();
 
   const handleBrainDump = async () => {
     setIsAnalyzing(true);
@@ -19,6 +21,12 @@ export function useBrainDump(fetchData: () => Promise<void>) {
       setAnalysisResult(result);
       fetchData();
       
+      toast({
+        title: "Analisis Berhasil",
+        description: `Ditemukan ${result.quests.length} quest dari pemikiranmu.`,
+        type: 'success'
+      });
+
       // Auto close after 3 seconds of showing results
       setTimeout(() => {
         setIsBrainDumpOpen(false);
@@ -28,7 +36,11 @@ export function useBrainDump(fetchData: () => Promise<void>) {
       
     } catch (e: any) {
       console.error(e);
-      alert("Error processing brain dump: " + e.message);
+      toast({
+        title: "Gagal Menganalisis",
+        description: e.message || "Terjadi kesalahan saat memproses data.",
+        type: 'error'
+      });
     } finally {
       setIsAnalyzing(false);
     }

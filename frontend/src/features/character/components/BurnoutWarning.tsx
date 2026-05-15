@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { AlertTriangle } from 'lucide-react';
-import { BurnoutPrediction } from '../../../shared/services/vibeService';
+import { BurnoutPrediction } from '../../../shared/services/analyticsService';
 
 interface BurnoutWarningProps {
   burnoutMonitor: BurnoutPrediction | null;
@@ -18,16 +18,16 @@ export function BurnoutWarning({ burnoutMonitor }: BurnoutWarningProps) {
     >
       <div className="flex items-center gap-2 text-rose-500 border-b border-rose-500/20 pb-2">
         <AlertTriangle className="w-4 h-4 animate-pulse" />
-        <h3 className="text-[10px] font-bold uppercase tracking-widest">Sistem Warning: Burnout!</h3>
+        <h3 className="text-xs font-bold uppercase tracking-widest">Sistem Warning: Burnout!</h3>
       </div>
-      <p className="text-[11px] text-rose-200/80 leading-relaxed font-mono">
+      <p className="text-xs text-rose-200/80 leading-relaxed font-mono">
         {burnoutMonitor.refactoringMessage}
       </p>
       
       <div className="mt-2 space-y-2">
-        <h4 className="text-[9px] text-rose-400 font-bold uppercase tracking-widest">Wajib Side-Quest Recovery:</h4>
+        <h4 className="text-xs text-rose-400 font-bold uppercase tracking-widest">Wajib Side-Quest Recovery:</h4>
         {burnoutMonitor.sideQuests?.map((sq, i) => (
-          <div key={i} className="bg-rose-900/10 border border-rose-500/20 p-2 rounded text-[10px] flex gap-2 items-start">
+          <div key={i} className="bg-rose-900/10 border border-rose-500/20 p-2 rounded text-xs flex gap-2 items-start">
             <span className="text-rose-500 mt-0.5">•</span>
             <div>
               <span className="font-bold text-rose-300 block">{sq.title}</span>
@@ -38,8 +38,8 @@ export function BurnoutWarning({ burnoutMonitor }: BurnoutWarningProps) {
       </div>
       
       <div className="mt-2 bg-slate-900/50 p-2 rounded border border-slate-700/50">
-        <h4 className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mb-1">Arahan Sistem AI</h4>
-        <p className="text-[10px] text-slate-300 font-mono italic">"{burnoutMonitor.adjustments}"</p>
+        <h4 className="text-xs text-slate-400 font-bold uppercase tracking-widest mb-1">Arahan Sistem AI</h4>
+        <p className="text-xs text-slate-300 font-mono italic">"{burnoutMonitor.adjustments}"</p>
       </div>
     </motion.div>
   );

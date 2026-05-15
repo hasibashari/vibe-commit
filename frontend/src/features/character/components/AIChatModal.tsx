@@ -1,16 +1,17 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Send, Sparkles, AlertCircle } from 'lucide-react';
+import { X, Send, Sparkles, AlertCircle, Trash2 } from 'lucide-react';
 import { useAIChat } from '../hooks/useAIChat';
 
 interface AIChatModalProps {
   isOpen: boolean;
   onClose: () => void;
   user: any;
+  goals?: any[];
 }
 
-export const AIChatModal: React.FC<AIChatModalProps> = ({ isOpen, onClose, user }) => {
-  const { messages, input, setInput, isTyping, messagesEndRef, handleSend } = useAIChat(isOpen, user);
+export const AIChatModal: React.FC<AIChatModalProps> = ({ isOpen, onClose, user, goals }) => {
+  const { messages, input, setInput, isTyping, messagesEndRef, handleSend, clearChat } = useAIChat(isOpen, user, goals);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -28,9 +29,9 @@ export const AIChatModal: React.FC<AIChatModalProps> = ({ isOpen, onClose, user 
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 pt-[10%]"
+            className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[100] pt-[10%]"
           />
-          <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-50 p-4">
+          <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-[100] p-4">
             <motion.div
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -44,15 +45,24 @@ export const AIChatModal: React.FC<AIChatModalProps> = ({ isOpen, onClose, user 
                   </div>
                   <div>
                     <h3 className="font-display font-bold text-slate-200">AI Companion</h3>
-                    <p className="text-[10px] text-cyan-400 font-mono tracking-wider">ONLINE</p>
+                    <p className="text-xs text-cyan-400 font-mono tracking-wider">ONLINE</p>
                   </div>
                 </div>
-                <button
-                  onClick={onClose}
-                  className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={clearChat}
+                    className="p-2 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition-colors"
+                    title="Kosongkan Obrolan"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={onClose}
+                    className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
 
               <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
@@ -104,7 +114,7 @@ export const AIChatModal: React.FC<AIChatModalProps> = ({ isOpen, onClose, user 
                   </button>
                 </div>
                 <div className="mt-2 text-center">
-                   <p className="text-[10px] text-slate-500 flex items-center justify-center gap-1">
+                   <p className="text-xs text-slate-500 flex items-center justify-center gap-1">
                       <AlertCircle className="w-3 h-3" /> AI bisa membuat kesalahan.
                    </p>
                 </div>

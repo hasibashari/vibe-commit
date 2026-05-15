@@ -24,8 +24,8 @@ export const ProbabilityChart: React.FC<ChartProps> = ({ difficulty, alpha, curr
   return (
     <div className="h-64 w-full bg-slate-900/30 rounded-lg p-6 border border-slate-800">
       <div className="flex justify-between items-center mb-6">
-        <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Oracle Drop Rate / Success Chance</h3>
-        <span className="text-[10px] font-mono text-cyan-400 opacity-60">Magic Boost Active</span>
+        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">Oracle Drop Rate / Success Chance</h3>
+        <span className="text-xs font-mono text-cyan-400 opacity-60">Magic Boost Active</span>
       </div>
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data}>

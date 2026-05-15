@@ -50,7 +50,7 @@ export const LifeCommitHeatmap: React.FC<HeatmapProps> = ({ logs }) => {
           />
         ))}
       </div>
-      <div className="mt-2 flex items-center justify-end gap-2 text-[9px] font-mono text-slate-500 uppercase">
+      <div className="mt-2 flex items-center justify-end gap-2 text-xs font-mono text-slate-500 uppercase">
         <span>Kosong</span>
         <div className="w-[11px] h-[11px] rounded-[2px] bg-slate-800/30 border border-slate-800/80"></div>
         <div className="w-[11px] h-[11px] rounded-[2px] bg-emerald-900 border border-emerald-800/50"></div>

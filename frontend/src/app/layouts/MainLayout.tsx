@@ -4,7 +4,6 @@ interface MainLayoutProps {
   environment?: ReactNode;
   header: ReactNode;
   bottomNav: ReactNode;
-  statusBar: ReactNode;
   children: ReactNode;
   modals?: ReactNode;
 }
@@ -13,7 +12,6 @@ export function MainLayout({
   environment, 
   header, 
   bottomNav, 
-  statusBar, 
   children, 
   modals 
 }: MainLayoutProps) {
@@ -28,7 +26,6 @@ export function MainLayout({
         </div>
 
         {bottomNav}
-        {statusBar}
         {modals}
       </div>
     </>

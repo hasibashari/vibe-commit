@@ -144,7 +144,7 @@ export function FirstTimeOnboarding({ onComplete }: FirstTimeOnboardingProps) {
             {step < steps.length - 1 && (
               <button 
                 onClick={onComplete}
-                className="text-[10px] uppercase tracking-widest font-bold text-slate-500 hover:text-slate-300 transition-colors absolute bottom-4"
+                className="text-xs uppercase tracking-widest font-bold text-slate-500 hover:text-slate-300 transition-colors absolute bottom-4"
               >
                 Skip Tutorial
               </button>
