@@ -29,24 +29,25 @@ export async function analyzeBrainDump(content: string): Promise<BrainDumpAnalys
 
   const response = await ai.models.generateContent({
     model: "gemini-2.5-flash",
-    contents: `You are the Gemini AI Integration Module. Your task is to process a user's "Raw Input Analysis" or "Brain Dump," which contains anxiety, overwhelm, and piled-up responsibilities.
+    contents: `Kamu adalah Modul Integrasi AI Gemini. Tugas kamu adalah memproses "Raw Input Analysis" atau "Brain Dump" dari pengguna yang berisi kecemasan, rasa kewalahan, dan tumpukan tanggung jawab.
     
-    Instructions (Step-by-Step):
-    1. Analyze the text to identify the user's anxiety level.
-    2. Perform Micro-task Fragmentation by breaking large problems into smaller structured tasks (Quests).
-    3. Assign Difficulty (D) (1-10) and Reward (alpha) (0.1-1.0) weights for each structured task.
-    4. Provide the correct category for each task: MUST BE one of "Main Quest", "Daily Quest", or "Side Quest".
-    5. The output must be in JSON format, ready to be inserted into the QuestLog dashboard.
+    Instruksi (Langkah-demi-Langkah):
+    1. Analisis teks untuk mengidentifikasi tingkat kecemasan pengguna.
+    2. Lakukan Fragmentasi Tugas Mikro dengan memecah masalah besar menjadi tugas-tugas terstruktur yang lebih kecil (Quest).
+    3. Tetapkan bobot Kesulitan (Difficulty) (D) (1-10) dan Hadiah (Reward) (alpha) (0.1-1.0) untuk setiap tugas terstruktur.
+    4. Berikan kategori yang tepat untuk setiap tugas: HARUS salah satu dari "Main Quest", "Daily Quest", atau "Side Quest".
+    5. Semua teks ringkasan, judul tugas, dan deskripsi TUGAS HARUS MENGGUNAKAN BAHASA INDONESIA.
+    6. Output harus dalam format JSON, siap untuk dimasukkan ke dasbor QuestLog.
 
-    Content: ${content}`,
+    Konten: ${content}`,
     config: {
       responseMimeType: "application/json",
       responseSchema: {
         type: Type.OBJECT,
         properties: {
-          anxietyLevel: { type: Type.STRING, description: "e.g., Low, Moderate, High, Severe" },
-          anxietyScore: { type: Type.NUMBER, description: "1-10 scale" },
-          analysisSummary: { type: Type.STRING, description: "Brief empathetic summary of the user's state and how the fragmentation helps." },
+          anxietyLevel: { type: Type.STRING, description: "contoh: Rendah, Sedang, Tinggi, Parah" },
+          anxietyScore: { type: Type.NUMBER, description: "Skala 1-10" },
+          analysisSummary: { type: Type.STRING, description: "Ringkasan empatik singkat tentang kondisi pengguna dan bagaimana fragmentasi membantu." },
           quests: {
             type: Type.ARRAY,
             items: {
@@ -67,7 +68,7 @@ export async function analyzeBrainDump(content: string): Promise<BrainDumpAnalys
     },
   });
 
-  const rawText = response.text || '{"anxietyLevel":"Unknown","anxietyScore":0,"analysisSummary":"","quests":[]}';
+  const rawText = response.text || '{"anxietyLevel":"Tidak diketahui","anxietyScore":0,"analysisSummary":"","quests":[]}';
   const cleanText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
   return JSON.parse(cleanText);
 }
@@ -77,20 +78,20 @@ export async function chatWithAI(history: { role: 'user' | 'model', content: str
     return "Maaf, API Key belum di-set. Coba configure environment variable dulu ya!";
   }
 
-  const prompt = `System: You are an AI Companion in a gamified productivity app.
-The user's current status:
-- Name: ${context.userName || "User"}
+  const prompt = `System: Kamu adalah Companion AI (teman virtual) di aplikasi produktivitas berbasis gamifikasi.
+Status pengguna saat ini:
+- Nama: ${context.userName || "User"}
 - Level: ${context.level}
-- HP (Stamina/Energy): ${context.hp}/100
-- Mana (Focus/Mental Energy): ${context.mana}/100
-- Active Quests: ${context.activeQuests || 'None'}
+- HP (Stamina/Energi): ${context.hp}/100
+- Mana (Fokus/Energi Mental): ${context.mana}/100
+- Quest Aktif: ${context.activeQuests || 'Tidak ada'}
 
-Act as an empathetic, encouraging, and slightly game-flavored assistant. 
-Keep responses relatively short, natural, and engaging (1-3 sentences). 
-Use friendly Indonesian slang slightly (gue/lo or casual bahasa like 'kamu', 'banget', 'yuk' depending on the tone, keep it warm and respectful).
-Remind them to rest if HP/Mana is low, and motivate them to tackle their active quests.
+Berperanlah sebagai asisten yang empatik, memberikan semangat, dan memiliki nuansa game (rpg).
+Jawablah dalam bahasa Indonesia dengan gaya kasual yang ramah (boleh pakai 'kamu', 'aku', bahasanya santai tapi asyik).
+Pastikan balasan tetap relatif singkat, natural, dan interaktif (1-3 kalimat).
+Ingatkan pengguna untuk istirahat jika HP/Mana sedang rendah, dan berikan motivasi untuk menyelesaikan Quest Aktif mereka.
 
-Conversation History:
+Riwayat Percakapan:
 ${history.map(msg => (msg.role === 'user' ? 'User' : 'AI') + ': ' + msg.content).join('\n')}
 AI:`;
 
