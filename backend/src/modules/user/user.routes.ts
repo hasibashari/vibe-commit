@@ -13,15 +13,19 @@ router.get('/:id', (req, res) => {
 });
 
 router.put('/:id', (req, res) => {
-  const { name, title, avatar_color } = req.body;
+  const { name, title, avatar_color, custom_main_bg, custom_char_bg, custom_character, theme_vibe } = req.body;
   const stmt = db.prepare(`
     UPDATE users 
     SET name = COALESCE(?, name), 
         title = COALESCE(?, title),
-        avatar_color = COALESCE(?, avatar_color)
+        avatar_color = COALESCE(?, avatar_color),
+        custom_main_bg = COALESCE(?, custom_main_bg),
+        custom_char_bg = COALESCE(?, custom_char_bg),
+        custom_character = COALESCE(?, custom_character),
+        theme_vibe = COALESCE(?, theme_vibe)
     WHERE id = ?
   `);
-  stmt.run(name, title, avatar_color, req.params.id);
+  stmt.run(name, title, avatar_color, custom_main_bg, custom_char_bg, custom_character, theme_vibe, req.params.id);
   res.json(db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id));
 });
 
@@ -59,13 +63,17 @@ router.post('/:id/import', (req, res) => {
         SET name = COALESCE(?, name), 
             title = COALESCE(?, title),
             avatar_color = COALESCE(?, avatar_color),
+            custom_main_bg = COALESCE(?, custom_main_bg),
+            custom_char_bg = COALESCE(?, custom_char_bg),
+            custom_character = COALESCE(?, custom_character),
+            theme_vibe = COALESCE(?, theme_vibe),
             hp = COALESCE(?, hp),
             mana = COALESCE(?, mana),
             level = COALESCE(?, level),
             exp = COALESCE(?, exp)
         WHERE id = ?
       `);
-      stmt.run(user.name, user.title, user.avatar_color, user.hp, user.mana, user.level, user.exp, userId);
+      stmt.run(user.name, user.title, user.avatar_color, user.custom_main_bg, user.custom_char_bg, user.custom_character, user.theme_vibe, user.hp, user.mana, user.level, user.exp, userId);
     }
 
     // Insert goals

@@ -127,6 +127,8 @@ export default function App() {
           <VibeEnvironment 
             anxietyScore={latestDump?.anxietyScore || 5} 
             sigmaVariance={user.mana} 
+            customMainBg={user.custom_main_bg}
+            themeVibe={user.theme_vibe}
           />
         }
         header={<RPGHeader hp={user.hp} mana={user.mana} level={user.level} exp={user.exp} coins={coins} user={user} onOpenProfile={() => setIsProfileOpen(true)} onOpenSettings={() => setIsSettingsOpen(true)} />}
@@ -151,6 +153,8 @@ export default function App() {
             <SettingsModal 
               isOpen={isSettingsOpen} 
               onClose={() => setIsSettingsOpen(false)} 
+              user={user}
+              onUpdateUser={updateProfile}
               onExport={handleExportData} 
               onImport={handleImportData}
               onResetProgress={resetProfile}
@@ -182,7 +186,7 @@ export default function App() {
           activeTab={activeTab}
           rightSidebar={
             <>
-              <StatusScene hp={user.hp} mana={user.mana} level={user.level} goals={goals} nudge={nudge} userName={user.name} />
+              <StatusScene hp={user.hp} mana={user.mana} level={user.level} goals={goals} nudge={nudge} userName={user.name} customCharBg={user.custom_char_bg} customCharacter={user.custom_character} />
               <BurnoutWarning burnoutMonitor={burnoutMonitor} />
             </>
           }

@@ -14,9 +14,11 @@ interface StatsProps {
   goals?: any[];
   nudge?: { optimalHour: number; suggestion: string } | null;
   userName?: string;
+  customCharBg?: string;
+  customCharacter?: string;
 }
 
-export const StatusScene: React.FC<StatsProps> = ({ hp, mana, level, goals, nudge, userName }) => {
+export const StatusScene: React.FC<StatsProps> = ({ hp, mana, level, goals, nudge, userName, customCharBg, customCharacter }) => {
   const [isChatOpen, setIsChatOpen] = useState(false);
 
   const { dynamicQuotes, quoteIndex } = useDynamicQuotes(hp, mana, goals, nudge, userName);
@@ -30,8 +32,8 @@ export const StatusScene: React.FC<StatsProps> = ({ hp, mana, level, goals, nudg
   };
 
   return (
-    <div className="relative -mx-4 sm:mx-0 w-[calc(100%+2rem)] sm:w-full min-h-[450px] aspect-[4/5] sm:aspect-auto sm:min-h-0 sm:h-[400px] md:h-[450px] lg:h-[480px] bg-slate-950 border-y sm:border border-slate-800/60 sm:rounded-2xl overflow-hidden shadow-2xl flex flex-col items-center justify-center group isolate">
-      <BackgroundLayer />
+      <div className="relative -mx-4 sm:mx-0 w-[calc(100%+2rem)] sm:w-full min-h-[450px] aspect-[4/5] sm:aspect-auto sm:min-h-0 sm:h-[400px] md:h-[450px] lg:h-[480px] bg-slate-950 border-y sm:border border-slate-800/60 sm:rounded-2xl overflow-hidden shadow-2xl flex flex-col items-center justify-center group isolate">
+      <BackgroundLayer imageUrl={customCharBg} />
       <GroundLayer />
 
       <div className="absolute top-6 left-0 w-full px-6 flex justify-between items-start z-20">
@@ -85,7 +87,7 @@ export const StatusScene: React.FC<StatsProps> = ({ hp, mana, level, goals, nudg
           className="cursor-pointer group-hover:scale-105 transition-transform duration-300 relative"
           title="Tap aku!"
         >
-          <CharacterSprite />
+          <CharacterSprite imageUrl={customCharacter} />
         </motion.div>
       </div>
 

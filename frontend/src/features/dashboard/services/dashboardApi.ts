@@ -29,7 +29,7 @@ export const fetchDashboardData = async (userId: string = DEFAULT_USER_ID) => {
 
 export const updateProfileData = async (
   userId: string = DEFAULT_USER_ID,
-  data: { name: string; title: string; avatar_color: string }
+  data: Partial<UserStats>
 ) => {
   const res = await fetch(`/api/user/${userId}`, {
     method: 'PUT',

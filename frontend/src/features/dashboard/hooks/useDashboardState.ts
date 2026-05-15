@@ -54,7 +54,7 @@ export function useDashboardState() {
     }
   }, [toast]);
 
-  const updateProfile = async (data: { name: string, title: string, avatar_color: string }) => {
+  const updateProfile = async (data: Partial<UserStats>) => {
     try {
       const updatedUser = await updateProfileData(undefined, data);
       setUser(prev => ({ ...prev, ...updatedUser }));

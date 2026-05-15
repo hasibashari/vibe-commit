@@ -1,7 +1,11 @@
 import React from 'react';
 import { motion } from 'motion/react';
 
-export const CharacterSprite: React.FC = () => {
+interface CharacterSpriteProps {
+  imageUrl?: string;
+}
+
+export const CharacterSprite: React.FC<CharacterSpriteProps> = ({ imageUrl }) => {
   return (
     <motion.div
       animate={{
@@ -12,9 +16,17 @@ export const CharacterSprite: React.FC = () => {
         duration: 3,
         ease: "easeInOut"
       }}
-      className="relative w-40 h-40 drop-shadow-2xl z-10"
+      className="relative w-40 h-40 drop-shadow-2xl z-10 flex items-center justify-center"
     >
-      <svg viewBox="0 0 32 32" className="w-full h-full" shapeRendering="crispEdges">
+      {imageUrl ? (
+        <img 
+          src={imageUrl} 
+          alt="Custom Character" 
+          className="max-w-full max-h-full object-contain drop-shadow-[0_0_15px_rgba(34,211,238,0.2)]" 
+          referrerPolicy="no-referrer"
+        />
+      ) : (
+        <svg viewBox="0 0 32 32" className="w-full h-full" shapeRendering="crispEdges">
         {/* Character Back View */}
         {/* Hood / Hat */}
         <rect x="10" y="4" width="12" height="12" fill="#0f172a" />
@@ -44,6 +56,7 @@ export const CharacterSprite: React.FC = () => {
         <rect x="17" y="29" width="3" height="3" fill="#020617" />
         <rect x="17" y="32" width="4" height="1" fill="#38bdf8" opacity="0.6"/>
       </svg>
+      )}
     </motion.div>
   );
 };

@@ -1,23 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { Settings as SettingsIcon, Download, Sparkles, Globe, Activity, RefreshCw, TriangleAlert } from 'lucide-react';
+import { Settings as SettingsIcon, Download, Sparkles, Globe, Activity, RefreshCw, TriangleAlert, Image, ImagePlus } from 'lucide-react';
 import { Modal } from '../../../shared/components/Modal';
 import { Button } from '../../../shared/components/Button';
+import type { UserStats } from '../../../shared/types/user';
 
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
+  user: UserStats;
+  onUpdateUser: (data: Partial<UserStats>) => Promise<void>;
   onExport: () => void;
   onImport: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onResetProgress: () => Promise<void>;
 }
 
-export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onExport, onImport, onResetProgress }) => {
+export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, user, onUpdateUser, onExport, onImport, onResetProgress }) => {
   const [settings, setSettings] = useState({
     language: 'id',
     animations: true,
     nudgeIntensity: 'normal'
   });
   const [isResetConfirm, setIsResetConfirm] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -39,6 +43,38 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
     setIsResetConfirm(false);
     onClose();
     window.location.reload();
+  };
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, key: 'custom_main_bg' | 'custom_char_bg' | 'custom_character') => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      alert("File is too large! Maximum size is 2MB per image to prevent database strain.");
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64String = reader.result as string;
+        await onUpdateUser({ [key]: base64String });
+        setIsUploading(false);
+      };
+      reader.onerror = () => {
+        alert("Failed to read file.");
+        setIsUploading(false);
+      };
+      reader.readAsDataURL(file);
+    } catch (err) {
+      setIsUploading(false);
+    }
+    event.target.value = '';
+  };
+
+  const resetCustomization = async (key: 'custom_main_bg' | 'custom_char_bg' | 'custom_character') => {
+    await onUpdateUser({ [key]: '' });
   };
 
   return (
@@ -96,6 +132,71 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
             >
               <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${settings.animations ? 'translate-x-7' : 'translate-x-1'}`} />
             </button>
+          </div>
+        </div>
+
+        {/* Visual Customization */}
+        <div className="flex flex-col gap-3 pt-6 border-t border-white/5">
+          <div className="flex items-center gap-2 text-slate-400">
+            <Image className="w-4 h-4" />
+            <h4 className="text-xs font-bold uppercase tracking-widest">Visual Customization</h4>
+          </div>
+
+          <div className="flex items-center justify-between bg-slate-900 border border-slate-800 p-3 rounded-xl mb-2">
+            <div className="flex flex-col">
+              <span className="text-sm font-bold text-slate-200">Theme Vibe</span>
+              <span className="text-xs text-slate-500">Preset color palettes</span>
+            </div>
+            <select
+              value={user.theme_vibe || 'midnight'}
+              onChange={(e) => onUpdateUser({ theme_vibe: e.target.value })}
+              className="bg-slate-800 border border-slate-700 text-sm rounded-lg px-3 py-2 text-slate-200 outline-none focus:border-cyan-500"
+            >
+              <option value="midnight">Midnight Dev (Default)</option>
+              <option value="emerald">Emerald Forest</option>
+              <option value="neon">Neon City</option>
+              <option value="sunset">Retro Sunset</option>
+            </select>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3">
+            {[
+              { id: 'custom_character', label: 'Custom Character (Sprite/GIF)', value: user.custom_character },
+              { id: 'custom_main_bg', label: 'Main Background', value: user.custom_main_bg },
+              { id: 'custom_char_bg', label: 'Character Background', value: user.custom_char_bg },
+            ].map((item) => (
+              <div key={item.id} className="flex items-center justify-between bg-slate-900 border border-slate-800 p-3 rounded-xl">
+                <div className="flex flex-col">
+                  <span className="text-sm font-bold text-slate-200">{item.label}</span>
+                  <span className="text-xs text-slate-500">
+                    {item.value ? 'Customized' : 'Default'}
+                  </span>
+                </div>
+                <div className="flex gap-2 items-center">
+                  {item.value && (
+                    <button 
+                      onClick={() => resetCustomization(item.id as any)}
+                      className="text-xs text-rose-400 hover:text-rose-300 px-2 py-1 bg-rose-500/10 rounded"
+                    >
+                      Reset
+                    </button>
+                  )}
+                  <div className="relative">
+                    <input 
+                      type="file" 
+                      accept="image/*"
+                      onChange={(e) => handleFileUpload(e, item.id as any)}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      disabled={isUploading}
+                    />
+                    <Button variant="secondary" className="px-3 py-1.5 h-auto text-xs gap-1 pointer-events-none" disabled={isUploading}>
+                      <ImagePlus className="w-3 h-3" />
+                      {isUploading ? '...' : 'Upload'}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
