@@ -88,7 +88,7 @@ export function useEasterEgg() {
 
     let msg = null;
     if (tapCount === 3) msg = "Eh, kenapa tap-tap?";
-    else if (tapCount === 8) msg = "Woi! Jangan di-poke terus, geli tau!";
+    else if (tapCount === 8) msg = "Woi! Jangan di tap-tap terus, geli tau!";
     else if (tapCount === 15) msg = "Buset dah, lo gabut apa gimana nih?";
     else if (tapCount === 25) msg = "😡 UDAH WOYY! Selesaikan quest lo sana!";
 
