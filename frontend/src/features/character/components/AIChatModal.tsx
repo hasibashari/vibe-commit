@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Send, Sparkles, AlertCircle, Bot } from 'lucide-react';
-import { chatWithAI } from '../../../shared/services/vibeService';
+import { X, Send, Sparkles, AlertCircle } from 'lucide-react';
+import { useAIChat } from '../hooks/useAIChat';
 
 interface AIChatModalProps {
   isOpen: boolean;
@@ -10,48 +10,7 @@ interface AIChatModalProps {
 }
 
 export const AIChatModal: React.FC<AIChatModalProps> = ({ isOpen, onClose, user }) => {
-  const [messages, setMessages] = useState<{ role: 'user' | 'model', content: string }[]>([]);
-  const [input, setInput] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (isOpen && messages.length === 0) {
-      // Initialize with a greeting
-      setMessages([
-        { role: 'model', content: `Hei ${user?.name || 'Petualang'}! Ada yang bisa kubantu hari ini?` }
-      ]);
-    }
-  }, [isOpen]);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isTyping]);
-
-  const handleSend = async () => {
-    if (!input.trim() || isTyping) return;
-
-    const userMessage = input.trim();
-    setInput('');
-    const newMessages = [...messages, { role: 'user' as const, content: userMessage }];
-    setMessages(newMessages);
-    setIsTyping(true);
-
-    try {
-      const response = await chatWithAI(newMessages, {
-        userName: user?.name,
-        level: user?.level,
-        hp: user?.hp,
-        mana: user?.mana
-      });
-      setMessages([...newMessages, { role: 'model', content: response }]);
-    } catch (error) {
-      console.error(error);
-      setMessages([...newMessages, { role: 'model', content: 'Maaf, sistemku sedang nge-lag. Bisa diulangi?' }]);
-    } finally {
-      setIsTyping(false);
-    }
-  };
+  const { messages, input, setInput, isTyping, messagesEndRef, handleSend } = useAIChat(isOpen, user);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {

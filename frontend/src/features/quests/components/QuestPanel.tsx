@@ -32,16 +32,23 @@ export function QuestPanel({
   recentlyCompletedIds
 }: QuestPanelProps) {
   
-  const [collapsedCategories, setCollapsedCategories] = useState<Record<string, boolean>>({
-    'Side Quest': true // Collapse side quests by default
-  });
+  const [expandedCategory, setExpandedCategory] = useState<string>('Main Quest');
 
   const toggleCategory = (cat: string) => {
-    setCollapsedCategories(prev => ({ ...prev, [cat]: !prev[cat] }));
+    setExpandedCategory(prev => prev === cat ? '' : cat);
   };
   
   const { mainQuests, dailyQuests, sideQuests, experimentQuests } = groupQuests(goals);
   const expMultiplier = calculateExpMultiplier(goals);
+
+  React.useEffect(() => {
+    if (selectedGoal) {
+      if (mainQuests.some(q => q.id === selectedGoal.id)) setExpandedCategory('Main Quest');
+      else if (dailyQuests.some(q => q.id === selectedGoal.id)) setExpandedCategory('Daily Quest');
+      else if (sideQuests.some(q => q.id === selectedGoal.id)) setExpandedCategory('Side Quest');
+      else if (experimentQuests.some(q => q.id === selectedGoal.id)) setExpandedCategory('Experiments');
+    }
+  }, [selectedGoal?.id]);
 
   return (
     <div className="flex flex-col gap-4 md:gap-6 pb-6">
@@ -83,124 +90,124 @@ export function QuestPanel({
         </div>
         
         {/* Main Quests */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 transition-all duration-300">
           <button 
             onClick={() => toggleCategory('Main Quest')}
             className="flex items-center justify-between px-1 group"
           >
-            <h3 className="text-[11px] font-bold text-amber-400/90 uppercase tracking-[0.2em] flex items-center gap-2 group-hover:text-amber-300 transition-colors">
+            <h3 className={`text-[11px] font-bold uppercase tracking-[0.2em] flex items-center gap-2 transition-colors ${expandedCategory === 'Main Quest' ? 'text-amber-300' : 'text-amber-400/70 group-hover:text-amber-300'}`}>
               <Crown className="w-4 h-4" /> Main Quest ({mainQuests.length})
             </h3>
-            {collapsedCategories['Main Quest'] ? <ChevronUp className="w-4 h-4 text-slate-500 group-hover:text-amber-400/70" /> : <ChevronDown className="w-4 h-4 text-slate-500 group-hover:text-amber-400/70" />}
+            {expandedCategory !== 'Main Quest' ? <ChevronUp className="w-4 h-4 text-slate-500 group-hover:text-amber-400/70" /> : <ChevronDown className="w-4 h-4 text-slate-500 group-hover:text-amber-400/70" />}
           </button>
           
-          {!collapsedCategories['Main Quest'] && (
-            <div className="space-y-3">
-              {mainQuests.map(goal => (
-                <QuestItem 
-                  key={goal.id}
-                  goal={goal}
-                  onLog={() => onLogAction(goal.id)}
-                  onBranch={onBranch}
-                  onEdit={onEdit}
-                  onDrop={onDrop}
-                  isSelected={selectedGoal?.id === goal.id}
-                  isCompleted={recentlyCompletedIds.includes(goal.id)}
-                  onClick={() => onSelectGoal(goal)}
-                />
-              ))}
-              {mainQuests.length === 0 && (
-                <div className="px-4 py-8 text-center border border-dashed border-slate-700 bg-slate-800/20 rounded-lg flex flex-col items-center justify-center gap-2">
-                  <Target className="w-5 h-5 text-slate-500 opacity-50" />
-                  <p className="text-[10px] font-mono uppercase tracking-widest text-slate-500">Belum ada target utama</p>
-                </div>
-              )}
-            </div>
-          )}
+          <div className={`space-y-3 overflow-hidden transition-all duration-300 ${expandedCategory === 'Main Quest' ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0 pointer-events-none'}`}>
+            {mainQuests.map(goal => (
+              <QuestItem 
+                key={goal.id}
+                goal={goal}
+                onLog={() => onLogAction(goal.id)}
+                onBranch={onBranch}
+                onEdit={onEdit}
+                onDrop={onDrop}
+                isSelected={selectedGoal?.id === goal.id}
+                isCompleted={recentlyCompletedIds.includes(goal.id)}
+                onClick={() => onSelectGoal(goal)}
+              />
+            ))}
+            {mainQuests.length === 0 && (
+              <div className="px-4 py-8 text-center border border-dashed border-slate-700 bg-slate-800/20 rounded-lg flex flex-col items-center justify-center gap-2">
+                <Target className="w-5 h-5 text-slate-500 opacity-50" />
+                <p className="text-[10px] font-mono uppercase tracking-widest text-slate-500">Belum ada target utama</p>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Daily Quests */}
-        <div className="flex flex-col gap-3 pt-3 border-t border-slate-800">
+        <div className="flex flex-col gap-3 pt-3 border-t border-slate-800 transition-all duration-300">
           <button 
             onClick={() => toggleCategory('Daily Quest')}
             className="flex items-center justify-between px-1 group"
           >
-            <h3 className="text-[11px] font-bold text-cyan-400/90 uppercase tracking-[0.2em] flex items-center gap-2 group-hover:text-cyan-300 transition-colors">
+            <h3 className={`text-[11px] font-bold uppercase tracking-[0.2em] flex items-center gap-2 transition-colors ${expandedCategory === 'Daily Quest' ? 'text-cyan-300' : 'text-cyan-400/70 group-hover:text-cyan-300'}`}>
               <Calendar className="w-4 h-4" /> Daily Quest ({dailyQuests.length})
             </h3>
-            {collapsedCategories['Daily Quest'] ? <ChevronUp className="w-4 h-4 text-slate-500 group-hover:text-cyan-400/70" /> : <ChevronDown className="w-4 h-4 text-slate-500 group-hover:text-cyan-400/70" />}
+            {expandedCategory !== 'Daily Quest' ? <ChevronUp className="w-4 h-4 text-slate-500 group-hover:text-cyan-400/70" /> : <ChevronDown className="w-4 h-4 text-slate-500 group-hover:text-cyan-400/70" />}
           </button>
 
-          {!collapsedCategories['Daily Quest'] && (
-            <div className="space-y-3">
-              {dailyQuests.map(goal => (
-                <QuestItem 
-                  key={goal.id}
-                  goal={goal}
-                  onLog={() => onLogAction(goal.id)}
-                  onBranch={onBranch}
-                  onEdit={onEdit}
-                  onDrop={onDrop}
-                  isSelected={selectedGoal?.id === goal.id}
-                  isCompleted={recentlyCompletedIds.includes(goal.id)}
-                  onClick={() => onSelectGoal(goal)}
-                />
-              ))}
-              {dailyQuests.length === 0 && (
-                <div className="px-4 py-8 text-center border border-dashed border-slate-700 bg-slate-800/20 rounded-lg flex flex-col items-center justify-center gap-2">
-                  <Calendar className="w-5 h-5 text-slate-500 opacity-50" />
-                  <p className="text-[10px] font-mono uppercase tracking-widest text-slate-500">Belum ada target harian</p>
-                </div>
-              )}
-            </div>
-          )}
+          <div className={`space-y-3 overflow-hidden transition-all duration-300 ${expandedCategory === 'Daily Quest' ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0 pointer-events-none'}`}>
+            {dailyQuests.map(goal => (
+              <QuestItem 
+                key={goal.id}
+                goal={goal}
+                onLog={() => onLogAction(goal.id)}
+                onBranch={onBranch}
+                onEdit={onEdit}
+                onDrop={onDrop}
+                isSelected={selectedGoal?.id === goal.id}
+                isCompleted={recentlyCompletedIds.includes(goal.id)}
+                onClick={() => onSelectGoal(goal)}
+              />
+            ))}
+            {dailyQuests.length === 0 && (
+              <div className="px-4 py-8 text-center border border-dashed border-slate-700 bg-slate-800/20 rounded-lg flex flex-col items-center justify-center gap-2">
+                <Calendar className="w-5 h-5 text-slate-500 opacity-50" />
+                <p className="text-[10px] font-mono uppercase tracking-widest text-slate-500">Belum ada target harian</p>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Side Quests */}
-        <div className="flex flex-col gap-3 pt-3 border-t border-slate-800">
+        <div className="flex flex-col gap-3 pt-3 border-t border-slate-800 transition-all duration-300">
           <button 
             onClick={() => toggleCategory('Side Quest')}
             className="flex items-center justify-between px-1 group"
           >
-            <h3 className="text-[11px] font-bold text-emerald-400/90 uppercase tracking-[0.2em] flex items-center gap-2 group-hover:text-emerald-300 transition-colors">
+            <h3 className={`text-[11px] font-bold uppercase tracking-[0.2em] flex items-center gap-2 transition-colors ${expandedCategory === 'Side Quest' ? 'text-emerald-300' : 'text-emerald-400/70 group-hover:text-emerald-300'}`}>
               <Bookmark className="w-4 h-4" /> Side Quest ({sideQuests.length})
             </h3>
-            {collapsedCategories['Side Quest'] ? <ChevronUp className="w-4 h-4 text-slate-500 group-hover:text-emerald-400/70" /> : <ChevronDown className="w-4 h-4 text-slate-500 group-hover:text-emerald-400/70" />}
+            {expandedCategory !== 'Side Quest' ? <ChevronUp className="w-4 h-4 text-slate-500 group-hover:text-emerald-400/70" /> : <ChevronDown className="w-4 h-4 text-slate-500 group-hover:text-emerald-400/70" />}
           </button>
 
-          {!collapsedCategories['Side Quest'] && (
-            <div className="space-y-3">
-              {sideQuests.map(goal => (
-                <QuestItem 
-                  key={goal.id}
-                  goal={goal}
-                  onLog={() => onLogAction(goal.id)}
-                  onBranch={onBranch}
-                  onEdit={onEdit}
-                  onDrop={onDrop}
-                  isSelected={selectedGoal?.id === goal.id}
-                  isCompleted={recentlyCompletedIds.includes(goal.id)}
-                  onClick={() => onSelectGoal(goal)}
-                />
-              ))}
-              {sideQuests.length === 0 && (
-                <div className="px-4 py-8 text-center border border-dashed border-slate-700 bg-slate-800/20 rounded-lg flex flex-col items-center justify-center gap-2">
-                  <Bookmark className="w-5 h-5 text-slate-500 opacity-50" />
-                  <p className="text-[10px] font-mono uppercase tracking-widest text-slate-500">Belum ada tugas tambahan</p>
-                </div>
-              )}
-            </div>
-          )}
+          <div className={`space-y-3 overflow-hidden transition-all duration-300 ${expandedCategory === 'Side Quest' ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0 pointer-events-none'}`}>
+            {sideQuests.map(goal => (
+              <QuestItem 
+                key={goal.id}
+                goal={goal}
+                onLog={() => onLogAction(goal.id)}
+                onBranch={onBranch}
+                onEdit={onEdit}
+                onDrop={onDrop}
+                isSelected={selectedGoal?.id === goal.id}
+                isCompleted={recentlyCompletedIds.includes(goal.id)}
+                onClick={() => onSelectGoal(goal)}
+              />
+            ))}
+            {sideQuests.length === 0 && (
+              <div className="px-4 py-8 text-center border border-dashed border-slate-700 bg-slate-800/20 rounded-lg flex flex-col items-center justify-center gap-2">
+                <Bookmark className="w-5 h-5 text-slate-500 opacity-50" />
+                <p className="text-[10px] font-mono uppercase tracking-widest text-slate-500">Belum ada tugas tambahan</p>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Experiments */}
         {experimentQuests.length > 0 && (
-          <div className="flex flex-col gap-3 pt-3 border-t border-slate-800/50">
-            <h3 className="text-[10px] font-bold text-purple-400 uppercase tracking-widest px-1 flex items-center gap-2">
-              <FlaskConical className="w-3 h-3" /> Branch Eksperimen
-            </h3>
+          <div className="flex flex-col gap-3 pt-3 border-t border-slate-800/50 transition-all duration-300">
+            <button 
+              onClick={() => toggleCategory('Experiments')}
+              className="flex items-center justify-between px-1 group"
+            >
+              <h3 className={`text-[10px] font-bold uppercase tracking-[0.2em] flex items-center gap-2 transition-colors ${expandedCategory === 'Experiments' ? 'text-purple-300' : 'text-purple-400/70 group-hover:text-purple-300'}`}>
+                <FlaskConical className="w-3 h-3" /> Branch Eksperimen ({experimentQuests.length})
+              </h3>
+              {expandedCategory !== 'Experiments' ? <ChevronUp className="w-4 h-4 text-slate-500 group-hover:text-purple-400/70" /> : <ChevronDown className="w-4 h-4 text-slate-500 group-hover:text-purple-400/70" />}
+            </button>
             
-            <div className="space-y-3">
+            <div className={`space-y-3 overflow-hidden transition-all duration-300 ${expandedCategory === 'Experiments' ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0 pointer-events-none'}`}>
               {experimentQuests.map(goal => (
                 <div 
                   key={goal.id} 

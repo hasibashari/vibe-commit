@@ -1,16 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { groupGoalsByCategory } from '../utils/characterUtils';
 
 export const VariableCharts: React.FC<{ goals: { category: string }[] }> = ({ goals }) => {
-  const data = React.useMemo(() => {
-    const categoryCounts: Record<string, number> = {};
-    goals.forEach(g => {
-      // Default grouping if category is missing
-      const cat = g.category || 'Uncategorized';
-      categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
-    });
-    return Object.entries(categoryCounts).map(([name, value]) => ({ name, value })).sort((a,b) => b.value - a.value);
-  }, [goals]);
+  const data = useMemo(() => groupGoalsByCategory(goals), [goals]);
 
   const COLORS = ['#06b6d4', '#8b5cf6', '#10b981', '#f59e0b', '#f43f5e', '#3b82f6'];
 
