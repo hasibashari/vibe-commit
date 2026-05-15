@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import type { Goal } from '../../shared/types/goal';
+import type { UserStats } from '../../shared/types/user';
+import type { Achievement } from '../../features/dashboard/utils/dashboardUtils';
 import { useDashboardState } from '../../features/dashboard/hooks/useDashboardState';
 import { useQuest } from '../../features/quests/hooks/useQuest';
 import { useBrainDump } from '../../features/brainDump/hooks/useBrainDump';
@@ -10,17 +12,17 @@ interface AppContextType {
   // Dashboard State
   goals: Goal[];
   setGoals: React.Dispatch<React.SetStateAction<Goal[]>>;
-  user: any;
-  achievements: any[];
-  latestDump: any;
-  burnoutMonitor: any;
-  expPopups: any[];
-  setExpPopups: React.Dispatch<React.SetStateAction<any[]>>;
+  user: UserStats;
+  achievements: Achievement[];
+  latestDump: { summary: string; anxietyLevel: string; anxietyScore: number } | null;
+  burnoutMonitor: { burnoutScore: number; riskLevel: string; triggers: string[] } | null;
+  expPopups: {id: string, exp: number}[];
+  setExpPopups: React.Dispatch<React.SetStateAction<{id: string, exp: number}[]>>;
   fetchData: () => Promise<void>;
   recentlyCompletedIds: string[];
   updateProfile: (data: { name: string, title: string, avatar_color: string }) => Promise<void>;
   resetProfile: () => Promise<void>;
-  nudge: any;
+  nudge: { optimalHour: number; suggestion: string } | null;
   isLoading: boolean;
   
   // Quest State
@@ -34,7 +36,7 @@ interface AppContextType {
   setQuestToEdit: React.Dispatch<React.SetStateAction<Goal | null>>;
   handleLogAction: (goalId: string) => Promise<void>;
   handleBranch: (parent: Goal) => Promise<void>;
-  handleSaveQuest: (data: any) => Promise<void>;
+  handleSaveQuest: (data: Partial<Goal>) => Promise<void>;
   confirmDeleteQuest: (goalId: string) => void;
   executeDeleteQuest: (setGoals: React.Dispatch<React.SetStateAction<Goal[]>>) => Promise<void>;
 

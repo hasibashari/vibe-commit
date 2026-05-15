@@ -1,4 +1,5 @@
-import type { Goal } from '../../../app/App';
+import type { Goal } from '../../../shared/types/goal';
+import { DEFAULT_USER_ID } from '../../../shared/config/constants';
 
 export const logQuestActionApi = async (goalId: string, logId: string) => {
   await fetch('/api/logs', {
@@ -22,7 +23,7 @@ export const createExperimentalBranchApi = async (parent: Goal, branchId: string
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       id: branchId,
-      userId: 'user123',
+      userId: DEFAULT_USER_ID,
       title: `${parent.title} (Exp)`,
       description: `Experimental branch of: ${parent.title}`,
       difficulty: Math.min(10, parent.difficulty * 1.2),
@@ -54,7 +55,7 @@ export const createQuestApi = async (questData: Partial<Goal>, id: string) => {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       id,
-      userId: 'user123',
+      userId: DEFAULT_USER_ID,
       title: questData.title,
       description: questData.description,
       difficulty: questData.difficulty,

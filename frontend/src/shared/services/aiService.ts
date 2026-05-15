@@ -1,6 +1,11 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const apiKey = process.env.GEMINI_API_KEY;
+if (!apiKey) {
+  console.warn('GEMINI_API_KEY is not set. AI features might fail.');
+}
+
+const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
 
 export interface AnalyzedQuest {
   title: string;
@@ -18,6 +23,10 @@ export interface BrainDumpAnalysis {
 }
 
 export async function analyzeBrainDump(content: string): Promise<BrainDumpAnalysis> {
+  if (!ai) {
+    throw new Error('Konfigurasi API AI tidak ditemukan. Tolong masukkan GEMINI_API_KEY kamu.');
+  }
+
   const response = await ai.models.generateContent({
     model: "gemini-2.5-flash",
     contents: `You are the Gemini AI Integration Module. Your task is to process a user's "Raw Input Analysis" or "Brain Dump," which contains anxiety, overwhelm, and piled-up responsibilities.
@@ -64,6 +73,10 @@ export async function analyzeBrainDump(content: string): Promise<BrainDumpAnalys
 }
 
 export async function chatWithAI(history: { role: 'user' | 'model', content: string }[], context: any): Promise<string> {
+  if (!ai) {
+    return "Maaf, API Key belum di-set. Coba configure environment variable dulu ya!";
+  }
+
   const prompt = `System: You are an AI Companion in a gamified productivity app.
 The user's current status:
 - Name: ${context.userName || "User"}

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Target, RotateCcw, BrainCircuit, ChevronRight, Crown, Calendar, Bookmark, FlaskConical, ChevronDown, ChevronUp } from 'lucide-react';
 import { QuestItem } from './QuestItem';
-import type { Goal } from '../../../app/App';
+import { Button } from '../../../shared/components/Button';
+import type { Goal } from '../../../shared/types/goal';
 import { groupQuests, calculateExpMultiplier } from '../utils/questUtils';
 
 interface QuestPanelProps {
@@ -233,12 +234,13 @@ export function QuestPanel({
 
         {/* Action Buttons */}
         <div className="mt-4 pt-4 border-t border-slate-800/50 space-y-3">
-          <button 
+          <Button 
+            variant="secondary"
             onClick={onNewQuest}
-            className="w-full py-3.5 bg-slate-800/50 hover:bg-slate-700/50 border border-slate-700 text-slate-300 text-xs font-bold uppercase tracking-widest rounded-lg transition-all active:scale-95"
+            className="w-full"
           >
             + Buat Quest Manual
-          </button>
+          </Button>
         </div>
       </div>
     </div>

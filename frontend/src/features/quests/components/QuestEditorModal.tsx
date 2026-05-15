@@ -121,4 +121,4 @@ export const QuestEditorModal: React.FC<QuestEditorModalProps> = ({ isOpen, onCl
       </div>
     </Modal>
   );
-};;
+};

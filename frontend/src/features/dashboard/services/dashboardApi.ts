@@ -1,15 +1,7 @@
-export interface UserStats {
-  id?: string;
-  name?: string;
-  title?: string;
-  avatar_color?: string;
-  hp: number;
-  mana: number;
-  level: number;
-  exp: number;
-}
+import { DEFAULT_USER_ID } from '../../../shared/config/constants';
+import type { UserStats } from '../../../shared/types/user';
 
-export const fetchDashboardData = async (userId: string = 'user123') => {
+export const fetchDashboardData = async (userId: string = DEFAULT_USER_ID) => {
   const gRes = await fetch(`/api/goals/${userId}`);
   const goalsData = await gRes.json();
 
@@ -36,7 +28,7 @@ export const fetchDashboardData = async (userId: string = 'user123') => {
 };
 
 export const updateProfileData = async (
-  userId: string = 'user123',
+  userId: string = DEFAULT_USER_ID,
   data: { name: string; title: string; avatar_color: string }
 ) => {
   const res = await fetch(`/api/user/${userId}`, {
@@ -47,6 +39,6 @@ export const updateProfileData = async (
   return res.json();
 };
 
-export const resetProfileData = async (userId: string = 'user123') => {
+export const resetProfileData = async (userId: string = DEFAULT_USER_ID) => {
   await fetch(`/api/user/${userId}/reset`, { method: 'POST' });
 };

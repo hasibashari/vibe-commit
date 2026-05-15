@@ -1,4 +1,4 @@
-import type { Goal } from '../../../app/App';
+import type { Goal } from '../../../shared/types/goal';
 
 export const groupQuests = (goals: Goal[]) => {
   const mainQuests = goals.filter(g => g.category === 'Main Quest' && !g.is_experimental);

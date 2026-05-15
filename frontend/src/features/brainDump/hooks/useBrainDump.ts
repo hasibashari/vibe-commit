@@ -34,11 +34,13 @@ export function useBrainDump(fetchData: () => Promise<void>) {
         setAnalysisResult(null);
       }, 4000);
       
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(e);
+      let desc = "Terjadi kesalahan saat memproses data.";
+      if (e instanceof Error) desc = e.message;
       toast({
         title: "Gagal Menganalisis",
-        description: e.message || "Terjadi kesalahan saat memproses data.",
+        description: desc,
         type: 'error'
       });
     } finally {

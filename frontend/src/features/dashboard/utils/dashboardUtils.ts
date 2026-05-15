@@ -1,6 +1,8 @@
-import type { Goal } from '../../../app/App';
+import type { Goal } from '../../../shared/types/goal';
+import type { Log } from '../../../shared/types/log';
+import type { UserStats } from '../../../shared/types/user';
 
-export const calculateRPGStats = (allLogs: any[], userData: any, baseHp: number = 100, baseMana: number = 100) => {
+export const calculateRPGStats = (allLogs: Log[], userData: UserStats, baseHp: number = 100, baseMana: number = 100) => {
   const now = new Date();
   now.setHours(0, 0, 0, 0);
 
@@ -8,7 +10,7 @@ export const calculateRPGStats = (allLogs: any[], userData: any, baseHp: number 
   let daysSinceLastLog = 0;
   if (allLogs.length > 0) {
     let maxTimestamp = 0;
-    allLogs.forEach((l: any) => {
+    allLogs.forEach((l: Log) => {
       let dateStr = l.timestamp;
       if (typeof dateStr === 'string' && dateStr.includes(' ')) {
         dateStr = dateStr.replace(' ', 'T');
@@ -27,7 +29,7 @@ export const calculateRPGStats = (allLogs: any[], userData: any, baseHp: number 
 
   // Mana (Focus): Drops as you complete tasks today (limits burnout). Starts at baseMana.
   const todayDateStr = new Date().toISOString().split('T')[0];
-  const logsToday = allLogs.filter((l: any) => {
+  const logsToday = allLogs.filter((l: Log) => {
     if (!l.timestamp) return false;
     const logDateStr = typeof l.timestamp === 'string' ? l.timestamp.split(' ')[0].split('T')[0] : '';
     return logDateStr === todayDateStr;
@@ -54,7 +56,7 @@ export interface Achievement {
   category: 'milestone' | 'combat' | 'exploration';
 }
 
-export const calculateAchievements = (allLogs: any[], level: number): Achievement[] => {
+export const calculateAchievements = (allLogs: Log[], level: number): Achievement[] => {
   const totalTasks = allLogs.length;
 
   return [

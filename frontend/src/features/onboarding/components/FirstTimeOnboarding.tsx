@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Shield, BrainCircuit, Target, ArrowRight, Zap, Stars } from 'lucide-react';
+import { Button } from '../../../shared/components/Button';
 
 interface FirstTimeOnboardingProps {
   onComplete: () => void;
@@ -121,33 +122,33 @@ export function FirstTimeOnboarding({ onComplete }: FirstTimeOnboardingProps) {
               ))}
             </div>
 
-            <button 
+            <Button 
+              variant="primary"
               onClick={handleNext}
               disabled={isTyping}
-              className="w-full relative group overflow-hidden bg-slate-800 hover:bg-slate-700 active:scale-95 transition-all rounded-xl py-4 flex items-center justify-center border border-slate-600 disabled:opacity-50 disabled:active:scale-100"
+              className="w-full py-4 relative group overflow-hidden"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-cyan-600/20 to-emerald-600/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              
-              {/* Scanline effect on hover */}
               <div className="absolute top-0 left-0 w-full h-[2px] bg-white opacity-20 -translate-y-4 group-hover:animate-scanline"></div>
 
-              <span className="relative font-bold text-white tracking-widest uppercase text-sm flex items-center gap-2">
+              <span className="relative flex items-center gap-2">
                 {step === steps.length - 1 ? (
                   <><Stars className="w-4 h-4 text-amber-400" /> Mulai Petualangan</>
                 ) : (
                   <>Selanjutnya <ArrowRight className="w-4 h-4 text-cyan-400" /></>
                 )}
               </span>
-            </button>
+            </Button>
 
             {/* Skip Option */}
             {step < steps.length - 1 && (
-              <button 
+              <Button 
+                variant="ghost"
                 onClick={onComplete}
-                className="text-xs uppercase tracking-widest font-bold text-slate-500 hover:text-slate-300 transition-colors absolute bottom-4"
+                className="absolute bottom-4 text-slate-500 hover:text-slate-300"
               >
                 Skip Tutorial
-              </button>
+              </Button>
             )}
           </div>
 

@@ -40,7 +40,7 @@ export const RPGHeader: React.FC<RPGHeaderProps> = ({ hp, mana, level, exp, coin
             <button onClick={onOpenProfile} className="font-display text-sm md:text-base font-bold text-white tracking-wide text-left hover:text-cyan-400 transition-colors">
               {user?.name || 'Player_One'}
             </button>
-            <span className="text-[10px] md:text-xs font-mono text-slate-400 uppercase tracking-widest">{user?.title || 'Novice Operative'}</span>
+            <span className="text-xs font-mono text-slate-400 uppercase tracking-widest">{user?.title || 'Novice Operative'}</span>
           </div>
         </div>
 
@@ -61,7 +61,7 @@ export const RPGHeader: React.FC<RPGHeaderProps> = ({ hp, mana, level, exp, coin
         
         {/* EXP Bar (Moved here for better grid) */}
         <div className="flex flex-col gap-1 min-w-[80px] flex-1 lg:flex-none lg:w-32">
-          <div className="flex justify-between items-center text-[10px] font-bold tracking-widest uppercase">
+          <div className="flex justify-between items-center text-xs font-bold tracking-widest uppercase">
             <span className="text-amber-400">Lv {level}</span>
             <span className="text-slate-400">{exp.toFixed(0)} <span className="text-slate-600">%</span></span>
           </div>
@@ -72,7 +72,7 @@ export const RPGHeader: React.FC<RPGHeaderProps> = ({ hp, mana, level, exp, coin
 
         {/* HP Bar */}
         <div className="flex flex-col gap-1 min-w-[80px] flex-1 lg:flex-none lg:w-32">
-          <div className="flex justify-between items-center text-[10px] font-bold tracking-widest uppercase">
+          <div className="flex justify-between items-center text-xs font-bold tracking-widest uppercase">
             <span className="text-emerald-400 flex items-center gap-1"><Heart className="w-3 h-3" fill="currentColor" /> HP</span>
             <span className="text-slate-200">{hp.toFixed(0)}</span>
           </div>
@@ -83,7 +83,7 @@ export const RPGHeader: React.FC<RPGHeaderProps> = ({ hp, mana, level, exp, coin
 
         {/* MP Bar */}
         <div className="flex flex-col gap-1 min-w-[80px] flex-1 lg:flex-none lg:w-32">
-          <div className="flex justify-between items-center text-[10px] font-bold tracking-widest uppercase">
+          <div className="flex justify-between items-center text-xs font-bold tracking-widest uppercase">
             <span className="text-cyan-400 flex items-center gap-1"><Zap className="w-3 h-3" fill="currentColor" /> MP</span>
             <span className="text-slate-200">{mana.toFixed(0)}</span>
           </div>

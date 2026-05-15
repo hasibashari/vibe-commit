@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
-import type { Goal } from '../../../app/App';
+import type { Goal } from '../../../shared/types/goal';
 
 interface GlobalProbabilityTrendProps {
   goals: Goal[];

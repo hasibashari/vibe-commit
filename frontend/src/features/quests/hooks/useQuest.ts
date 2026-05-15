@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { Goal } from '../../../app/App';
+import type { Goal } from '../../../shared/types/goal';
 import { calculateProbability, adjustDifficultyBayesian } from '../../../shared/utils/vibeMath';
 import { logQuestActionApi, updateQuestDifficultyApi, createExperimentalBranchApi, updateQuestApi, createQuestApi, deleteQuestApi } from '../services/questApi';
 import { useToast } from '../../../shared/components/Toast';
@@ -45,10 +45,12 @@ export function useQuest(
       }
 
       fetchData();
-    } catch(e: any) {
+    } catch(e: unknown) {
+      let desc = "Pastikan koneksi lancar.";
+      if (e instanceof Error) desc = e.message;
       toast({
         title: "Gagal Melog Quest",
-        description: e.message || "Pastikan koneksi lancar.",
+        description: desc,
         type: 'error'
       });
     }
@@ -60,8 +62,10 @@ export function useQuest(
       await createExperimentalBranchApi(parent, id);
       fetchData();
       toast({ title: "Branching Berhasil", description: `Variasi dari '${parent.title}' dibuat.`, type: 'success' });
-    } catch(e: any) {
-      toast({ title: "Gagal Branching", description: e.message, type: 'error' });
+    } catch(e: unknown) {
+      let desc = "Terjadi kesalahan";
+      if (e instanceof Error) desc = e.message;
+      toast({ title: "Gagal Branching", description: desc, type: 'error' });
     }
   };
 
@@ -80,8 +84,10 @@ export function useQuest(
       setIsQuestEditorOpen(false);
       setQuestToEdit(null);
       fetchData();
-    } catch (e: any) {
-      toast({ title: "Gagal Menyimpan Quest", description: e.message, type: 'error' });
+    } catch (e: unknown) {
+      let desc = "Terjadi kesalahan";
+      if (e instanceof Error) desc = e.message;
+      toast({ title: "Gagal Menyimpan Quest", description: desc, type: 'error' });
     }
   };
 
@@ -101,10 +107,12 @@ export function useQuest(
       setQuestToDelete(null);
       await fetchData();
       toast({ title: "Quest Dihapus", type: 'info' });
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(e);
       setQuestToDelete(null);
-      toast({ title: "Gagal Menghapus Quest", description: e.message, type: 'error' });
+      let desc = "Terjadi kesalahan";
+      if (e instanceof Error) desc = e.message;
+      toast({ title: "Gagal Menghapus Quest", description: desc, type: 'error' });
     }
   };
 

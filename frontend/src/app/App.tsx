@@ -21,7 +21,6 @@ import { DashboardLayout } from './layouts/DashboardLayout';
 import type { Goal } from '../shared/types/goal';
 import { useAppContext } from './providers/AppProvider';
 
-export type { Goal };
 export type Tab = 'character' | 'quests' | 'dashboard';
 
 export default function App() {

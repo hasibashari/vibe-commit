@@ -1,7 +1,7 @@
 import React from 'react';
 import { Target, Check, ChevronRight, FlaskConical, Settings2, Trash2 } from 'lucide-react';
 import { motion } from 'motion/react';
-import type { Goal } from '../../../app/App';
+import type { Goal } from '../../../shared/types/goal';
 
 interface QuestItemProps {
   key?: React.Key;

@@ -1,9 +1,4 @@
-import { analyzeBrainDump } from '../../../shared/services/aiService';
-
-export const analyzeBrainDumpApi = async (draftContent: string) => {
-  const result = await analyzeBrainDump(draftContent);
-  return result;
-};
+import { DEFAULT_USER_ID } from '../../../shared/config/constants';
 
 export const saveBrainDumpApi = async (draftContent: string, analysisResult: any) => {
   await fetch('/api/brain-dump', {
@@ -11,7 +6,7 @@ export const saveBrainDumpApi = async (draftContent: string, analysisResult: any
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       id: crypto.randomUUID(),
-      userId: 'user123',
+      userId: DEFAULT_USER_ID,
       rawContent: draftContent,
       analysis: {
         anxietyLevel: analysisResult.anxietyLevel,
@@ -29,7 +24,7 @@ export const saveQuestsFromBrainDumpApi = async (quests: any[]) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         id: crypto.randomUUID(),
-        userId: 'user123',
+        userId: DEFAULT_USER_ID,
         title: res.title,
         description: res.description,
         difficulty: res.difficulty,

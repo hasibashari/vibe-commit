@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { Goal } from '../../../app/App';
+import type { Goal } from '../../../shared/types/goal';
 import { calculateStochasticNudges, analyzeBurnoutRisk, BurnoutPrediction } from '../../../shared/services/analyticsService';
 import { fetchDashboardData, updateProfileData, resetProfileData, UserStats } from '../services/dashboardApi';
 import { calculateRPGStats, getCompletedIdsToday, calculateAchievements, Achievement } from '../utils/dashboardUtils';
@@ -21,7 +21,7 @@ export function useDashboardState() {
   const fetchData = useCallback(async () => {
     try {
       setIsLoading(true);
-      const { goalsWithCounts, dumpsData, userData } = await fetchDashboardData('user123');
+      const { goalsWithCounts, dumpsData, userData } = await fetchDashboardData();
       
       setGoals(goalsWithCounts);
       setRecentlyCompletedIds(getCompletedIdsToday(goalsWithCounts));
@@ -43,7 +43,7 @@ export function useDashboardState() {
       
       const newAchievements = calculateAchievements(allLogs, calculatedUser.level);
       setAchievements(newAchievements);
-    } catch (e: any) {
+    } catch (e: unknown) {
       toast({
         title: "Koneksi Terputus",
         description: "Gagal memuat data dari server.",
@@ -56,17 +56,17 @@ export function useDashboardState() {
 
   const updateProfile = async (data: { name: string, title: string, avatar_color: string }) => {
     try {
-      const updatedUser = await updateProfileData('user123', data);
+      const updatedUser = await updateProfileData(undefined, data);
       setUser(prev => ({ ...prev, ...updatedUser }));
       toast({ title: "Profil Disimpan", type: 'success' });
-    } catch (e: any) {
+    } catch (e: unknown) {
       toast({ title: "Gagal Menyimpan Profil", type: 'error' });
     }
   };
 
   const resetProfile = async () => {
     try {
-      await resetProfileData('user123');
+      await resetProfileData();
       setGoals([]);
       setLatestDump(null);
       setBurnoutMonitor(null);
@@ -76,7 +76,7 @@ export function useDashboardState() {
       setUser({ hp: 100, mana: 100, level: 1, exp: 0 });
       setAchievements(calculateAchievements([], 1));
       toast({ title: "Data Direset", description: "Semua progres telah dihapus.", type: 'info' });
-    } catch (e: any) {
+    } catch (e: unknown) {
       toast({ title: "Gagal Mereset Data", type: 'error' });
     }
   };
