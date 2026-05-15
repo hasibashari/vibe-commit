@@ -115,7 +115,7 @@ export default function App() {
             onNewQuest={() => { setQuestToEdit(null); setIsQuestEditorOpen(true); }}
           />
         }
-        statusBar={<BottomStatusBar activeQuestsCount={goals.length} totalExp={user.exp} />}
+        statusBar={<BottomStatusBar activeQuestsCount={goals.length} />}
         modals={
           <>
             <ExpPopupRenderer popups={expPopups} />

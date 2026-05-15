@@ -30,7 +30,7 @@ export const StatusScene: React.FC<StatsProps> = ({ hp, mana, level, goals, nudg
   };
 
   return (
-    <div className="relative -mx-4 sm:mx-0 w-[calc(100%+2rem)] sm:w-full min-h-[450px] aspect-[4/5] sm:aspect-auto sm:min-h-[500px] md:h-[650px] lg:h-[750px] bg-slate-950 border-y sm:border border-slate-800/60 sm:rounded-2xl overflow-hidden shadow-2xl flex flex-col items-center justify-center group isolate">
+    <div className="relative -mx-4 sm:mx-0 w-[calc(100%+2rem)] sm:w-full min-h-[450px] aspect-[4/5] sm:aspect-auto sm:min-h-0 sm:h-[400px] md:h-[450px] lg:h-[480px] bg-slate-950 border-y sm:border border-slate-800/60 sm:rounded-2xl overflow-hidden shadow-2xl flex flex-col items-center justify-center group isolate">
       <BackgroundLayer />
       <GroundLayer />
 
@@ -54,7 +54,7 @@ export const StatusScene: React.FC<StatsProps> = ({ hp, mana, level, goals, nudg
             initial={{ opacity: 0, y: 10, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.9 }}
-            className="absolute bottom-full mb-8 left-1/2 -translate-x-1/2 w-[85vw] max-w-[280px] sm:max-w-[320px] z-20 group/chat"
+            className="absolute bottom-full mb-4 left-1/2 -translate-x-1/2 w-[85vw] max-w-[280px] sm:max-w-[320px] z-20 group/chat"
           >
             <div className="bg-slate-900/80 hover:bg-slate-800/90 backdrop-blur-md border border-cyan-500/30 group-hover/chat:border-cyan-400/50 rounded-2xl p-4 shadow-[0_0_20px_rgba(34,211,238,0.1)] group-hover/chat:shadow-[0_0_25px_rgba(34,211,238,0.2)] relative transition-all duration-300">
 

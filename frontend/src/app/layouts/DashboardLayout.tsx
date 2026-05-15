@@ -15,7 +15,7 @@ export function DashboardLayout({
   rightSidebar
 }: DashboardLayoutProps) {
   return (
-    <div className="relative md:grid grid-cols-1 md:grid-cols-8 lg:grid-cols-12 gap-0 md:gap-6 lg:gap-6 h-full pb-24 lg:pb-0 w-full">
+    <div className="relative md:grid grid-cols-1 md:grid-cols-8 lg:grid-cols-12 gap-0 md:gap-6 lg:gap-6 h-full pb-24 md:pb-0 w-full">
       
       {/* Left Sidebar: Quest List */}
       <aside className={`absolute md:static inset-0 w-full md:w-auto md:col-start-1 md:col-span-3 lg:col-span-3 flex-col gap-4 md:gap-6 h-full min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar transition-all duration-300 ease-in-out ${
