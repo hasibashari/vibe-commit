@@ -12,6 +12,7 @@ interface ModalProps {
   variant?: 'default' | 'danger' | 'fullscreen';
   className?: string;
   preventBackdropClose?: boolean;
+  disableInternalScroll?: boolean;
 }
 
 export function Modal({ 
@@ -22,7 +23,8 @@ export function Modal({
   children, 
   variant = 'default',
   className,
-  preventBackdropClose = false
+  preventBackdropClose = false,
+  disableInternalScroll = false
 }: ModalProps) {
 
   useEffect(() => {
@@ -85,9 +87,11 @@ export function Modal({
                 )}
               </div>
             )}
-            <div className="flex-1 overflow-y-auto">
-              {children}
-            </div>
+            {disableInternalScroll ? children : (
+              <div className="flex-1 overflow-y-auto">
+                {children}
+              </div>
+            )}
           </motion.div>
         </div>
       )}

@@ -46,7 +46,7 @@ export const StatusScene: React.FC<StatsProps> = ({ hp, mana, level, goals, nudg
       </div>
 
       {/* Main Character Scene */}
-      <div className="absolute bottom-[calc(10%+8px)] left-1/2 -translate-x-1/2 z-10 flex flex-col items-center scale-90 md:scale-100 origin-bottom">
+      <div className="absolute bottom-[calc(10%+8px)] left-1/2 -translate-x-1/2 z-10 flex flex-col items-center scale-90 md:scale-95 lg:scale-[0.85] origin-bottom">
         {/* Dynamic UI Chat Bubble */}
         <AnimatePresence mode="wait">
           <motion.div 
@@ -54,20 +54,20 @@ export const StatusScene: React.FC<StatsProps> = ({ hp, mana, level, goals, nudg
             initial={{ opacity: 0, y: 10, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.9 }}
-            className="absolute bottom-full mb-4 left-1/2 -translate-x-1/2 w-[85vw] max-w-[280px] sm:max-w-[320px] z-20 group/chat"
+            className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 w-[85vw] max-w-[260px] lg:max-w-[250px] z-20 group/chat"
           >
-            <div className="bg-slate-900/80 hover:bg-slate-800/90 backdrop-blur-md border border-cyan-500/30 group-hover/chat:border-cyan-400/50 rounded-2xl p-4 shadow-[0_0_20px_rgba(34,211,238,0.1)] group-hover/chat:shadow-[0_0_25px_rgba(34,211,238,0.2)] relative transition-all duration-300">
+            <div className="bg-slate-900/80 hover:bg-slate-800/90 backdrop-blur-md border border-cyan-500/30 group-hover/chat:border-cyan-400/50 rounded-2xl p-3 shadow-[0_0_20px_rgba(34,211,238,0.1)] group-hover/chat:shadow-[0_0_25px_rgba(34,211,238,0.2)] relative transition-all duration-300">
 
               
               <button 
                 onClick={(e) => { e.stopPropagation(); handleOpenChat(); }}
-                className="absolute -top-3 -right-2 bg-indigo-500 hover:bg-indigo-400 hover:scale-110 transition-all rounded-full p-2 shadow-lg shadow-indigo-500/20 border border-indigo-400/30 animate-pulse z-30 outline-none focus:ring-2 focus:ring-indigo-300"
+                className="absolute -top-3 -right-1 sm:-right-2 bg-indigo-500 hover:bg-indigo-400 hover:scale-110 transition-all rounded-full p-2 shadow-lg shadow-indigo-500/20 border border-indigo-400/30 animate-pulse z-30 outline-none focus:ring-2 focus:ring-indigo-300"
                 title="Chat dengan AI"
               >
                 <MessageCircle className="w-4 h-4 text-white" />
               </button>
 
-              <p className="text-sm text-slate-200 font-sans text-center leading-relaxed font-medium min-h-[40px] break-words cursor-default mt-1">
+              <p className="text-sm text-slate-200 font-sans text-center leading-relaxed font-medium min-h-[40px] break-words cursor-default mt-0.5">
                 "{displayedText}
                 {isTyping && <span className="inline-block w-1 h-3.5 ml-0.5 bg-cyan-400 animate-pulse align-middle"></span>}
                 "
