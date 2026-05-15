@@ -36,11 +36,11 @@ export function DashboardLayout({
       )}>
         {/* On Desktop, show mainContent and rightSidebar stacked or side-by-side depending on breakpoint.
             Let's stack them gracefully, or make a subgrid. */}
-        <div className="flex flex-col lg:grid lg:grid-cols-2 gap-6 h-full min-h-0">
-          <div className={cn("flex flex-col gap-6", activeTab === 'dashboard' ? 'flex' : 'hidden lg:flex')}>
+        <div className="flex flex-col lg:grid lg:grid-cols-8 gap-6 h-full min-h-0">
+          <div className={cn("flex flex-col gap-6 lg:col-span-5", activeTab === 'dashboard' ? 'flex' : 'hidden lg:flex')}>
             {mainContent}
           </div>
-          <div className={cn("flex flex-col gap-6", activeTab === 'character' ? 'flex' : 'hidden lg:flex')}>
+          <div className={cn("flex flex-col gap-6 lg:col-span-3", activeTab === 'character' ? 'flex' : 'hidden lg:flex')}>
             {rightSidebar}
           </div>
         </div>
