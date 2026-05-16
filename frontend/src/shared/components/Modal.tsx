@@ -10,6 +10,7 @@ interface ModalProps {
   description?: string;
   children: React.ReactNode;
   variant?: 'default' | 'danger' | 'fullscreen';
+  position?: 'center' | 'bottom';
   className?: string;
   preventBackdropClose?: boolean;
   disableInternalScroll?: boolean;
@@ -22,6 +23,7 @@ export function Modal({
   description, 
   children, 
   variant = 'default',
+  position = 'center',
   className,
   preventBackdropClose = false,
   disableInternalScroll = false
@@ -50,7 +52,10 @@ export function Modal({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+        <div className={cn(
+          "fixed inset-0 z-[100] flex justify-center p-4 sm:p-6",
+          position === 'center' ? "items-center" : "items-end sm:items-center pb-24 sm:pb-6"
+        )}>
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
