@@ -12,18 +12,18 @@ const AudioContext = createContext<AudioContextType | undefined>(undefined);
 
 const BGM_THEMES: Record<string, string> = {
   // Relaxing nature/acoustic for lush state
-  'nature': 'https://cdn.pixabay.com/download/audio/2022/11/08/audio_6bbb5a8055.mp3?filename=nature-birds-ambient-126233.mp3',
+  'nature': '/sounds/nature.mp3',
   // Dark ambient/Synth for dark state
-  'cyber': 'https://cdn.pixabay.com/download/audio/2021/11/25/audio_91b32e02f9.mp3?filename=cyberpunk-2099-10701.mp3',
+  'cyber': '/sounds/cyber.mp3',
   // Lo-Fi Cafe
-  'coffee': 'https://cdn.pixabay.com/download/audio/2023/04/24/audio_34b31a2936.mp3?filename=lofi-study-112191.mp3',
+  'coffee': '/sounds/coffee.mp3',
 };
 
-// Fallback tracks in case pixabay URLs have hotlink issues or change
+// Fallback tracks (Optional, leaving them same or removing them since we use local)
 const FALLBACK_BGM = {
-  'nature': 'https://cdn.pixabay.com/audio/2022/05/16/audio_dbddf05807.mp3',
-  'cyber': 'https://cdn.pixabay.com/audio/2022/03/15/audio_2eb1e4eb47.mp3',
-  'coffee': 'https://cdn.pixabay.com/audio/2022/10/25/audio_8c946eafcb.mp3',
+  'nature': '/sounds/nature.mp3',
+  'cyber': '/sounds/cyber.mp3',
+  'coffee': '/sounds/coffee.mp3',
 };
 
 export function AudioProvider({ children }: { children: ReactNode }) {
