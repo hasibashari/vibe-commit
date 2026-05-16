@@ -14,11 +14,24 @@ interface HubMonitoringProps {
 }
 
 export function HubMonitoring({ goals }: HubMonitoringProps) {
-  const { allLogs, totalCompleted, activeExp } = React.useMemo(() => {
+  const { allLogs, totalCompleted, activeExp, completedTodayCount } = React.useMemo(() => {
+    const todayStr = new Date().toISOString().split('T')[0];
+    let completedToday = 0;
+    
+    goals.forEach(goal => {
+      const hasLogToday = (goal.logs || []).some(log => {
+        if (!log.timestamp) return false;
+        const logDateStr = typeof log.timestamp === 'string' ? log.timestamp.split('T')[0].split(' ')[0] : '';
+        return logDateStr === todayStr;
+      });
+      if (hasLogToday) completedToday++;
+    });
+
     return {
       allLogs: goals.flatMap(g => g.logs || []),
       totalCompleted: goals.reduce((acc, g) => acc + g.repetition_count, 0),
-      activeExp: Math.floor(goals.reduce((acc, g) => acc + (g.repetition_count > 0 ? (g.difficulty * 10 * g.reward_alpha) : 0), 0))
+      activeExp: Math.floor(goals.reduce((acc, g) => acc + (g.repetition_count > 0 ? (g.difficulty * 10 * g.reward_alpha) : 0), 0)),
+      completedTodayCount: completedToday
     };
   }, [goals]);
 
@@ -60,8 +73,8 @@ export function HubMonitoring({ goals }: HubMonitoringProps) {
             />
             <StatCard 
               icon={<Target className="w-4 h-4 text-emerald-500" />}
-              label="Aktif"
-              value={goals.filter(g => g.repetition_count > 0).length}
+              label="Sisa Quest"
+              value={Math.max(0, goals.length - completedTodayCount)}
               valueColor="text-emerald-400"
             />
             <StatCard 
