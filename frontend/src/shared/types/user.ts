@@ -7,6 +7,8 @@ export interface UserStats {
   custom_char_bg?: string;
   custom_character?: string;
   theme_vibe?: string;
+  bgm_theme?: string;
+  bgm_muted?: number | boolean;
   hp: number;
   mana: number;
   level: number;

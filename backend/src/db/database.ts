@@ -22,6 +22,8 @@ export function initDb() {
   try { db.exec("ALTER TABLE users ADD COLUMN custom_char_bg TEXT"); } catch (e) {}
   try { db.exec("ALTER TABLE users ADD COLUMN custom_character TEXT"); } catch (e) {}
   try { db.exec("ALTER TABLE users ADD COLUMN theme_vibe TEXT DEFAULT 'midnight'"); } catch (e) {}
+  try { db.exec("ALTER TABLE users ADD COLUMN bgm_theme TEXT DEFAULT 'nature'"); } catch (e) {}
+  try { db.exec("ALTER TABLE users ADD COLUMN bgm_muted INTEGER DEFAULT 0"); } catch (e) {}
   try { db.exec("ALTER TABLE goals DROP COLUMN is_experimental"); } catch (e) {}
   try { db.exec("ALTER TABLE goals DROP COLUMN parent_id"); } catch (e) {}
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { AnimatePresence } from 'motion/react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { RPGHeader } from '../features/character/components/RPGHeader';
@@ -20,12 +20,14 @@ import { MainLayout } from './layouts/MainLayout';
 import { DashboardLayout } from './layouts/DashboardLayout';
 import type { Goal } from '../shared/types/goal';
 import { useAppContext } from './providers/AppProvider';
+import { useAudio } from './providers/AudioProvider';
 
 export type Tab = 'character' | 'quests' | 'dashboard';
 
 export default function App() {
   const { tab } = useParams<{ tab: Tab }>();
   const navigate = useNavigate();
+  const { playVictorySound, playLevelUpSound } = useAudio();
 
   const {
     isProfileOpen, setIsProfileOpen,
@@ -38,6 +40,22 @@ export default function App() {
     isBrainDumpOpen, setIsBrainDumpOpen, draftContent, setDraftContent,
     isAnalyzing, handleBrainDump, analysisResult, isLoading
   } = useAppContext();
+
+  const prevCompletedCountRef = useRef(recentlyCompletedIds.length);
+  useEffect(() => {
+    if (recentlyCompletedIds.length > prevCompletedCountRef.current) {
+      playVictorySound();
+    }
+    prevCompletedCountRef.current = recentlyCompletedIds.length;
+  }, [recentlyCompletedIds, playVictorySound]);
+
+  const prevLevelRef = useRef(user?.level);
+  useEffect(() => {
+    if (user && prevLevelRef.current && user.level > prevLevelRef.current) {
+      playLevelUpSound();
+    }
+    if (user) prevLevelRef.current = user.level;
+  }, [user?.level, playLevelUpSound]);
 
   const activeTab = tab || 'quests';
   const setActiveTab = (newTab: Tab) => navigate(`/${newTab}`);

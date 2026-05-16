@@ -139,7 +139,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, u
         <div className="flex flex-col gap-3 pt-6 border-t border-white/5">
           <div className="flex items-center gap-2 text-slate-400">
             <Image className="w-4 h-4" />
-            <h4 className="text-xs font-bold uppercase tracking-widest">Visual Customization</h4>
+            <h4 className="text-xs font-bold uppercase tracking-widest">Visual & Audio Vibe</h4>
           </div>
 
           <div className="flex items-center justify-between bg-slate-900 border border-slate-800 p-3 rounded-xl mb-2">
@@ -156,6 +156,23 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, u
               <option value="emerald">Emerald Forest</option>
               <option value="neon">Neon City</option>
               <option value="sunset">Retro Sunset</option>
+            </select>
+          </div>
+
+          <div className="flex items-center justify-between bg-slate-900 border border-slate-800 p-3 rounded-xl mb-2">
+            <div className="flex flex-col">
+              <span className="text-sm font-bold text-slate-200">Background Music</span>
+              <span className="text-xs text-slate-500">Adaptive ambient sounds</span>
+            </div>
+            <select
+              value={user.bgm_theme || 'dynamic'}
+              onChange={(e) => onUpdateUser({ bgm_theme: e.target.value })}
+              className="bg-slate-800 border border-slate-700 text-sm rounded-lg px-3 py-2 text-slate-200 outline-none focus:border-cyan-500"
+            >
+              <option value="dynamic">Adaptive (Based on Anxiety)</option>
+              <option value="nature">Nature / Acoustic</option>
+              <option value="cyber">Cyber-Zen (Synth)</option>
+              <option value="coffee">Coffee Shop / Lo-Fi</option>
             </select>
           </div>
 

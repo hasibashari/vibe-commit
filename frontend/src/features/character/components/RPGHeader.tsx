@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Heart, Zap, Star, Shield, Settings } from 'lucide-react';
+import { Heart, Zap, Star, Shield, Settings, Volume2, VolumeX } from 'lucide-react';
+import { useAudio } from '../../../app/providers/AudioProvider';
 
 interface RPGHeaderProps {
   hp: number;
@@ -14,6 +15,7 @@ interface RPGHeaderProps {
 }
 
 export const RPGHeader: React.FC<RPGHeaderProps> = ({ hp, mana, level, exp, coins, user, onOpenProfile, onOpenSettings }) => {
+  const { isMuted, toggleMute } = useAudio();
   const avatarColorMap: Record<string, { from: string; text: string }> = {
     indigo: { from: 'from-indigo-500/20', text: 'text-indigo-400' },
     rose: { from: 'from-rose-500/20', text: 'text-rose-400' },
@@ -50,6 +52,9 @@ export const RPGHeader: React.FC<RPGHeaderProps> = ({ hp, mana, level, exp, coin
             <Star className="w-3.5 h-3.5 text-amber-400" fill="currentColor" />
             <span className="text-xs font-mono font-bold text-amber-400">{coins}</span>
           </div>
+          <button onClick={toggleMute} className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-colors">
+            {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-cyan-400" />}
+          </button>
           <button onClick={onOpenSettings} className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-colors">
             <Settings className="w-4 h-4" />
           </button>
@@ -98,10 +103,16 @@ export const RPGHeader: React.FC<RPGHeaderProps> = ({ hp, mana, level, exp, coin
           <span className="text-xs font-mono font-bold text-amber-400">{coins}</span>
         </div>
 
-        {/* Settings - Desktop */}
-        <button onClick={onOpenSettings} className="hidden lg:flex shrink-0 w-8 h-8 items-center justify-center rounded-lg bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-colors">
-          <Settings className="w-4 h-4" />
-        </button>
+        <div className="hidden lg:flex items-center gap-2 shrink-0">
+          <button onClick={toggleMute} className="flex w-8 h-8 items-center justify-center rounded-lg bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-colors">
+            {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-cyan-400" />}
+          </button>
+          
+          {/* Settings - Desktop */}
+          <button onClick={onOpenSettings} className="flex w-8 h-8 items-center justify-center rounded-lg bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-colors">
+            <Settings className="w-4 h-4" />
+          </button>
+        </div>
 
       </div>
 
