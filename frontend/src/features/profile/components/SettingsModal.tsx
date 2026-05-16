@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings as SettingsIcon, Download, Sparkles, Globe, Activity, RefreshCw, TriangleAlert, Image, ImagePlus } from 'lucide-react';
+import { Settings as SettingsIcon, Download, Sparkles, Globe, Activity, RefreshCw, TriangleAlert, Image, ImagePlus, X } from 'lucide-react';
 import { Modal } from '../../../shared/components/Modal';
 import { Button } from '../../../shared/components/Button';
 import type { UserStats } from '../../../shared/types/user';
@@ -83,9 +83,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, u
       onClose={onClose}
       preventBackdropClose={isResetConfirm}
     >
-      <div className="p-4 border-b border-white/5 flex items-center gap-2">
-        <SettingsIcon className="w-5 h-5 text-slate-400" />
-        <h3 className="text-xl font-bold text-white tracking-tight">System Settings</h3>
+      <div className="p-4 border-b border-white/5 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <SettingsIcon className="w-5 h-5 text-slate-400" />
+          <h3 className="text-xl font-bold text-white tracking-tight">System Settings</h3>
+        </div>
+        <button onClick={onClose} className="p-1 rounded-md text-slate-400 hover:text-white hover:bg-white/10 transition-colors">
+          <X className="w-5 h-5" />
+        </button>
       </div>
       <div className="p-6 flex flex-col gap-6">
         

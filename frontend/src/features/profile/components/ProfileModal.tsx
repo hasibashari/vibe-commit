@@ -51,28 +51,36 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Hero Dossier"
       className="max-w-md"
     >
-      <div className="flex bg-slate-800/50 p-1 rounded-lg mx-6 mt-4">
-        <button 
-          onClick={() => setActiveTab('profile')}
-          className={cn(
-            "flex-1 py-1.5 text-xs font-bold uppercase tracking-wider rounded-md transition-colors",
-            activeTab === 'profile' ? "bg-slate-700 text-white" : "text-slate-400 hover:text-slate-200"
-          )}
-        >
-          IDENTITAS
-        </button>
-        <button 
-          onClick={() => setActiveTab('badges')}
-          className={cn(
-            "flex-1 py-1.5 text-xs font-bold uppercase tracking-wider rounded-md transition-colors",
-            activeTab === 'badges' ? "bg-slate-700 text-white" : "text-slate-400 hover:text-slate-200"
-          )}
-        >
-          BADGES
-        </button>
+      <div className="px-6 pt-4 pb-2 border-b border-white/5 flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-display font-bold text-white tracking-tight">Hero Dossier</h2>
+          <button onClick={onClose} className="p-1 rounded-md text-slate-400 hover:text-white hover:bg-white/10 transition-colors">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="flex bg-slate-800/50 p-1 rounded-lg">
+          <button 
+            onClick={() => setActiveTab('profile')}
+            className={cn(
+              "flex-1 py-1.5 text-xs font-bold uppercase tracking-wider rounded-md transition-colors",
+              activeTab === 'profile' ? "bg-slate-700 text-white" : "text-slate-400 hover:text-slate-200"
+            )}
+          >
+            IDENTITAS
+          </button>
+          <button 
+            onClick={() => setActiveTab('badges')}
+            className={cn(
+              "flex-1 py-1.5 text-xs font-bold uppercase tracking-wider rounded-md transition-colors",
+              activeTab === 'badges' ? "bg-slate-700 text-white" : "text-slate-400 hover:text-slate-200"
+            )}
+          >
+            BADGES
+          </button>
+        </div>
       </div>
 
       <div className="p-6">
