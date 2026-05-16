@@ -217,7 +217,7 @@ export default function App() {
               selectedGoal={selectedGoal}
               latestDump={latestDump}
               onSelectGoal={(goal) => {
-                setSelectedGoal(goal);
+                setSelectedGoal(prev => (prev?.id === goal.id ? null : goal));
               }}
               onLogAction={handleLogAction}
               onEdit={(goal) => { setQuestToEdit(goal); setIsQuestEditorOpen(true); }}

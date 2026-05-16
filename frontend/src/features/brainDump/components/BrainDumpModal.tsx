@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrainCircuit, Sparkles, RotateCcw, CheckCircle2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { BrainCircuit, Sparkles, RotateCcw, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react';
 import { Modal } from '../../../shared/components/Modal';
 import { Button } from '../../../shared/components/Button';
 import { motion } from 'motion/react';
@@ -23,6 +23,14 @@ export function BrainDumpModal({
   onSubmit,
   analysisResult
 }: BrainDumpModalProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setIsExpanded(false);
+    }
+  }, [isOpen]);
+
   return (
     <Modal
       isOpen={isOpen}
@@ -43,8 +51,23 @@ export function BrainDumpModal({
           
           <h2 className="font-display text-3xl font-bold tracking-tight text-white">Quests Generated!</h2>
           
-          <div className="space-y-2 text-slate-300 max-w-md">
-            <p className="text-lg">{analysisResult.analysisSummary}</p>
+          <div className="space-y-4 text-slate-300 max-w-md w-full">
+            <div className={`text-lg transition-all duration-300 overflow-hidden ${isExpanded ? '' : 'line-clamp-3'}`}>
+              <p>{analysisResult.analysisSummary}</p>
+            </div>
+            
+            {analysisResult.analysisSummary.length > 100 && (
+              <button 
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="flex items-center gap-1 mx-auto text-sm text-cyan-400 hover:text-cyan-300 transition-colors"
+              >
+                {isExpanded ? (
+                  <>Sembunyikan <ChevronUp className="w-4 h-4" /></>
+                ) : (
+                  <>Baca Selengkapnya <ChevronDown className="w-4 h-4" /></>
+                )}
+              </button>
+            )}
           </div>
 
           <div className="flex gap-4 mt-6">

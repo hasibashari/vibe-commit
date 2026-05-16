@@ -26,13 +26,6 @@ export function useBrainDump(fetchData: () => Promise<void>) {
         description: `Ditemukan ${result.quests.length} quest dari pemikiranmu.`,
         type: 'success'
       });
-
-      // Auto close after 3 seconds of showing results
-      setTimeout(() => {
-        setIsBrainDumpOpen(false);
-        setDraftContent('');
-        setAnalysisResult(null);
-      }, 4000);
       
     } catch (e: unknown) {
       console.error(e);
@@ -53,6 +46,9 @@ export function useBrainDump(fetchData: () => Promise<void>) {
       setIsBrainDumpOpen(true);
     } else if (!isAnalyzing) {
       setIsBrainDumpOpen(false);
+      if (analysisResult) {
+        setDraftContent('');
+      }
       setAnalysisResult(null);
     }
   };
