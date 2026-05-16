@@ -122,34 +122,36 @@ export function FirstTimeOnboarding({ onComplete }: FirstTimeOnboardingProps) {
               ))}
             </div>
 
-            <Button 
-              variant="primary"
-              onClick={handleNext}
-              disabled={isTyping}
-              className="w-full py-4 relative group overflow-hidden"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-cyan-600/20 to-emerald-600/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              <div className="absolute top-0 left-0 w-full h-[2px] bg-white opacity-20 -translate-y-4 group-hover:animate-scanline"></div>
-
-              <span className="relative flex items-center gap-2">
-                {step === steps.length - 1 ? (
-                  <><Stars className="w-4 h-4 text-amber-400" /> Mulai Petualangan</>
-                ) : (
-                  <>Selanjutnya <ArrowRight className="w-4 h-4 text-cyan-400" /></>
-                )}
-              </span>
-            </Button>
-
-            {/* Skip Option */}
-            {step < steps.length - 1 && (
+            <div className="w-full flex flex-col gap-3">
               <Button 
-                variant="ghost"
-                onClick={onComplete}
-                className="absolute bottom-4 text-slate-500 hover:text-slate-300"
+                variant="primary"
+                onClick={handleNext}
+                disabled={isTyping}
+                className="w-full py-4 relative group overflow-hidden"
               >
-                Skip Tutorial
+                <div className="absolute inset-0 bg-gradient-to-r from-cyan-600/20 to-emerald-600/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div className="absolute top-0 left-0 w-full h-[2px] bg-white opacity-20 -translate-y-4 group-hover:animate-scanline"></div>
+
+                <span className="relative flex items-center gap-2">
+                  {step === steps.length - 1 ? (
+                    <><Stars className="w-4 h-4 text-amber-400" /> Mulai Petualangan</>
+                  ) : (
+                    <>Selanjutnya <ArrowRight className="w-4 h-4 text-cyan-400" /></>
+                  )}
+                </span>
               </Button>
-            )}
+
+              {/* Skip Option */}
+              {step < steps.length - 1 && (
+                <Button 
+                  variant="ghost"
+                  onClick={onComplete}
+                  className="text-slate-500 hover:text-slate-300 text-sm"
+                >
+                  Skip Tutorial
+                </Button>
+              )}
+            </div>
           </div>
 
         </div>

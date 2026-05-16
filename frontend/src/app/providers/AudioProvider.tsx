@@ -66,11 +66,10 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       }
 
       const audio = audioRef.current;
-      if (audio && !isMutedRef.current) {
+      if (audio && audio.src && audio.src !== window.location.href && !isMutedRef.current) {
         audio.play().catch(() => {});
-        // Jika volume masih 0 atau 1 (belum di-fade in), lakukan manual fade in
-        if (audio.volume === 1 || audio.volume === 0) {
-           audio.volume = 0;
+        // Hanya fade in jika volume masih 0
+        if (audio.volume === 0) {
            let v = 0;
            const interval = setInterval(() => {
              v += 0.02;
@@ -135,10 +134,9 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     };
 
     const fadeIn = () => {
-      if (isMuted) return;
-      if (isUnlockedRef.current) {
-         audio.play().catch(() => {});
-      }
+      if (isMuted || !isUnlockedRef.current) return;
+      if (!audio.src || audio.src === window.location.href) return;
+      audio.play().catch(() => {});
       let v = audio.volume;
       const interval = setInterval(() => {
         v += 0.02;
@@ -174,7 +172,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   const toggleMute = () => {
     const nextMuted = !isMuted;
     setIsMuted(nextMuted);
-    updateProfile({ bgm_muted: nextMuted ? 1 : 0 } as any);
+    updateProfile({ bgm_muted: nextMuted ? 1 : 0 });
   };
 
   const playVictorySound = () => {

@@ -58,7 +58,10 @@ export function useDashboardState() {
   const updateProfile = async (data: Partial<UserStats>) => {
     try {
       const updatedUser = await updateProfileData(undefined, data);
-      setUser(prev => ({ ...prev, ...updatedUser }));
+      setUser(prev => {
+        const allLogs = goals.flatMap(g => g.logs.map((l: any) => ({ ...l, goal_id: g.id })));
+        return calculateRPGStats(allLogs, { ...prev, ...updatedUser }, 100, 100);
+      });
       toast({ title: "Profil Disimpan", type: 'success' });
     } catch (e: unknown) {
       toast({ title: "Gagal Menyimpan Profil", type: 'error' });
