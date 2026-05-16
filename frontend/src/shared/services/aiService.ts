@@ -73,7 +73,15 @@ export async function analyzeBrainDump(content: string): Promise<BrainDumpAnalys
   return JSON.parse(cleanText);
 }
 
-export async function chatWithAI(history: { role: 'user' | 'model', content: string }[], context: any): Promise<string> {
+interface AIContext {
+  userName?: string;
+  level?: number;
+  hp?: number;
+  mana?: number;
+  activeQuests?: string;
+}
+
+export async function chatWithAI(history: { role: 'user' | 'model', content: string }[], context: AIContext): Promise<string> {
   if (!ai) {
     return "Maaf, API Key belum di-set. Coba configure environment variable dulu ya!";
   }

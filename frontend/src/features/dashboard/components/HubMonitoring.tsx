@@ -14,12 +14,14 @@ interface HubMonitoringProps {
 }
 
 export function HubMonitoring({ goals }: HubMonitoringProps) {
-  const allLogs = goals.flatMap(g => g.logs || []);
-  const totalCompleted = goals.reduce((acc, g) => acc + g.repetition_count, 0);
-  
-  // Calculate basic stats
-  const activeExp = goals.reduce((acc, g) => acc + (g.repetition_count > 0 ? (g.difficulty * 10) : 0), 0);
-  
+  const { allLogs, totalCompleted, activeExp } = React.useMemo(() => {
+    return {
+      allLogs: goals.flatMap(g => g.logs || []),
+      totalCompleted: goals.reduce((acc, g) => acc + g.repetition_count, 0),
+      activeExp: goals.reduce((acc, g) => acc + (g.repetition_count > 0 ? (g.difficulty * 10 * g.reward_alpha) : 0), 0)
+    };
+  }, [goals]);
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 10 }}

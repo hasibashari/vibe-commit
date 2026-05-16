@@ -32,7 +32,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, u
     }
   }, [isOpen]);
 
-  const updateSetting = (key: string, value: any) => {
+  const updateSetting = (key: string, value: string | boolean | number) => {
     const newSettings = { ...settings, [key]: value };
     setSettings(newSettings);
     localStorage.setItem('appSettings', JSON.stringify(newSettings));
@@ -92,7 +92,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, u
           <X className="w-5 h-5" />
         </button>
       </div>
-      <div className="p-6 flex flex-col gap-6">
+      <div className="p-4 sm:p-6 flex flex-col gap-6">
         
         {/* Localization */}
         <div className="flex flex-col gap-3">
@@ -197,7 +197,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, u
                 <div className="flex gap-2 items-center">
                   {item.value && (
                     <button 
-                      onClick={() => resetCustomization(item.id as any)}
+                      onClick={() => resetCustomization(item.id as 'custom_character' | 'custom_main_bg' | 'custom_char_bg')}
                       className="text-xs text-rose-400 hover:text-rose-300 px-2 py-1 bg-rose-500/10 rounded"
                     >
                       Reset
@@ -207,7 +207,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, u
                     <input 
                       type="file" 
                       accept="image/*"
-                      onChange={(e) => handleFileUpload(e, item.id as any)}
+                      onChange={(e) => handleFileUpload(e, item.id as 'custom_character' | 'custom_main_bg' | 'custom_char_bg')}
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                       disabled={isUploading}
                     />

@@ -7,11 +7,13 @@ import { Sparkles, MessageCircle } from 'lucide-react';
 import { AIChatModal } from './AIChatModal';
 import { useDynamicQuotes, useEasterEgg, useTypingEffect } from '../hooks/useStatusScene';
 
+import type { Goal } from '../../../shared/types/goal';
+
 interface StatsProps {
   hp: number;
   mana: number;
   level: number;
-  goals?: any[];
+  goals?: Goal[];
   nudge?: { optimalHour: number; suggestion: string } | null;
   userName?: string;
   customCharBg?: string;
@@ -32,7 +34,7 @@ export const StatusScene: React.FC<StatsProps> = ({ hp, mana, level, goals, nudg
   };
 
   return (
-      <div className="relative -mx-4 sm:mx-0 w-[calc(100%+2rem)] sm:w-full h-[65dvh] sm:h-[400px] md:h-[450px] lg:h-[480px] bg-slate-950 border-y sm:border border-slate-800/60 sm:rounded-2xl overflow-hidden shadow-2xl flex flex-col items-center justify-center group isolate">
+      <div className="relative -mx-4 sm:mx-0 w-[calc(100%+2rem)] sm:w-full flex-1 min-h-[50dvh] sm:min-h-0 sm:h-[400px] md:h-[450px] lg:h-[480px] bg-slate-950 border-y sm:border border-slate-800/60 sm:rounded-2xl overflow-hidden shadow-2xl flex flex-col items-center justify-center group isolate">
       <BackgroundLayer imageUrl={customCharBg} />
       <GroundLayer />
 
@@ -40,7 +42,7 @@ export const StatusScene: React.FC<StatsProps> = ({ hp, mana, level, goals, nudg
         <div className="flex flex-col">
           <div className="flex items-center gap-2">
             <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-            <p className="text-[12px] text-cyan-400 font-mono tracking-widest uppercase mt-1 drop-shadow-md">
+            <p className="text-xs text-cyan-400 font-mono tracking-widest uppercase mt-1 drop-shadow-md">
               AI Companion
             </p>
           </div>
@@ -94,7 +96,7 @@ export const StatusScene: React.FC<StatsProps> = ({ hp, mana, level, goals, nudg
       <AIChatModal 
         isOpen={isChatOpen} 
         onClose={() => setIsChatOpen(false)} 
-        user={{ name: userName, hp, mana, level }}
+        user={{ name: userName, hp, mana, level, exp: 0 }}
         goals={goals}
       />
     </div>

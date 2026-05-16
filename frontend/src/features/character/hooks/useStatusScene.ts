@@ -8,10 +8,12 @@ const getTimeGreeting = () => {
   return "Malam";
 };
 
+import type { Goal } from '../../../shared/types/goal';
+
 export const getDynamicQuotes = (
   hp: number,
   mana: number,
-  goals?: any[],
+  goals?: Goal[],
   nudge?: { optimalHour: number; suggestion: string } | null,
   userName?: string
 ) => {
@@ -59,7 +61,7 @@ export const getDynamicQuotes = (
 export function useDynamicQuotes(
   hp: number,
   mana: number,
-  goals?: any[],
+  goals?: Goal[],
   nudge?: { optimalHour: number; suggestion: string } | null,
   userName?: string
 ) {

@@ -2,6 +2,9 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { Heart, Zap, Star, Shield, Settings, Volume2, VolumeX } from 'lucide-react';
 import { useAudio } from '../providers/AudioProvider';
+import { Button } from '../../shared/components/Button';
+
+import type { UserStats } from '../../shared/types/user';
 
 interface TopBarProps {
   hp: number;
@@ -9,7 +12,7 @@ interface TopBarProps {
   level: number;
   exp: number;
   coins: number;
-  user?: any;
+  user?: UserStats;
   onOpenProfile?: () => void;
   onOpenSettings?: () => void;
 }
@@ -28,7 +31,7 @@ export const TopBar: React.FC<TopBarProps> = ({ hp, mana, level, exp, coins, use
   const colorClasses = avatarColorMap[cColor] || avatarColorMap.indigo;
 
   return (
-    <header className="sticky top-0 z-50 transition-all duration-300 w-full bg-[#0A0C10]/95 backdrop-blur-xl border-b border-white/5 flex flex-col lg:flex-row lg:items-center justify-between px-4 py-3 md:px-6 shadow-sm gap-4 lg:gap-0">
+    <header className="sticky top-0 z-50 transition-all duration-300 w-full bg-[#0A0C10]/95 backdrop-blur-xl border-b border-white/5 flex flex-col lg:flex-row lg:items-center justify-between px-4 pb-3 pt-[max(env(safe-area-inset-top,0px),0.75rem)] md:px-6 shadow-sm gap-4 lg:gap-0">
       
       {/* Left: User / Level Info */}
       <div className="flex items-center justify-between lg:justify-start w-full lg:w-auto gap-4">
@@ -52,12 +55,12 @@ export const TopBar: React.FC<TopBarProps> = ({ hp, mana, level, exp, coins, use
             <Star className="w-3.5 h-3.5 text-amber-400" fill="currentColor" />
             <span className="text-xs font-mono font-bold text-amber-400">{coins}</span>
           </div>
-          <button onClick={toggleMute} className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-colors">
+          <Button variant="secondary" size="icon" onClick={toggleMute} className="w-8 h-8 rounded-lg !p-0">
             {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-cyan-400" />}
-          </button>
-          <button onClick={onOpenSettings} className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-colors">
+          </Button>
+          <Button variant="secondary" size="icon" onClick={onOpenSettings} className="w-8 h-8 rounded-lg !p-0">
             <Settings className="w-4 h-4" />
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -104,14 +107,14 @@ export const TopBar: React.FC<TopBarProps> = ({ hp, mana, level, exp, coins, use
         </div>
 
         <div className="hidden lg:flex items-center gap-2 shrink-0">
-          <button onClick={toggleMute} className="flex w-8 h-8 items-center justify-center rounded-lg bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-colors">
+          <Button variant="secondary" size="icon" onClick={toggleMute} className="w-8 h-8 rounded-lg !p-0">
             {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-cyan-400" />}
-          </button>
+          </Button>
           
           {/* Settings - Desktop */}
-          <button onClick={onOpenSettings} className="flex w-8 h-8 items-center justify-center rounded-lg bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-colors">
+          <Button variant="secondary" size="icon" onClick={onOpenSettings} className="w-8 h-8 rounded-lg !p-0">
             <Settings className="w-4 h-4" />
-          </button>
+          </Button>
         </div>
 
       </div>

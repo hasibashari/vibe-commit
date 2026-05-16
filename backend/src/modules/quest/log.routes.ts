@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { z } from 'zod';
 import db from '../../db/database.js';
 
 const router = Router();
@@ -19,10 +20,25 @@ router.get('/:goalId', (req, res) => {
   res.json(logs);
 });
 
-router.post('/', (req, res) => {
-  const { id, goalId, vibeScore, notes } = req.body;
-  db.prepare('INSERT INTO quest_logs (id, goal_id, vibe_score, notes) VALUES (?, ?, ?, ?)').run(id, goalId, vibeScore, notes);
-  res.json({ success: true });
+router.post('/', (req, res, next) => {
+  try {
+    const schema = z.object({
+      id: z.string(),
+      goalId: z.string(),
+      vibeScore: z.number().nullable().optional(),
+      notes: z.string().nullable().optional()
+    });
+    const { id, goalId, vibeScore, notes } = schema.parse(req.body);
+    db.prepare('INSERT INTO quest_logs (id, goal_id, vibe_score, notes) VALUES (?, ?, ?, ?)').run(
+      id, 
+      goalId, 
+      vibeScore ?? null, 
+      notes ?? null
+    );
+    res.json({ success: true });
+  } catch (err) {
+    next(err);
+  }
 });
 
 export default router;

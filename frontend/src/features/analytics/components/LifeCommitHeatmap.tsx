@@ -5,9 +5,7 @@ interface HeatmapProps {
 }
 
 export const LifeCommitHeatmap: React.FC<HeatmapProps> = ({ logs }) => {
-  const [data, setData] = React.useState<number[]>([]);
-
-  React.useEffect(() => {
+  const data = React.useMemo(() => {
     // Generate ~90 days of data (approx 3 months for a minimal view)
     const days = 90;
     const heat = new Array(days).fill(0);
@@ -26,9 +24,7 @@ export const LifeCommitHeatmap: React.FC<HeatmapProps> = ({ logs }) => {
       }
     });
 
-    // If there are no logs for some days, occasionally sprinkle some to look good?
-    // No, keep it genuine. But for a dev-aesthetic, let's just make sure it stays empty.
-    setData(heat);
+    return heat;
   }, [logs]);
 
   const getColor = (count: number) => {

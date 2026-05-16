@@ -34,7 +34,10 @@ export interface BurnoutPrediction {
   adjustments?: string;
 }
 
-export function analyzeBurnoutRisk(logs: any[], goals: any[]): BurnoutPrediction {
+import type { Log } from '../types/log';
+import type { Goal } from '../types/goal';
+
+export function analyzeBurnoutRisk(logs: Log[], goals: Goal[]): BurnoutPrediction {
   const now = new Date().getTime();
   const ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
   
@@ -48,7 +51,7 @@ export function analyzeBurnoutRisk(logs: any[], goals: any[]): BurnoutPrediction
     recentSigma = calculateStats(recentLogs).sigma;
     historicalSigma = calculateStats(historicalLogs).sigma;
 
-    const getHighDiffLogs = (logList: any[]) => logList.filter(l => {
+    const getHighDiffLogs = (logList: Log[]) => logList.filter(l => {
       const goal = goals.find(g => g.id === l.goal_id);
       return goal && goal.difficulty >= 5;
     });

@@ -27,7 +27,7 @@ export const QuestEditorModal: React.FC<QuestEditorModalProps> = ({ isOpen, onCl
         title: initialData.title,
         description: initialData.description || '',
         difficulty: initialData.difficulty,
-        reward_alpha: (initialData as any).reward_alpha || 0.5,
+        reward_alpha: initialData.reward_alpha || 0.5,
         category: initialData.category || 'Daily Quest',
       });
     } else {
@@ -47,7 +47,7 @@ export const QuestEditorModal: React.FC<QuestEditorModalProps> = ({ isOpen, onCl
       onClose={onClose}
       title={initialData ? 'Edit Quest' : 'Buat Quest Baru'}
     >
-      <div className="p-6 space-y-5">
+      <div className="p-4 sm:p-6 space-y-5">
         <Input 
           label="Nama Quest"
           value={formData.title}

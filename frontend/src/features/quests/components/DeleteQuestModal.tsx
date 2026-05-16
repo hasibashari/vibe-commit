@@ -16,7 +16,7 @@ export function DeleteQuestModal({ questId, onClose, onConfirm }: DeleteQuestMod
       onClose={onClose}
       variant="danger"
     >
-      <div className="p-6 flex flex-col gap-4">
+      <div className="p-4 sm:p-6 flex flex-col gap-4">
         <div className="text-center">
           <AlertTriangle className="w-12 h-12 text-rose-500 mx-auto mb-4 opacity-80" />
           <h3 className="text-xl font-bold text-white mb-2 tracking-tight">Drop Quest?</h3>

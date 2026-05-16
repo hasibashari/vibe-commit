@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../utils/cn';
 import { X } from 'lucide-react';
+import { Button } from './Button';
 
 interface ModalProps {
   isOpen: boolean;
@@ -82,13 +83,15 @@ export function Modal({
                   {description && <p className="text-sm text-slate-400 mt-1">{description}</p>}
                 </div>
                 {!preventBackdropClose && (
-                  <button 
+                  <Button 
+                    variant="ghost"
+                    size="icon"
                     onClick={onClose}
-                    className="p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors -mr-2"
+                    className="w-9 h-9 !p-0 -mr-2"
                     aria-label="Close dialog"
                   >
                     <X className="w-5 h-5" />
-                  </button>
+                  </Button>
                 )}
               </div>
             )}

@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useCallback, ReactNode } fr
 import { AnimatePresence, motion } from 'motion/react';
 import { X, CheckCircle, AlertCircle, Info } from 'lucide-react';
 import { cn } from '../utils/cn';
+import { Button } from './Button';
 
 export type ToastType = 'success' | 'error' | 'info';
 
@@ -63,12 +64,15 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                   <p className="text-xs text-slate-400 mt-1 leading-relaxed">{t.description}</p>
                 )}
               </div>
-              <button
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => removeToast(t.id)}
-                className="shrink-0 text-slate-500 hover:text-white transition-colors"
+                className="shrink-0 w-6 h-6 !p-0 text-slate-500 hover:text-white transition-colors"
+                aria-label="Close"
               >
                 <X className="w-4 h-4" />
-              </button>
+              </Button>
             </motion.div>
           ))}
         </AnimatePresence>

@@ -27,7 +27,7 @@ export function useDashboardState() {
       setGoals(goalsWithCounts);
       setRecentlyCompletedIds(getCompletedIdsToday(goalsWithCounts));
 
-      const allLogs = goalsWithCounts.flatMap(g => g.logs.map((l: any) => ({ ...l, goal_id: g.id })));
+      const allLogs = goalsWithCounts.flatMap(g => (g.logs || []).map((l: import('../../../shared/types/log').Log) => ({ ...l, goal_id: g.id })));
       
       const nudgeData = calculateStochasticNudges(allLogs);
       if (nudgeData) setNudge(nudgeData);
@@ -59,7 +59,7 @@ export function useDashboardState() {
     try {
       const updatedUser = await updateProfileData(undefined, data);
       setUser(prev => {
-        const allLogs = goals.flatMap(g => g.logs.map((l: any) => ({ ...l, goal_id: g.id })));
+        const allLogs = goals.flatMap(g => (g.logs || []).map((l: import('../../../shared/types/log').Log) => ({ ...l, goal_id: g.id })));
         return calculateRPGStats(allLogs, { ...prev, ...updatedUser }, 100, 100);
       });
       if (!silent) {

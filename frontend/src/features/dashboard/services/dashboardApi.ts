@@ -1,23 +1,27 @@
 import { DEFAULT_USER_ID } from '../../../shared/config/constants';
 import type { UserStats } from '../../../shared/types/user';
+import type { Goal } from '../../../shared/types/goal';
+import type { Log } from '../../../shared/types/log';
 
 export const fetchDashboardData = async (userId: string = DEFAULT_USER_ID) => {
-  const gRes = await fetch(`/api/goals/${userId}`);
-  const goalsData = await gRes.json();
+  const [gRes, lRes, dumpsRes, userRes] = await Promise.all([
+    fetch(`/api/goals/${userId}`),
+    fetch(`/api/logs/user/${userId}`),
+    fetch(`/api/brain-dump/${userId}`),
+    fetch(`/api/user/${userId}`)
+  ]);
 
-  const lRes = await fetch(`/api/logs/user/${userId}`);
-  const allLogsData = await lRes.json();
+  const [goalsData, allLogsData, dumpsData, userData] = await Promise.all([
+    gRes.json(),
+    lRes.json(),
+    dumpsRes.json(),
+    userRes.json()
+  ]);
 
-  const goalsWithCounts = goalsData.map((g: any) => {
-    const logs = allLogsData.filter((log: any) => log.goal_id === g.id);
+  const goalsWithCounts = goalsData.map((g: Goal) => {
+    const logs = allLogsData.filter((log: Log) => log.goal_id === g.id);
     return { ...g, repetition_count: logs.length, logs };
   });
-
-  const dumpsRes = await fetch(`/api/brain-dump/${userId}`);
-  const dumpsData = await dumpsRes.json();
-
-  const userRes = await fetch(`/api/user/${userId}`);
-  const userData = await userRes.json();
 
   return { 
     goalsWithCounts: goalsWithCounts, 

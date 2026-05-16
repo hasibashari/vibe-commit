@@ -38,8 +38,8 @@ export function QuestPanel({
     setExpandedCategory(prev => prev === cat ? '' : cat);
   };
   
-  const { mainQuests, dailyQuests, sideQuests } = groupQuests(goals);
-  const expMultiplier = calculateExpMultiplier(goals);
+  const { mainQuests, dailyQuests, sideQuests } = React.useMemo(() => groupQuests(goals), [goals]);
+  const expMultiplier = React.useMemo(() => calculateExpMultiplier(goals), [goals]);
 
   React.useEffect(() => {
     if (selectedGoal) {
@@ -75,7 +75,7 @@ export function QuestPanel({
             {latestDump && latestDump.summary.length > 100 ? (
               <button 
                 onClick={() => setIsSummaryExpanded(!isSummaryExpanded)}
-                className="text-[10px] font-medium text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
+                className="text-xs font-medium text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
               >
                 {isSummaryExpanded ? 'Sembunyikan' : 'Baca Selengkapnya'}
               </button>
@@ -85,9 +85,9 @@ export function QuestPanel({
             
             <button 
               onClick={onOpenBrainDump}
-              className="text-[10px] bg-indigo-900/40 text-indigo-300 hover:text-white hover:bg-indigo-500/40 px-2 py-1 rounded transition-colors flex items-center gap-1"
+              className="text-xs font-medium bg-indigo-900/40 text-indigo-300 hover:text-white hover:bg-indigo-500/40 px-3 py-1.5 rounded transition-colors flex items-center gap-1"
             >
-              Buka Brain Dump <ChevronRight className="w-3 h-3" />
+              Buka Brain Dump <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
@@ -110,16 +110,16 @@ export function QuestPanel({
             <div className="flex items-start justify-between gap-2 mb-2">
               <div className="flex items-center gap-1.5 min-w-0">
                 <BrainCircuit className="w-4 h-4 text-indigo-400 shrink-0" />
-                <span className="text-[10px] font-bold tracking-widest uppercase text-indigo-300">Brain Dump</span>
+                <span className="text-xs font-bold tracking-widest uppercase text-indigo-300">Brain Dump</span>
               </div>
-              <span className={`text-[9px] font-mono uppercase px-2 py-0.5 rounded-full border shrink-0 ${
+              <span className={`text-xs font-mono uppercase px-2 py-0.5 rounded-full border shrink-0 ${
                 latestDump.anxietyScore > 7 ? 'text-rose-400 border-rose-400/30 bg-rose-400/10' : 'text-indigo-400 border-indigo-400/30 bg-indigo-400/10'
               }`}>
                 Lvl: {latestDump.anxietyLevel}
               </span>
             </div>
             
-            <p className={`text-[11px] text-slate-300 italic leading-relaxed ${isSummaryExpanded ? '' : 'line-clamp-2'}`}>
+            <p className={`text-xs text-slate-300 italic leading-relaxed ${isSummaryExpanded ? '' : 'line-clamp-2'}`}>
               "{latestDump.summary}"
             </p>
             
@@ -127,7 +127,7 @@ export function QuestPanel({
               {latestDump.summary.length > 100 ? (
                 <button 
                   onClick={() => setIsSummaryExpanded(!isSummaryExpanded)}
-                  className="text-[10px] text-indigo-400 hover:text-indigo-300 flex items-center gap-1 font-medium"
+                  className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1 font-medium"
                 >
                   {isSummaryExpanded ? 'Sembunyikan' : 'Baca Selengkapnya'}
                 </button>

@@ -1,6 +1,22 @@
 import { DEFAULT_USER_ID } from '../../../shared/config/constants';
+import type { Goal } from '../../../shared/types/goal';
 
-export const saveBrainDumpApi = async (draftContent: string, analysisResult: any) => {
+interface BrainDumpAnalysisResult {
+  anxietyLevel: string;
+  anxietyScore: number;
+  analysisSummary: string;
+  quests: BrainDumpQuest[];
+}
+
+interface BrainDumpQuest {
+  title: string;
+  description: string;
+  difficulty: number;
+  rewardAlpha: number;
+  category: string;
+}
+
+export const saveBrainDumpApi = async (draftContent: string, analysisResult: BrainDumpAnalysisResult) => {
   await fetch('/api/brain-dump', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -17,9 +33,9 @@ export const saveBrainDumpApi = async (draftContent: string, analysisResult: any
   });
 };
 
-export const saveQuestsFromBrainDumpApi = async (quests: any[]) => {
-  for (const res of quests) {
-    await fetch('/api/goals', {
+export const saveQuestsFromBrainDumpApi = async (quests: BrainDumpQuest[]) => {
+  await Promise.all(quests.map(res => 
+    fetch('/api/goals', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -32,6 +48,6 @@ export const saveQuestsFromBrainDumpApi = async (quests: any[]) => {
         category: res.category,
         isExperimental: false
       })
-    });
-  }
+    })
+  ));
 };

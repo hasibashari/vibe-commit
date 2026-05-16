@@ -7,12 +7,14 @@ import { Modal } from '../../../shared/components/Modal';
 import { Input } from '../../../shared/components/Input';
 import { Button } from '../../../shared/components/Button';
 
+import type { UserStats } from '../../../shared/types/user';
+
 interface ProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
-  user: any;
+  user: UserStats;
   achievements?: Achievement[];
-  onSaveProfile: (data: any) => Promise<void>;
+  onSaveProfile: (data: Partial<UserStats>) => Promise<void>;
 }
 
 export const ProfileModal: React.FC<ProfileModalProps> = ({ 
@@ -83,7 +85,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
         </div>
       </div>
 
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         <AnimatePresence mode="wait">
           {activeTab === 'profile' ? (
             <motion.div 

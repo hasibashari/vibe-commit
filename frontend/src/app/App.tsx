@@ -20,9 +20,12 @@ import { MainLayout } from './layouts/MainLayout';
 import { DashboardLayout } from './layouts/DashboardLayout';
 import type { Goal } from '../shared/types/goal';
 import { useAppContext } from './providers/AppProvider';
+import { useDashboardContext } from './providers/DashboardProvider';
+import { useQuestContext } from './providers/QuestProvider';
+import { useBrainDumpContext } from './providers/BrainDumpProvider';
 import { useAudio } from './providers/AudioProvider';
 
-export type Tab = 'character' | 'quests' | 'dashboard';
+import type { Tab } from '../shared/types/navigation';
 
 export default function App() {
   const { tab } = useParams<{ tab: Tab }>();
@@ -31,15 +34,25 @@ export default function App() {
 
   const {
     isProfileOpen, setIsProfileOpen,
-    isSettingsOpen, setIsSettingsOpen,
+    isSettingsOpen, setIsSettingsOpen
+  } = useAppContext();
+
+  const {
     goals, setGoals, user, achievements, latestDump, burnoutMonitor,
     expPopups, recentlyCompletedIds, updateProfile, resetProfile, nudge,
+    isLoading
+  } = useDashboardContext();
+
+  const {
     selectedGoal, setSelectedGoal, isQuestEditorOpen, setIsQuestEditorOpen,
     questToDelete, setQuestToDelete, questToEdit, setQuestToEdit,
-    handleLogAction, handleSaveQuest, confirmDeleteQuest, executeDeleteQuest,
+    handleLogAction, handleSaveQuest, confirmDeleteQuest, executeDeleteQuest
+  } = useQuestContext();
+
+  const {
     isBrainDumpOpen, setIsBrainDumpOpen, draftContent, setDraftContent,
-    isAnalyzing, handleBrainDump, analysisResult, isLoading
-  } = useAppContext();
+    isAnalyzing, handleBrainDump, analysisResult
+  } = useBrainDumpContext();
 
   const prevCompletedCountRef = useRef(recentlyCompletedIds.length);
   useEffect(() => {
@@ -186,7 +199,7 @@ export default function App() {
             <DeleteQuestModal
               questId={questToDelete}
               onClose={() => setQuestToDelete(null)}
-              onConfirm={() => executeDeleteQuest(setGoals as any)}
+              onConfirm={() => executeDeleteQuest(setGoals)}
             />
             <BrainDumpModal 
               isOpen={isBrainDumpOpen}

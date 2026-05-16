@@ -4,11 +4,14 @@ import { useAIChat } from '../hooks/useAIChat';
 import { Modal } from '../../../shared/components/Modal';
 import { Button } from '../../../shared/components/Button';
 
+import type { Goal } from '../../../shared/types/goal';
+import type { UserStats } from '../../../shared/types/user';
+
 interface AIChatModalProps {
   isOpen: boolean;
   onClose: () => void;
-  user: any;
-  goals?: any[];
+  user: UserStats;
+  goals?: Goal[];
 }
 
 export const AIChatModal: React.FC<AIChatModalProps> = ({ isOpen, onClose, user, goals }) => {
@@ -26,7 +29,7 @@ export const AIChatModal: React.FC<AIChatModalProps> = ({ isOpen, onClose, user,
       isOpen={isOpen}
       onClose={onClose}
       position="bottom"
-      className="max-w-lg p-0 flex flex-col w-full h-[70vh] max-h-[500px]"
+      className="max-w-lg p-0 flex flex-col w-full h-[70dvh] max-h-[85dvh]"
       disableInternalScroll
     >
       <div className="flex justify-between items-center px-4 py-3 border-b border-white/5 bg-slate-800/20 shrink-0">

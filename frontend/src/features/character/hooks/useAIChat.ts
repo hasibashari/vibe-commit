@@ -1,9 +1,12 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { chatWithAI } from '../../../shared/services/aiService';
 
+import type { Goal } from '../../../shared/types/goal';
+import type { UserStats } from '../../../shared/types/user';
+
 const CHAT_HISTORY_KEY = 'ai_chat_history';
 
-export function useAIChat(isOpen: boolean, user: any, goals?: any[]) {
+export function useAIChat(isOpen: boolean, user: UserStats, goals?: Goal[]) {
   const [messages, setMessages] = useState<{ role: 'user' | 'model', content: string }[]>(() => {
     try {
       const stored = localStorage.getItem(CHAT_HISTORY_KEY);

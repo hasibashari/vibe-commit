@@ -1,3 +1,5 @@
+import type { Log } from './log';
+
 export interface Goal {
   id: string;
   userId?: string;
@@ -13,5 +15,5 @@ export interface Goal {
   repetition_count: number;
   createdAt?: string;
   updatedAt?: string;
-  logs?: any[]; 
+  logs?: Log[]; 
 }

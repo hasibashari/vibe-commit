@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import type { Tab } from '../App';
+import type { Tab } from '../../shared/types/navigation';
 import { cn } from '../../shared/utils/cn';
 
 interface DashboardLayoutProps {
@@ -16,7 +16,7 @@ export function DashboardLayout({
   rightSidebar
 }: DashboardLayoutProps) {
   return (
-    <div className="w-full h-full flex flex-col md:grid md:grid-cols-12 gap-0 md:gap-6 pb-24 md:pb-0 overflow-hidden">
+    <div className="w-full h-full flex flex-col md:grid md:grid-cols-12 gap-0 md:gap-6 pb-20 md:pb-0 overflow-hidden">
       
       {/* Left Sidebar: Quest List (4 cols on lg, 5 on md) */}
       <aside className={cn(
@@ -36,11 +36,11 @@ export function DashboardLayout({
       )}>
         {/* On Desktop, show mainContent and rightSidebar stacked or side-by-side depending on breakpoint.
             Let's stack them gracefully, or make a subgrid. */}
-        <div className="flex flex-col lg:grid lg:grid-cols-8 gap-6 h-full min-h-0">
-          <div className={cn("flex flex-col gap-6 lg:col-span-5", activeTab === 'dashboard' ? 'flex' : 'hidden lg:flex')}>
+        <div className="flex flex-col lg:grid lg:grid-cols-8 gap-6 min-h-full">
+          <div className={cn("flex flex-col gap-6 lg:col-span-5 flex-1 min-h-0", activeTab === 'dashboard' ? 'flex' : 'hidden lg:flex')}>
             {mainContent}
           </div>
-          <div className={cn("flex flex-col gap-6 lg:col-span-3", activeTab === 'character' ? 'flex' : 'hidden lg:flex')}>
+          <div className={cn("flex flex-col gap-6 lg:col-span-3 flex-1 min-h-0", activeTab === 'character' ? 'flex' : 'hidden lg:flex')}>
             {rightSidebar}
           </div>
         </div>

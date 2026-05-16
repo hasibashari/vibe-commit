@@ -4,6 +4,11 @@ import { Modal } from '../../../shared/components/Modal';
 import { Button } from '../../../shared/components/Button';
 import { motion } from 'motion/react';
 
+interface BrainDumpAnalysisResult {
+  analysisSummary: string;
+  quests: { category: string }[];
+}
+
 interface BrainDumpModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -11,7 +16,7 @@ interface BrainDumpModalProps {
   draftContent: string;
   setDraftContent: (content: string) => void;
   onSubmit: () => void;
-  analysisResult?: any;
+  analysisResult?: BrainDumpAnalysisResult;
 }
 
 export function BrainDumpModal({
@@ -38,7 +43,7 @@ export function BrainDumpModal({
       preventBackdropClose={isAnalyzing || !!analysisResult}
     >
       {analysisResult ? (
-        <div className="p-10 space-y-8 flex flex-col items-center justify-center text-center min-h-[400px]">
+        <div className="p-6 sm:p-10 space-y-6 sm:space-y-8 flex flex-col items-center justify-center text-center min-h-[400px]">
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
@@ -72,7 +77,7 @@ export function BrainDumpModal({
 
           <div className="flex gap-4 mt-6">
             {['Main Quest', 'Daily Quest', 'Side Quest'].map(cat => {
-              const count = analysisResult.quests.filter((q: any) => q.category === cat).length;
+              const count = analysisResult.quests.filter((q: { category: string }) => q.category === cat).length;
               if (count === 0) return null;
               return (
                 <div key={cat} className="bg-slate-900 border border-slate-800 rounded-lg p-4 min-w-[120px]">
@@ -88,14 +93,14 @@ export function BrainDumpModal({
           </Button>
         </div>
       ) : (
-      <div className="p-8 space-y-6">
+      <div className="p-5 sm:p-8 space-y-4 sm:space-y-6">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
             <BrainCircuit className="w-6 h-6 text-cyan-400" />
           </div>
           <div>
-            <h2 className="font-display text-2xl md:text-3xl font-bold tracking-tight">AI Quest Generator</h2>
-            <p className="text-xs text-white/50 font-mono uppercase tracking-wider">Tumpahin pikiran lo, AI yang pecah jadi Quest logis</p>
+            <h2 className="font-display text-xl sm:text-2xl md:text-3xl font-bold tracking-tight">AI Quest Generator</h2>
+            <p className="text-[10px] sm:text-xs text-white/50 font-mono uppercase tracking-wider">Tumpahin pikiran lo, AI yang pecah jadi Quest logis</p>
           </div>
         </div>
 
@@ -103,10 +108,10 @@ export function BrainDumpModal({
           value={draftContent}
           onChange={(e) => setDraftContent(e.target.value)}
           placeholder="Contoh: Akhir-akhir ini badan sering lemes karena jarang olahraga, pengen gym tapi males pergi. Trus aku juga mau cicil baca drakor... eh buku tiap hari sekitar 15 menit..."
-          className="w-full h-64 bg-transparent border border-white/10 rounded-2xl p-6 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-colors resize-none placeholder:text-white/20 font-sans leading-relaxed text-lg text-slate-200"
+          className="w-full h-48 sm:h-64 bg-transparent border border-white/10 rounded-2xl p-4 sm:p-6 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-colors resize-none placeholder:text-white/20 font-sans leading-relaxed text-base sm:text-lg text-slate-200"
         />
 
-        <div className="flex justify-between items-center bg-[#0A0C10] -mx-8 -mb-8 p-6 border-t border-white/5">
+        <div className="flex justify-between items-center bg-[#0A0C10] -mx-5 -mb-5 sm:-mx-8 sm:-mb-8 p-4 sm:p-6 border-t border-white/5">
           <Button 
             variant="ghost"
             disabled={isAnalyzing}

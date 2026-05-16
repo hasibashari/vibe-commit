@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useRef, useState, ReactNode, useMemo } from 'react';
-import { useAppContext } from './AppProvider';
+import { useDashboardContext } from './DashboardProvider';
 
 interface AudioContextType {
   playVictorySound: () => void;
@@ -31,7 +31,7 @@ function getAudioContext() {
 }
 
 export function AudioProvider({ children }: { children: ReactNode }) {
-  const { user, updateProfile, latestDump } = useAppContext();
+  const { user, updateProfile, latestDump } = useDashboardContext();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isMuted, setIsMuted] = useState(false);
   const isMutedRef = useRef(isMuted);

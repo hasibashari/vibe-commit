@@ -16,16 +16,23 @@ export function initDb() {
     );
   `);
   
-  try { db.exec("ALTER TABLE users ADD COLUMN title TEXT DEFAULT 'Novice Operative'"); } catch (e) {}
-  try { db.exec("ALTER TABLE users ADD COLUMN avatar_color TEXT DEFAULT 'indigo'"); } catch (e) {}
-  try { db.exec("ALTER TABLE users ADD COLUMN custom_main_bg TEXT"); } catch (e) {}
-  try { db.exec("ALTER TABLE users ADD COLUMN custom_char_bg TEXT"); } catch (e) {}
-  try { db.exec("ALTER TABLE users ADD COLUMN custom_character TEXT"); } catch (e) {}
-  try { db.exec("ALTER TABLE users ADD COLUMN theme_vibe TEXT DEFAULT 'midnight'"); } catch (e) {}
-  try { db.exec("ALTER TABLE users ADD COLUMN bgm_theme TEXT DEFAULT 'nature'"); } catch (e) {}
-  try { db.exec("ALTER TABLE users ADD COLUMN bgm_muted INTEGER DEFAULT 0"); } catch (e) {}
-  try { db.exec("ALTER TABLE goals DROP COLUMN is_experimental"); } catch (e) {}
-  try { db.exec("ALTER TABLE goals DROP COLUMN parent_id"); } catch (e) {}
+  const userCols = db.pragma('table_info(users)') as any[];
+  const hasUserCol = (name: string) => userCols.some((c) => c.name === name);
+
+  if (!hasUserCol('title')) db.exec("ALTER TABLE users ADD COLUMN title TEXT DEFAULT 'Novice Operative'");
+  if (!hasUserCol('avatar_color')) db.exec("ALTER TABLE users ADD COLUMN avatar_color TEXT DEFAULT 'indigo'");
+  if (!hasUserCol('custom_main_bg')) db.exec("ALTER TABLE users ADD COLUMN custom_main_bg TEXT");
+  if (!hasUserCol('custom_char_bg')) db.exec("ALTER TABLE users ADD COLUMN custom_char_bg TEXT");
+  if (!hasUserCol('custom_character')) db.exec("ALTER TABLE users ADD COLUMN custom_character TEXT");
+  if (!hasUserCol('theme_vibe')) db.exec("ALTER TABLE users ADD COLUMN theme_vibe TEXT DEFAULT 'midnight'");
+  if (!hasUserCol('bgm_theme')) db.exec("ALTER TABLE users ADD COLUMN bgm_theme TEXT DEFAULT 'nature'");
+  if (!hasUserCol('bgm_muted')) db.exec("ALTER TABLE users ADD COLUMN bgm_muted INTEGER DEFAULT 0");
+
+  const goalCols = db.pragma('table_info(goals)') as any[];
+  const hasGoalCol = (name: string) => goalCols.some((c) => c.name === name);
+
+  if (hasGoalCol('is_experimental')) db.exec("ALTER TABLE goals DROP COLUMN is_experimental");
+  if (hasGoalCol('parent_id')) db.exec("ALTER TABLE goals DROP COLUMN parent_id");
 
   db.exec(`
     CREATE TABLE IF NOT EXISTS goals (
