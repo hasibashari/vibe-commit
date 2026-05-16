@@ -21,7 +21,7 @@ interface AppContextType {
   setExpPopups: React.Dispatch<React.SetStateAction<{id: string, exp: number}[]>>;
   fetchData: () => Promise<void>;
   recentlyCompletedIds: string[];
-  updateProfile: (data: Partial<UserStats>) => Promise<void>;
+  updateProfile: (data: Partial<UserStats>, silent?: boolean) => Promise<void>;
   resetProfile: () => Promise<void>;
   nudge: { optimalHour: number; suggestion: string } | null;
   isLoading: boolean;

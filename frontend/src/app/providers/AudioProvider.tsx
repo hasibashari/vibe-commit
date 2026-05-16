@@ -172,7 +172,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   const toggleMute = () => {
     const nextMuted = !isMuted;
     setIsMuted(nextMuted);
-    updateProfile({ bgm_muted: nextMuted ? 1 : 0 });
+    updateProfile({ bgm_muted: nextMuted ? 1 : 0 }, true); // Pass silent=true
   };
 
   const playVictorySound = () => {

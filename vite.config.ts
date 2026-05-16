@@ -2,12 +2,31 @@ import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 import {defineConfig, loadEnv} from 'vite';
+import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, '.', '');
   return {
     publicDir: 'frontend/public',
-    plugins: [react(), tailwindcss()],
+    plugins: [
+      react(),
+      tailwindcss(),
+      VitePWA({
+        registerType: 'autoUpdate',
+        manifest: {
+          name: 'Vibe Commit',
+          short_name: 'Vibe Commit',
+          description: 'A gamified habit tracker and RPG to-do list.',
+          theme_color: '#0f172a',
+          background_color: '#0f172a',
+          display: 'standalone',
+        },
+        workbox: {
+          globPatterns: ['**/*.{js,css,html,ico,png,svg,mp3,wav}'],
+          maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
+        }
+      })
+    ],
     define: {
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
     },

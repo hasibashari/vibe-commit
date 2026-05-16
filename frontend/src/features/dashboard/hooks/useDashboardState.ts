@@ -55,16 +55,20 @@ export function useDashboardState() {
     }
   }, [toast]);
 
-  const updateProfile = async (data: Partial<UserStats>) => {
+  const updateProfile = async (data: Partial<UserStats>, silent?: boolean) => {
     try {
       const updatedUser = await updateProfileData(undefined, data);
       setUser(prev => {
         const allLogs = goals.flatMap(g => g.logs.map((l: any) => ({ ...l, goal_id: g.id })));
         return calculateRPGStats(allLogs, { ...prev, ...updatedUser }, 100, 100);
       });
-      toast({ title: "Profil Disimpan", type: 'success' });
+      if (!silent) {
+        toast({ title: "Profil Disimpan", type: 'success' });
+      }
     } catch (e: unknown) {
-      toast({ title: "Gagal Menyimpan Profil", type: 'error' });
+      if (!silent) {
+        toast({ title: "Gagal Menyimpan Profil", type: 'error' });
+      }
     }
   };
 
