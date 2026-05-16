@@ -32,7 +32,7 @@ export const StatusScene: React.FC<StatsProps> = ({ hp, mana, level, goals, nudg
   };
 
   return (
-      <div className="relative -mx-4 sm:mx-0 w-[calc(100%+2rem)] sm:w-full min-h-[450px] aspect-[4/5] sm:aspect-auto sm:min-h-0 sm:h-[400px] md:h-[450px] lg:h-[480px] bg-slate-950 border-y sm:border border-slate-800/60 sm:rounded-2xl overflow-hidden shadow-2xl flex flex-col items-center justify-center group isolate">
+      <div className="relative -mx-4 sm:mx-0 w-[calc(100%+2rem)] sm:w-full h-[65dvh] sm:h-[400px] md:h-[450px] lg:h-[480px] bg-slate-950 border-y sm:border border-slate-800/60 sm:rounded-2xl overflow-hidden shadow-2xl flex flex-col items-center justify-center group isolate">
       <BackgroundLayer imageUrl={customCharBg} />
       <GroundLayer />
 

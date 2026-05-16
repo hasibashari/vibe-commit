@@ -52,7 +52,7 @@ export function QuestPanel({
     <div className="flex flex-col gap-4 md:gap-6 pb-6">
       
       {/* Brain Dump Action Panel - Promoted to top for easier access */}
-      <div className="bg-indigo-900/20 border border-indigo-500/30 p-4 md:p-5 rounded-lg flex flex-col shadow-lg shadow-indigo-900/10">
+      <div className="hidden md:flex bg-indigo-900/20 border border-indigo-500/30 p-4 md:p-5 rounded-lg flex-col shadow-lg shadow-indigo-900/10">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-xs font-bold text-indigo-300 uppercase tracking-widest decoration-indigo-500/50 flex items-center gap-2">
             <BrainCircuit className="w-3.5 h-3.5" /> Brain Dump
@@ -86,6 +86,23 @@ export function QuestPanel({
             </span>
           </div>
         </div>
+
+        {/* Mobile Brain Dump Status - Small info text instead of full panel */}
+        {latestDump && (
+          <div className="md:hidden flex items-center justify-between px-2 mb-4">
+            <div className="flex items-center gap-2">
+              <BrainCircuit className="w-3.5 h-3.5 text-indigo-400" />
+              <p className="text-[10px] text-slate-400 italic line-clamp-1 truncate max-w-[180px]">
+                "{latestDump.summary}"
+              </p>
+            </div>
+            <span className={`text-[9px] font-mono uppercase px-1.5 py-0.5 rounded-full border ${
+              latestDump.anxietyScore > 7 ? 'text-rose-400 border-rose-400/30 bg-rose-400/10' : 'text-indigo-400 border-indigo-400/30 bg-indigo-400/10'
+            }`}>
+              Lvl: {latestDump.anxietyLevel}
+            </span>
+          </div>
+        )}
         
         {/* Main Quests */}
         <div className="flex flex-col gap-3 transition-all duration-300">
