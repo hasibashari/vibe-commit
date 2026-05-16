@@ -25,7 +25,7 @@ export const AIChatModal: React.FC<AIChatModalProps> = ({ isOpen, onClose, user,
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      className="max-w-lg p-0 flex flex-col h-[600px] max-h-[85dvh]"
+      className="max-w-lg p-0 flex flex-col h-[70vh] max-h-[500px]"
       disableInternalScroll
     >
       <div className="flex justify-between items-center px-4 py-3 border-b border-white/5 bg-slate-800/20 shrink-0">
