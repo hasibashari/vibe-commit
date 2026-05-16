@@ -11,7 +11,7 @@ export const BackgroundLayer: React.FC<BackgroundLayerProps> = ({ imageUrl }) =>
   return (
     <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none rounded-xl">
       <div 
-        className="absolute inset-0 bg-cover bg-center opacity-40 blur-[2px]"
+        className="absolute inset-0 bg-cover bg-center opacity-75 blur-[1px]"
         style={{ backgroundImage: `url(${bgImg})` }}
       />
       {/* Overlay to ensure UI readability */}
