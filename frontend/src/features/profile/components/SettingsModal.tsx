@@ -147,7 +147,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, u
             <h4 className="text-xs font-bold uppercase tracking-widest">Visual & Audio Vibe</h4>
           </div>
 
-          <div className="flex items-center justify-between bg-slate-900 border border-slate-800 p-3 rounded-xl mb-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900 border border-slate-800 p-3 rounded-xl mb-2">
             <div className="flex flex-col">
               <span className="text-sm font-bold text-slate-200">Theme Vibe</span>
               <span className="text-xs text-slate-500">Preset color palettes</span>
@@ -155,7 +155,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, u
             <select
               value={user.theme_vibe || 'midnight'}
               onChange={(e) => onUpdateUser({ theme_vibe: e.target.value })}
-              className="bg-slate-800 border border-slate-700 text-sm rounded-lg px-3 py-2 text-slate-200 outline-none focus:border-cyan-500"
+              className="bg-slate-800 border border-slate-700 text-sm rounded-lg px-3 py-2 text-slate-200 outline-none focus:border-cyan-500 w-full sm:w-auto"
             >
               <option value="midnight">Midnight Dev (Default)</option>
               <option value="emerald">Emerald Forest</option>
@@ -164,7 +164,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, u
             </select>
           </div>
 
-          <div className="flex items-center justify-between bg-slate-900 border border-slate-800 p-3 rounded-xl mb-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900 border border-slate-800 p-3 rounded-xl mb-2">
             <div className="flex flex-col">
               <span className="text-sm font-bold text-slate-200">Background Music</span>
               <span className="text-xs text-slate-500">Adaptive ambient sounds</span>
@@ -172,7 +172,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, u
             <select
               value={user.bgm_theme || 'dynamic'}
               onChange={(e) => onUpdateUser({ bgm_theme: e.target.value })}
-              className="bg-slate-800 border border-slate-700 text-sm rounded-lg px-3 py-2 text-slate-200 outline-none focus:border-cyan-500"
+              className="bg-slate-800 border border-slate-700 text-sm rounded-lg px-3 py-2 text-slate-200 outline-none focus:border-cyan-500 w-full sm:w-auto"
             >
               <option value="dynamic">Adaptive (Based on Anxiety)</option>
               <option value="nature">Nature / Acoustic</option>
