@@ -87,7 +87,7 @@ export function QuestPanel({
               onClick={onOpenBrainDump}
               className="text-[10px] bg-indigo-900/40 text-indigo-300 hover:text-white hover:bg-indigo-500/40 px-2 py-1 rounded transition-colors flex items-center gap-1"
             >
-              Buka Modal <ChevronRight className="w-3 h-3" />
+              Buka Brain Dump <ChevronRight className="w-3 h-3" />
             </button>
           </div>
         </div>
@@ -134,12 +134,6 @@ export function QuestPanel({
               ) : (
                 <div></div>
               )}
-              <button 
-                onClick={onOpenBrainDump}
-                className="text-[10px] py-1.5 px-3 bg-indigo-500/20 text-indigo-300 rounded hover:bg-indigo-500/30 transition-colors flex items-center gap-1 font-medium"
-              >
-                Buka Modal
-              </button>
             </div>
           </div>
         )}
