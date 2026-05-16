@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { Goal } from '../../../shared/types/goal';
 import { calculateStochasticNudges, analyzeBurnoutRisk, BurnoutPrediction } from '../../../shared/services/analyticsService';
-import { fetchDashboardData, updateProfileData, resetProfileData, UserStats } from '../services/dashboardApi';
+import { fetchDashboardData, updateProfileData, resetProfileData } from '../services/dashboardApi';
+import type { UserStats } from '../../../shared/types/user';
 import { calculateRPGStats, getCompletedIdsToday, calculateAchievements, Achievement } from '../utils/dashboardUtils';
 import { useToast } from '../../../shared/components/Toast';
 

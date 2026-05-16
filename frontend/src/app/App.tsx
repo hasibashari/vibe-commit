@@ -36,7 +36,7 @@ export default function App() {
     expPopups, recentlyCompletedIds, updateProfile, resetProfile, nudge,
     selectedGoal, setSelectedGoal, isQuestEditorOpen, setIsQuestEditorOpen,
     questToDelete, setQuestToDelete, questToEdit, setQuestToEdit,
-    handleLogAction, handleBranch, handleSaveQuest, confirmDeleteQuest, executeDeleteQuest,
+    handleLogAction, handleSaveQuest, confirmDeleteQuest, executeDeleteQuest,
     isBrainDumpOpen, setIsBrainDumpOpen, draftContent, setDraftContent,
     isAnalyzing, handleBrainDump, analysisResult, isLoading
   } = useAppContext();

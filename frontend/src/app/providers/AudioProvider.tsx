@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useRef, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState, ReactNode, useMemo } from 'react';
 import { useAppContext } from './AppProvider';
 
 interface AudioContextType {
@@ -8,7 +8,7 @@ interface AudioContextType {
   isMuted: boolean;
 }
 
-const AudioContext = createContext<AudioContextType | undefined>(undefined);
+const AudioPlayerContext = createContext<AudioContextType | undefined>(undefined);
 
 const BGM_THEMES: Record<string, string> = {
   // Relaxing nature/acoustic for lush state
@@ -19,17 +19,24 @@ const BGM_THEMES: Record<string, string> = {
   'coffee': '/sounds/coffee.mp3',
 };
 
-// Fallback tracks (Optional, leaving them same or removing them since we use local)
-const FALLBACK_BGM = {
-  'nature': '/sounds/nature.mp3',
-  'cyber': '/sounds/cyber.mp3',
-  'coffee': '/sounds/coffee.mp3',
-};
+let sharedAudioCtx: AudioContext | null = null;
+function getAudioContext() {
+  if (typeof window === 'undefined') return null;
+  if (!sharedAudioCtx) {
+    try {
+      sharedAudioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    } catch(e) {}
+  }
+  return sharedAudioCtx;
+}
 
 export function AudioProvider({ children }: { children: ReactNode }) {
   const { user, updateProfile, latestDump } = useAppContext();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isMuted, setIsMuted] = useState(false);
+  const isMutedRef = useRef(isMuted);
+  const isUnlockedRef = useRef(false);
+  const currentTrackRef = useRef<string | null>(null);
 
   // Initialize from user settings
   useEffect(() => {
@@ -39,52 +46,72 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   }, [user?.bgm_muted]);
 
   useEffect(() => {
+    isMutedRef.current = isMuted;
+  }, [isMuted]);
+
+  useEffect(() => {
     if (!audioRef.current) {
       audioRef.current = new Audio();
       audioRef.current.loop = true;
       audioRef.current.volume = 0; // start silent
     }
+
+    const unlockAudio = () => {
+      if (isUnlockedRef.current) return;
+      isUnlockedRef.current = true;
+      
+      const ctx = getAudioContext();
+      if (ctx && ctx.state === 'suspended') {
+        ctx.resume();
+      }
+
+      if (audioRef.current && !isMutedRef.current) {
+        audioRef.current.play().catch(() => {});
+      }
+      
+      document.removeEventListener('click', unlockAudio);
+      document.removeEventListener('touchstart', unlockAudio);
+      document.removeEventListener('keydown', unlockAudio);
+    };
+
+    document.addEventListener('click', unlockAudio);
+    document.addEventListener('touchstart', unlockAudio);
+    document.addEventListener('keydown', unlockAudio);
+
+    return () => {
+      document.removeEventListener('click', unlockAudio);
+      document.removeEventListener('touchstart', unlockAudio);
+      document.removeEventListener('keydown', unlockAudio);
+    };
   }, []);
+
+  const currentTheme = useMemo(() => {
+     if (!user) return 'nature';
+     if (user.bgm_theme && user.bgm_theme !== 'dynamic') return user.bgm_theme;
+     const anxiety = latestDump?.anxietyScore || 5;
+     if (anxiety > 7) return 'cyber';
+     if (anxiety > 4) return 'coffee';
+     return 'nature';
+  }, [user?.bgm_theme, latestDump?.anxietyScore, user]);
 
   // Adaptive BGM Logic
   useEffect(() => {
-    if (!audioRef.current || !user) return;
-    
-    // Choose theme track based on user setting or calculate vibe
-    // Let's use user settings if provided. If we want it dynamic based on Anxiety:
-    // the user mentioned "Kita buat satu konduktor yang memantau state Anxiety dan Mana"
-    // and "Saat Suasana Lush (Anxiety Rendah) -> Nature ... Saat Suasana Dark -> Lo-Fi".
-    // Or we provide 3 options in settings: 'dynamic', 'nature', 'cyber', 'coffee'.
-    
-    let preferredTheme = user.bgm_theme || 'dynamic';
-    
-    // Let's implement Dynamic
-    if (preferredTheme === 'dynamic') {
-      const anxiety = latestDump?.anxietyScore || 5;
-      if (anxiety > 7) {
-        preferredTheme = 'cyber'; // Dark/Foggy
-      } else if (anxiety > 4) {
-        preferredTheme = 'coffee'; // Neutral
-      } else {
-        preferredTheme = 'nature'; // Lush
-      }
-    }
+    if (!audioRef.current) return;
 
-    const newSrc = BGM_THEMES[preferredTheme] || BGM_THEMES['nature'];
+    const newSrc = BGM_THEMES[currentTheme] || BGM_THEMES['nature'];
     const audio = audioRef.current;
 
-    // A simple fade in/out
     const fadeOut = () => {
       let v = audio.volume;
       const interval = setInterval(() => {
         v -= 0.05;
         if (v <= 0) {
           v = 0;
-          audio.volume = v;
+          audio.volume = 0;
           clearInterval(interval);
           
           audio.src = newSrc;
-          if (!isMuted) fadeIn();
+          if (!isMuted && isUnlockedRef.current) fadeIn();
         } else {
           audio.volume = v;
         }
@@ -92,11 +119,14 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     };
 
     const fadeIn = () => {
-      audio.play().catch(() => { /* Auto-play restrictions */ });
+      if (isMuted) return;
+      if (isUnlockedRef.current) {
+         audio.play().catch(() => {});
+      }
       let v = audio.volume;
       const interval = setInterval(() => {
         v += 0.02;
-        if (v >= 0.15) { // Max volume for ambient background
+        if (v >= 0.15) { 
           v = 0.15;
           audio.volume = v;
           clearInterval(interval);
@@ -106,40 +136,24 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       }, 100);
     };
 
-    if (audio.src !== newSrc && audio.src) {
-      // Different track, fade out then change
-      fadeOut();
-    } else if (!audio.src) {
-      audio.src = newSrc;
-      if (!isMuted) fadeIn();
+    if (currentTrackRef.current !== newSrc) {
+       currentTrackRef.current = newSrc;
+       if (audio.src && audio.src !== window.location.href) {
+          fadeOut();
+       } else {
+          audio.src = newSrc;
+          if (!isMuted && isUnlockedRef.current) fadeIn();
+       }
     } else {
-      // Same track, just handle volume
-      if (isMuted) {
-         audio.volume = 0;
-         audio.pause();
-      } else {
-         if (audio.paused) audio.play().catch(()=>console.log('Play blocked'));
-         if (audio.volume < 0.15) fadeIn();
-      }
+       if (isMuted) {
+          audio.volume = 0;
+          audio.pause();
+       } else {
+          if (audio.paused && isUnlockedRef.current) audio.play().catch(()=>{});
+          if (audio.volume < 0.15) fadeIn();
+       }
     }
-    
-    // Attempt play on mount if not muted
-    if (!isMuted && audio.paused) {
-      audio.play().catch(() => {
-          // Play requires user interaction first, this will naturally be blocked until they click
-      });
-    }
-
-  }, [bgmThemeCalc(), isMuted]);
-
-  function bgmThemeCalc() {
-     if (!user) return 'nature';
-     if (user.bgm_theme && user.bgm_theme !== 'dynamic') return user.bgm_theme;
-     const anxiety = latestDump?.anxietyScore || 5;
-     if (anxiety > 7) return 'cyber';
-     if (anxiety > 4) return 'coffee';
-     return 'nature';
-  }
+  }, [currentTheme, isMuted]);
 
   const toggleMute = () => {
     const nextMuted = !isMuted;
@@ -150,7 +164,10 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   const playVictorySound = () => {
     if (isMuted) return;
     try {
-      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const audioCtx = getAudioContext();
+      if (!audioCtx) return;
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      
       const osc = audioCtx.createOscillator();
       const gainNode = audioCtx.createGain();
       
@@ -175,7 +192,10 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   const playLevelUpSound = () => {
     if (isMuted) return;
     try {
-      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const audioCtx = getAudioContext();
+      if (!audioCtx) return;
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      
       const osc = audioCtx.createOscillator();
       const gainNode = audioCtx.createGain();
       
@@ -198,14 +218,14 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AudioContext.Provider value={{ playVictorySound, playLevelUpSound, toggleMute, isMuted }}>
+    <AudioPlayerContext.Provider value={{ playVictorySound, playLevelUpSound, toggleMute, isMuted }}>
       {children}
-    </AudioContext.Provider>
+    </AudioPlayerContext.Provider>
   );
 }
 
 export function useAudio() {
-  const context = useContext(AudioContext);
+  const context = useContext(AudioPlayerContext);
   if (context === undefined) {
     throw new Error('useAudio must be used within an AudioProvider');
   }
