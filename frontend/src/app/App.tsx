@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { AnimatePresence } from 'motion/react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { RPGHeader } from '../features/character/components/RPGHeader';
+import { TopBar } from './layouts/TopBar';
 import { StatusScene } from '../features/character/components/StatusScene';
 import { VibeEnvironment } from '../shared/components/VibeEnvironment';
 import { QuestEditorModal } from '../features/quests/components/QuestEditorModal';
@@ -12,7 +12,7 @@ import { SettingsModal } from '../features/profile/components/SettingsModal';
 import { ExpPopupRenderer } from '../shared/components/ExpPopupRenderer';
 import { BrainDumpModal } from '../features/brainDump/components/BrainDumpModal';
 import { DeleteQuestModal } from '../features/quests/components/DeleteQuestModal';
-import { BottomNavigation } from './layouts/BottomNavigation';
+import { BottomBar } from './layouts/BottomBar';
 import { QuestPanel } from '../features/quests/components/QuestPanel';
 import { HubMonitoring } from '../features/dashboard/components/HubMonitoring';
 import { BurnoutWarning } from '../features/character/components/BurnoutWarning';
@@ -149,9 +149,9 @@ export default function App() {
             themeVibe={user.theme_vibe}
           />
         }
-        header={<RPGHeader hp={user.hp} mana={user.mana} level={user.level} exp={user.exp} coins={coins} user={user} onOpenProfile={() => setIsProfileOpen(true)} onOpenSettings={() => setIsSettingsOpen(true)} />}
+        header={<TopBar hp={user.hp} mana={user.mana} level={user.level} exp={user.exp} coins={coins} user={user} onOpenProfile={() => setIsProfileOpen(true)} onOpenSettings={() => setIsSettingsOpen(true)} />}
         bottomNav={
-          <BottomNavigation 
+          <BottomBar 
             activeTab={activeTab}
             setActiveTab={setActiveTab}
             onOpenBrainDump={() => setIsBrainDumpOpen(true)}

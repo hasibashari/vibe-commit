@@ -22,7 +22,7 @@ export function calculateStochasticNudges(logs: { timestamp: string }[]) {
   return {
     optimalHour: parseInt(peakHour[0]),
     confidence: peakHour[1] / logs.length,
-    suggestion: `Focus peak detected at ${peakHour[0]}:00. Recommended trigger window.`
+    suggestion: `Puncak fokus terdeteksi pada pukul ${peakHour[0]}:00. Waktu yang disarankan untuk beraktivitas.`
   };
 }
 
@@ -72,12 +72,12 @@ export function analyzeBurnoutRisk(logs: any[], goals: any[]): BurnoutPrediction
     return {
       isBurnedOut: true,
       severity: recentSigma > 3 ? "CRITICAL" : "HIGH",
-      refactoringMessage: "SYSTEM REFACTORING REQUIRED: Focus variance (σ) indicates structural fatigue. High-difficulty task execution is dropping.",
+      refactoringMessage: "PERLU REFACTORING SISTEM: Variansi fokus (σ) mengindikasikan kelelahan struktural. Eksekusi tugas dengan kesulitan tinggi mulai menurun.",
       sideQuests: [
-        { title: "Defrag Sleep Cycle", description: "Enforce 8h offline mode. Disconnect from high-cognitive load logic gates.", type: "Rest" },
-        { title: "Stochastic Nature Walk", description: "Wander without destination. Rebalance neural weights and reduce cortisol processes.", type: "Calming Nudge" }
+        { title: "Defrag Siklus Tidur", description: "Terapkan mode offline 8 jam. Putuskan koneksi dari tugas dengan beban kognitif tinggi.", type: "Istirahat" },
+        { title: "Jalan Alam Santai", description: "Jalan-jalan tanpa tujuan spesifik. Seimbangkan kembali bobot saraf dan kurangi proses kortisol.", type: "Penyesuaian Menenangkan" }
       ],
-      adjustments: "ADAPTIVE WORKLOAD: Cap max daily difficulty at 4.0 for the next 72 hours. Prioritize recovery pacing to maintain reliable 1% systemic growth."
+      adjustments: "BEBAN KERJA ADAPTIF: Batasi kesulitan harian maksimal di tingkat 4.0 selama 72 jam ke depan. Prioritaskan pemulihan untuk menjaga pertumbuhan sistemik 1% yang stabil."
     };
   }
 

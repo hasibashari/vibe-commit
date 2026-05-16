@@ -2,14 +2,14 @@ import React from 'react';
 import { Shield, Target, Plus, BrainCircuit, BarChart3 } from 'lucide-react';
 import type { Tab } from '../../app/App'; // Will update if necessary
 
-interface BottomNavigationProps {
+interface BottomBarProps {
   activeTab: Tab;
   setActiveTab: (tab: Tab) => void;
   onOpenBrainDump: () => void;
   onNewQuest: () => void;
 }
 
-export function BottomNavigation({ activeTab, setActiveTab, onOpenBrainDump, onNewQuest }: BottomNavigationProps) {
+export function BottomBar({ activeTab, setActiveTab, onOpenBrainDump, onNewQuest }: BottomBarProps) {
   return (
     <div className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-md z-[100] pb-[env(safe-area-inset-bottom)]">
       <div className="flex justify-around items-center h-16 px-1 bg-slate-950/90 backdrop-blur-2xl border border-slate-700/50 shadow-[0_10px_40px_rgba(0,0,0,0.8),inset_0_1px_rgba(255,255,255,0.1)] rounded-2xl relative">

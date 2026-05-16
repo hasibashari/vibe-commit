@@ -1,9 +1,9 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { Heart, Zap, Star, Shield, Settings, Volume2, VolumeX } from 'lucide-react';
-import { useAudio } from '../../../app/providers/AudioProvider';
+import { useAudio } from '../providers/AudioProvider';
 
-interface RPGHeaderProps {
+interface TopBarProps {
   hp: number;
   mana: number;
   level: number;
@@ -14,7 +14,7 @@ interface RPGHeaderProps {
   onOpenSettings?: () => void;
 }
 
-export const RPGHeader: React.FC<RPGHeaderProps> = ({ hp, mana, level, exp, coins, user, onOpenProfile, onOpenSettings }) => {
+export const TopBar: React.FC<TopBarProps> = ({ hp, mana, level, exp, coins, user, onOpenProfile, onOpenSettings }) => {
   const { isMuted, toggleMute } = useAudio();
   const avatarColorMap: Record<string, { from: string; text: string }> = {
     indigo: { from: 'from-indigo-500/20', text: 'text-indigo-400' },
