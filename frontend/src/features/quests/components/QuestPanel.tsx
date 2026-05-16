@@ -32,6 +32,7 @@ export function QuestPanel({
 }: QuestPanelProps) {
   
   const [expandedCategory, setExpandedCategory] = useState<string>('Main Quest');
+  const [isSummaryExpanded, setIsSummaryExpanded] = useState(false);
 
   const toggleCategory = (cat: string) => {
     setExpandedCategory(prev => prev === cat ? '' : cat);
@@ -65,15 +66,31 @@ export function QuestPanel({
             </span>
           )}
         </div>
-        <button 
-          onClick={onOpenBrainDump}
-          className="w-full text-left group flex items-start justify-between gap-3 bg-indigo-950/30 p-3 rounded-md hover:bg-indigo-900/40 transition-colors"
-        >
-          <p className="text-xs leading-relaxed text-slate-300 group-hover:text-white transition-colors">
+        <div className="bg-indigo-950/30 p-3 rounded-md border border-indigo-500/10 transition-colors">
+          <p className={`text-xs leading-relaxed text-slate-300 transition-colors ${isSummaryExpanded ? '' : 'line-clamp-2'}`}>
             {latestDump ? `"${latestDump.summary}"` : 'Tulis apa yang lo pikirkan biar AI buatkan plan-nya...'}
           </p>
-          <ChevronRight className="w-4 h-4 text-indigo-400/60 shrink-0 mt-0.5 group-hover:translate-x-1 transition-transform" />
-        </button>
+          
+          <div className="flex items-center justify-between mt-2 pt-2 border-t border-indigo-500/10">
+            {latestDump && latestDump.summary.length > 100 ? (
+              <button 
+                onClick={() => setIsSummaryExpanded(!isSummaryExpanded)}
+                className="text-[10px] font-medium text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
+              >
+                {isSummaryExpanded ? 'Sembunyikan' : 'Baca Selengkapnya'}
+              </button>
+            ) : (
+              <div></div>
+            )}
+            
+            <button 
+              onClick={onOpenBrainDump}
+              className="text-[10px] bg-indigo-900/40 text-indigo-300 hover:text-white hover:bg-indigo-500/40 px-2 py-1 rounded transition-colors flex items-center gap-1"
+            >
+              Buka Modal <ChevronRight className="w-3 h-3" />
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className="bg-slate-900/50 border border-slate-800 p-4 md:p-5 rounded-lg flex flex-col gap-5">
@@ -87,20 +104,43 @@ export function QuestPanel({
           </div>
         </div>
 
-        {/* Mobile Brain Dump Status - Small info text instead of full panel */}
+        {/* Mobile Brain Dump Status - Clickable action + Read More */}
         {latestDump && (
-          <div className="md:hidden flex items-center justify-between px-2 mb-4">
-            <div className="flex items-center gap-2">
-              <BrainCircuit className="w-3.5 h-3.5 text-indigo-400" />
-              <p className="text-[10px] text-slate-400 italic line-clamp-1 truncate max-w-[180px]">
-                "{latestDump.summary}"
-              </p>
+          <div className="md:hidden w-full flex flex-col p-3 mb-4 bg-indigo-950/20 rounded-md border border-indigo-500/20 text-left">
+            <div className="flex items-start justify-between gap-2 mb-2">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <BrainCircuit className="w-4 h-4 text-indigo-400 shrink-0" />
+                <span className="text-[10px] font-bold tracking-widest uppercase text-indigo-300">Brain Dump</span>
+              </div>
+              <span className={`text-[9px] font-mono uppercase px-2 py-0.5 rounded-full border shrink-0 ${
+                latestDump.anxietyScore > 7 ? 'text-rose-400 border-rose-400/30 bg-rose-400/10' : 'text-indigo-400 border-indigo-400/30 bg-indigo-400/10'
+              }`}>
+                Lvl: {latestDump.anxietyLevel}
+              </span>
             </div>
-            <span className={`text-[9px] font-mono uppercase px-1.5 py-0.5 rounded-full border ${
-              latestDump.anxietyScore > 7 ? 'text-rose-400 border-rose-400/30 bg-rose-400/10' : 'text-indigo-400 border-indigo-400/30 bg-indigo-400/10'
-            }`}>
-              Lvl: {latestDump.anxietyLevel}
-            </span>
+            
+            <p className={`text-[11px] text-slate-300 italic leading-relaxed ${isSummaryExpanded ? '' : 'line-clamp-2'}`}>
+              "{latestDump.summary}"
+            </p>
+            
+            <div className="flex items-center justify-between mt-3 gap-2">
+              {latestDump.summary.length > 100 ? (
+                <button 
+                  onClick={() => setIsSummaryExpanded(!isSummaryExpanded)}
+                  className="text-[10px] text-indigo-400 hover:text-indigo-300 flex items-center gap-1 font-medium"
+                >
+                  {isSummaryExpanded ? 'Sembunyikan' : 'Baca Selengkapnya'}
+                </button>
+              ) : (
+                <div></div>
+              )}
+              <button 
+                onClick={onOpenBrainDump}
+                className="text-[10px] py-1.5 px-3 bg-indigo-500/20 text-indigo-300 rounded hover:bg-indigo-500/30 transition-colors flex items-center gap-1 font-medium"
+              >
+                Buka Modal
+              </button>
+            </div>
           </div>
         )}
         
