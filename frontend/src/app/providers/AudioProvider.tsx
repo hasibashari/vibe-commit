@@ -65,8 +65,24 @@ export function AudioProvider({ children }: { children: ReactNode }) {
         ctx.resume();
       }
 
-      if (audioRef.current && !isMutedRef.current) {
-        audioRef.current.play().catch(() => {});
+      const audio = audioRef.current;
+      if (audio && !isMutedRef.current) {
+        audio.play().catch(() => {});
+        // Jika volume masih 0 atau 1 (belum di-fade in), lakukan manual fade in
+        if (audio.volume === 1 || audio.volume === 0) {
+           audio.volume = 0;
+           let v = 0;
+           const interval = setInterval(() => {
+             v += 0.02;
+             if (v >= 0.15) { 
+               v = 0.15;
+               audio.volume = v;
+               clearInterval(interval);
+             } else {
+               audio.volume = v;
+             }
+           }, 100);
+        }
       }
       
       document.removeEventListener('click', unlockAudio);
@@ -162,7 +178,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   };
 
   const playVictorySound = () => {
-    if (isMuted) return;
+    if (isMuted || !isUnlockedRef.current) return;
     try {
       const audioCtx = getAudioContext();
       if (!audioCtx) return;
@@ -190,7 +206,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   };
 
   const playLevelUpSound = () => {
-    if (isMuted) return;
+    if (isMuted || !isUnlockedRef.current) return;
     try {
       const audioCtx = getAudioContext();
       if (!audioCtx) return;
