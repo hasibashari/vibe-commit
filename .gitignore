@@ -3,4 +3,3 @@ node_modules
 *.db
 dist
 firebase-applet-config.json
-firebase-blueprint.json
