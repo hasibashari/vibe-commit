@@ -2,9 +2,11 @@ import { create } from 'zustand';
 import type { Goal } from '../shared/types/goal';
 import type { UserStats } from '../shared/types/user';
 import { BurnoutPrediction, calculateStochasticNudges, analyzeBurnoutRisk } from '../shared/services/analyticsService';
-import { fetchDashboardData, updateProfileData, resetProfileData, updateSandboxData, buyItemAPI } from '../features/dashboard/services/dashboardApi';
+import { fetchDashboardData, updateProfileData, resetProfileData, updateSandboxData, buyItemAPI, deleteAccountAPI } from '../features/dashboard/services/dashboardApi';
 import { calculateRPGStats, getCompletedIdsToday, calculateAchievements, Achievement } from '../features/dashboard/utils/dashboardUtils';
 import { useToastStore } from './toastStore';
+
+import type { Log } from '../shared/types/log';
 
 interface DashboardStore {
   goals: Goal[];
@@ -23,8 +25,10 @@ interface DashboardStore {
   fetchData: () => Promise<void>;
   updateProfile: (data: Partial<UserStats>, silent?: boolean) => Promise<void>;
   resetProfile: () => Promise<void>;
+  deleteAccount: () => Promise<void>;
   updateSandbox: (payload: { hp?: number | null; mana?: number | null; level?: number | null; coins_delta?: number | null }) => Promise<void>;
   buyItem: (itemId: string, cost?: number, overrideCoins?: number | null) => Promise<boolean>;
+  recalculateState: (newGoals?: Goal[], newUser?: Partial<UserStats>) => void;
 }
 
 export const useDashboardStore = create<DashboardStore>((set, get) => ({
@@ -47,9 +51,8 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
       set({ isLoading: true });
       const { goalsWithCounts, dumpsData, userData } = await fetchDashboardData();
       
-      const allLogs = goalsWithCounts.flatMap(g => (g.logs || []).map((l: any) => ({ ...l, goal_id: g.id })));
-      
-      const calculatedUser = calculateRPGStats(allLogs, userData);
+      const allLogs = goalsWithCounts.flatMap(g => (g.logs || []).map((l: Partial<Log>) => ({ ...l, goal_id: g.id })));
+      const calculatedUser = calculateRPGStats(allLogs, userData, goalsWithCounts);
       
       set({
         goals: goalsWithCounts,
@@ -71,14 +74,31 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
     }
   },
 
+  recalculateState: (newGoals?: Goal[], newUser?: Partial<UserStats>) => {
+    const { goals: currentGoals, user: currentUser } = get();
+    const updatedGoals = newGoals || currentGoals;
+    
+    const allLogs = updatedGoals.flatMap(g => (g.logs || []).map((l: Partial<Log>) => ({ ...l, goal_id: g.id })));
+    const calculatedUser = calculateRPGStats(allLogs, newUser || currentUser, updatedGoals);
+    
+    set({
+      goals: updatedGoals,
+      recentlyCompletedIds: getCompletedIdsToday(updatedGoals),
+      nudge: calculateStochasticNudges(allLogs) || null,
+      burnoutMonitor: analyzeBurnoutRisk(allLogs, updatedGoals),
+      user: calculatedUser,
+      achievements: calculateAchievements(allLogs, calculatedUser.level)
+    });
+  },
+
   updateProfile: async (data, silent) => {
     const { toast } = useToastStore.getState();
     try {
       const updatedUser = await updateProfileData(undefined, data);
       
       const { goals, user } = get();
-      const allLogs = goals.flatMap(g => (g.logs || []).map((l: any) => ({ ...l, goal_id: g.id })));
-      const newStats = calculateRPGStats(allLogs, { ...user, ...updatedUser });
+      const allLogs = goals.flatMap(g => (g.logs || []).map((l: Partial<Log>) => ({ ...l, goal_id: g.id })));
+      const newStats = calculateRPGStats(allLogs, { ...user, ...updatedUser }, goals);
       
       set({ user: newStats });
       if (!silent) toast({ title: "Profil Disimpan", type: 'success' });
@@ -107,6 +127,26 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
     }
   },
 
+  deleteAccount: async () => {
+    const { toast } = useToastStore.getState();
+    try {
+      await deleteAccountAPI();
+      localStorage.removeItem('hasCompletedOnboarding_v3');
+      useToastStore.getState().toast({ title: "Akun Dihapus", description: "Selamat tinggal!.", type: 'info' });
+      // To ensure Auth Store resets as well, you'd ideally call resetOnboarding(),
+      // but since deleting an account triggers onAuthStateChanged which sets user to null
+      // it might be enough to just clear the localStorage, and optionally window.location.reload()
+      // to ensure all stores are fully clean. Let's do a reload to be completely safe after account deletion.
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Gagal menghapus akun";
+      toast({ title: msg, type: 'error' });
+      throw e;
+    }
+  },
+
   updateSandbox: async (payload) => {
     try {
       const { user, goals } = get();
@@ -128,13 +168,14 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
       const { user, goals } = get();
       const updatedUser = await buyItemAPI(user.id, itemId);
       
-      const allLogs = goals.flatMap(g => (g.logs || []).map((l: any) => ({ ...l, goal_id: g.id })));
-      set({ user: calculateRPGStats(allLogs, { ...user, ...updatedUser }) });
+      const allLogs = goals.flatMap(g => (g.logs || []).map((l: Partial<Log>) => ({ ...l, goal_id: g.id })));
+      set({ user: calculateRPGStats(allLogs, { ...user, ...updatedUser }, goals) });
       
       toast({ title: "Pembelian Berhasil", type: 'success' });
       return true;
-    } catch (e: any) {
-      toast({ title: e.message || "Gagal membeli item", type: 'error' });
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Gagal membeli item";
+      toast({ title: msg, type: 'error' });
       return false;
     }
   }

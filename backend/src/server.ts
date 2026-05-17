@@ -5,17 +5,10 @@ import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import path from 'path';
 import { createServer as createViteServer } from 'vite';
-import { initDb } from './db/database.js';
 import { ZodError } from 'zod';
+import { requireAuth } from './middlewares/auth.middleware.js';
 
-import userRoutes from './modules/user/user.routes.js';
-import questRoutes from './modules/quest/quest.routes.js';
-import logRoutes from './modules/quest/log.routes.js';
-import brainDumpRoutes from './modules/brain-dump/brain-dump.routes.js';
 import aiRoutes from './modules/ai/ai.routes.js';
-
-// Initialize schema
-initDb();
 
 async function startServer() {
   const app = express();
@@ -44,15 +37,12 @@ async function startServer() {
   app.use(morgan('dev', {
     skip: (req) => !req.url.startsWith('/api')
   }));
-  app.use(express.json({ limit: '1mb' })); // Reduced from 10mb for security
+  app.use(express.json({ limit: '1mb' }));
   app.use(express.urlencoded({ extended: true, limit: '1mb' }));
   app.use('/api/', apiLimiter);
 
   // Use Modules
-  app.use('/api/user', userRoutes);
-  app.use('/api/goals', questRoutes);
-  app.use('/api/logs', logRoutes);
-  app.use('/api/brain-dump', brainDumpRoutes);
+  app.use('/api/', requireAuth);
   app.use('/api/ai', aiRoutes);
 
   // Global Error Handler

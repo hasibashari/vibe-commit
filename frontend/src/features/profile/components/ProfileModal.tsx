@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Save, Trophy, Sword, Star, Crown, Swords, Shield, X, Heart, Zap, Lock, Palette, Monitor } from 'lucide-react';
 import { Achievement } from '../../dashboard/utils/dashboardUtils';
-import { useDashboardContext } from '../../../app/providers/DashboardProvider';
+import { useDashboardStore } from '../../../store/dashboardStore';
 import { cn } from '../../../shared/utils/cn';
 import { Modal } from '../../../shared/components/Modal';
 import { Input } from '../../../shared/components/Input';
@@ -22,7 +22,7 @@ interface ProfileModalProps {
 export const ProfileModal: React.FC<ProfileModalProps> = ({ 
   isOpen, onClose, user, achievements = [], onSaveProfile, coins = 0
 }) => {
-  const { buyItem } = useDashboardContext();
+  const { buyItem } = useDashboardStore();
   const [name, setName] = useState(user?.name || '');
   const [title, setTitle] = useState(user?.title || '');
   const [avatarColor, setAvatarColor] = useState(user?.avatar_color || 'indigo');

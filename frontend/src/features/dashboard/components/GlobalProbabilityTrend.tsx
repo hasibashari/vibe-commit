@@ -36,14 +36,14 @@ export function GlobalProbabilityTrend({ goals }: GlobalProbabilityTrendProps) {
       // Calculate daily shift
       if (dayLogs.length > 0) {
         const totalWeight = dayLogs.reduce((acc, log) => acc + log.weight, 0);
-        // Increase probability asymptotically towards 99% (never absolute 100%)
-        const growth = totalWeight * 2;
-        currentProbability = Math.min(99.0, currentProbability + growth * ((99.0 - currentProbability) / 100));
+        // Respond faster to momentum: growth is proportionally scaled
+        const growth = totalWeight * 15;
+        currentProbability = Math.min(99.0, currentProbability + growth * ((100.0 - currentProbability) / 100));
       } else {
-        // Decay towards baseline 1% (never absolute 0%)
+        // Decay towards baseline 1%
         if (currentProbability > 1.0) {
-          // Soft decay: decay slows down as it approaches 1%
-          const decay = Math.max(0.5, (currentProbability - 1.0) * 0.1); 
+          // Decay faster at the top, slower at the bottom
+          const decay = Math.max(0.5, (currentProbability - 1.0) * 0.15); 
           currentProbability = Math.max(1.0, currentProbability - decay);
         }
       }

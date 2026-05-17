@@ -1,5 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { chatWithAI } from '../../../shared/services/aiService';
+import { useDashboardStore } from '../../../store/dashboardStore';
+import { useToastStore } from '../../../store/toastStore';
 
 import type { Goal } from '../../../shared/types/goal';
 import type { UserStats } from '../../../shared/types/user';
@@ -20,6 +22,9 @@ export function useAIChat(isOpen: boolean, user: UserStats, goals?: Goal[]) {
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  const updateProfile = useDashboardStore(state => state.updateProfile);
+  const toast = useToastStore(state => state.toast);
 
   useEffect(() => {
     if (messages.length > 0) {
@@ -41,6 +46,16 @@ export function useAIChat(isOpen: boolean, user: UserStats, goals?: Goal[]) {
 
   const handleSend = useCallback(async () => {
     if (!input.trim() || isTyping) return;
+    
+    // Zero-Mana Exploit Protection
+    if ((user?.mana ?? 0) < 5) {
+      toast({
+        title: "Mana Tidak Cukup",
+        description: "Kamu butuh minimal 5 Mana untuk berbicara dengan AI.",
+        type: 'error'
+      });
+      return;
+    }
 
     const userMessage = input.trim();
     setInput('');
@@ -49,6 +64,9 @@ export function useAIChat(isOpen: boolean, user: UserStats, goals?: Goal[]) {
     setIsTyping(true);
 
     try {
+      // Deduct Mana
+      await updateProfile({ mana: Math.max(0, (user.mana || 0) - 5) }, true);
+
       const activeGoals = goals?.filter(g => g.status !== 'completed').map(g => g.title).join(', ') || 'Belum ada quest aktif.';
       
       const response = await chatWithAI(newMessages, {
@@ -62,10 +80,12 @@ export function useAIChat(isOpen: boolean, user: UserStats, goals?: Goal[]) {
     } catch (error) {
       console.error(error);
       setMessages([...newMessages, { role: 'model', content: 'Maaf, sistemku sedang nge-lag. Bisa diulangi?' }]);
+      // Refund Mana on failure
+      await updateProfile({ mana: (user.mana || 0) }, true);
     } finally {
       setIsTyping(false);
     }
-  }, [input, isTyping, messages, user, goals]);
+  }, [input, isTyping, messages, user, goals, updateProfile, toast]);
 
   const clearChat = useCallback(() => {
     setMessages([

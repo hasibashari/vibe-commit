@@ -1,17 +1,19 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Shield, BrainCircuit, Target, ArrowRight, Zap, Stars } from 'lucide-react';
-import { Button } from '../../../shared/components/Button';
+import { Shield, BrainCircuit, Target, ArrowRight, ArrowLeft, Zap, Stars, Fingerprint } from 'lucide-react';
 
 interface FirstTimeOnboardingProps {
-  onComplete: () => void;
+  onComplete?: () => void;
+  onLogin?: () => void;
+  showLoginStep?: boolean;
+  initialStep?: number;
 }
 
-export function FirstTimeOnboarding({ onComplete }: FirstTimeOnboardingProps) {
-  const [step, setStep] = useState(0);
+export function FirstTimeOnboarding({ onComplete, onLogin, showLoginStep = false, initialStep = 0 }: FirstTimeOnboardingProps) {
+  const [step, setStep] = useState(initialStep);
   const [isTyping, setIsTyping] = useState(true);
 
-  const steps = [
+  const baseSteps = [
     {
       title: "SYSTEM AWAKENING",
       text: "Selamat datang di Nexus. Ini bukan sekadar to-do list biasa, ini adalah sistem pelacak progres hidupmu yang dirancang layaknya RPG.",
@@ -38,7 +40,19 @@ export function FirstTimeOnboarding({ onComplete }: FirstTimeOnboardingProps) {
     }
   ];
 
-  // Auto typing effect for text could be added, but for now simple fade is cleaner and less annoying.
+  const steps = showLoginStep 
+    ? [
+        ...baseSteps,
+        {
+          title: "IDENTIFICATION",
+          text: "Otentikasi dibutuhkan untuk mengakses Nexus Dashboard dan menyinkronkan progres ke neural cloud.",
+          icon: <Fingerprint className="w-12 h-12 text-blue-400 mb-4 drop-shadow-[0_0_15px_rgba(96,165,250,0.6)]" />,
+          highlight: "Otentikasi",
+          isLogin: true
+        }
+      ]
+    : baseSteps;
+
   useEffect(() => {
     setIsTyping(true);
     const t = setTimeout(() => setIsTyping(false), 800);
@@ -49,10 +63,19 @@ export function FirstTimeOnboarding({ onComplete }: FirstTimeOnboardingProps) {
     if (step < steps.length - 1) {
       setStep(prev => prev + 1);
     } else {
-      // Finish onboarding
-      onComplete();
+      if (onComplete) onComplete();
     }
   };
+
+  const handleBack = () => {
+    if (step > 0) {
+      setStep(prev => prev - 1);
+    } else if (step === steps.length - 1 && initialStep === steps.length - 1) {
+        // if started exactly on login, no back possible
+    }
+  };
+
+  const isCurrentLogin = steps[step].isLogin;
 
   return (
     <div className="fixed inset-0 z-999 flex items-center justify-center p-4 sm:p-6 bg-surface/95 backdrop-blur-xl overflow-hidden font-sans">
@@ -66,16 +89,12 @@ export function FirstTimeOnboarding({ onComplete }: FirstTimeOnboardingProps) {
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="w-full max-w-md relative z-10"
+        className="w-full max-w-sm sm:max-w-md md:max-w-lg relative z-10 flex flex-col items-center"
       >
-        <div className="bg-slate-900/80 border border-slate-700/50 shadow-[0_0_50px_rgba(0,0,0,0.5),inset_0_1px_rgba(255,255,255,0.1)] rounded-2xl p-8 sm:p-10 relative overflow-hidden">
-           
-           {/* Decorative corner borders */}
-           <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-accent-500/30 rounded-tl-xl"></div>
-           <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/30 rounded-tr-xl"></div>
-           <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-accent-500/30 rounded-bl-xl"></div>
-           <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-accent-500/30 rounded-br-xl"></div>
+        <div className="text-4xl sm:text-5xl font-black mb-10 text-center text-white">Vibe<span className="text-accent-500">Commit</span></div>
 
+        <div className="w-full relative overflow-hidden flex flex-col items-center min-h-[350px] sm:min-h-[300px]">
+        
           <AnimatePresence mode="wait">
             <motion.div 
               key={step}
@@ -83,44 +102,46 @@ export function FirstTimeOnboarding({ onComplete }: FirstTimeOnboardingProps) {
               animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
               exit={{ opacity: 0, x: -20, filter: 'blur(4px)' }}
               transition={{ duration: 0.4 }}
-              className="flex flex-col items-center text-center mt-4"
+              className="flex flex-col items-center text-center w-full absolute inset-0"
             >
               <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.2, type: "spring", stiffness: 200, damping: 15 }}
+                className="mb-6 flex justify-center items-center h-16"
               >
                 {steps[step].icon}
               </motion.div>
               
-              <h2 className="font-display text-2xl sm:text-3xl font-black text-white tracking-widest uppercase mb-4 mt-2">
+              <h2 className="text-xl sm:text-2xl font-black text-white tracking-widest uppercase mb-4 h-14 flex items-center justify-center">
                 {steps[step].title}
               </h2>
               
-              <p className="text-slate-400 text-sm sm:text-base leading-relaxed mb-8 min-h-[80px]">
+              <p className="text-sm sm:text-base font-mono text-slate-400 w-full text-center mb-8 px-2 sm:px-6">
                 {steps[step].text.split(' ').map((word, i) => (
-                  <span key={i} className={steps[step].highlight.includes(word.replace(/[^a-zA-Z]/g, '')) ? 'text-accent-300 font-semibold' : ''}>
+                  <span key={i} className={steps[step].highlight.includes(word.replace(/[^a-zA-Z]/g, '')) ? 'text-accent-300 font-bold' : ''}>
                     {word}{' '}
                   </span>
                 ))}
               </p>
             </motion.div>
           </AnimatePresence>
+        </div>
 
-          {/* Stepper & Action */}
-          <div className="flex flex-col items-center gap-8 mt-4">
-            <div className="flex gap-2">
-              {steps.map((_, i) => (
-                <div 
-                  key={i} 
-                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                    i === step 
-                      ? 'bg-accent-400 w-6 shadow-[0_0_8px_rgba(var(--theme-400-rgb),0.8)]' 
-                      : i < step ? 'bg-accent-900' : 'bg-slate-800'
-                  }`}
-                />
-              ))}
-            </div>
+        {/* Stepper & Action */}
+        <div className="flex flex-col items-center w-full mt-auto relative z-20">
+          <div className="flex gap-2 mb-8">
+            {steps.map((_, i) => (
+              <div 
+                key={i} 
+                className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                  i === step 
+                    ? 'bg-accent-500 w-6 shadow-[0_0_8px_rgba(var(--theme-500-rgb),0.8)]' 
+                    : i < step ? 'bg-accent-900' : 'bg-slate-800'
+                }`}
+              />
+            ))}
+          </div>
 
             <div className="w-full flex flex-col gap-3">
               <Button 
@@ -153,8 +174,8 @@ export function FirstTimeOnboarding({ onComplete }: FirstTimeOnboardingProps) {
               )}
             </div>
           </div>
-
         </div>
+
       </motion.div>
     </div>
   );
