@@ -22,7 +22,7 @@ export const CharacterSprite: React.FC<CharacterSpriteProps> = ({ imageUrl }) =>
         <img 
           src={imageUrl} 
           alt="Custom Character" 
-          className="max-w-full max-h-full object-contain drop-shadow-[0_0_15px_rgba(34,211,238,0.2)]" 
+          className="max-w-full max-h-full object-contain drop-shadow-[0_0_15px_rgba(var(--theme-400-rgb),0.2)]" 
           referrerPolicy="no-referrer"
         />
       ) : (

@@ -22,19 +22,19 @@ export function BottomBar({ activeTab, setActiveTab, onOpenBrainDump, onNewQuest
         </Button>
         
         <Button variant="ghost" onClick={() => setActiveTab('dashboard')} className="!p-0 !bg-transparent hover:!bg-transparent flex flex-col items-center justify-center w-[18%] !h-full gap-1 group relative rounded-none">
-          <div className={`absolute -top-px w-6 h-0.5 rounded-b-full transition-all duration-300 ${activeTab === 'dashboard' ? 'bg-cyan-500 shadow-[0_0_10px_rgba(34,211,238,0.8)]' : 'bg-transparent'}`} />
-          <BarChart3 className={`w-[22px] h-[22px] transition-all duration-300 ${activeTab === 'dashboard' ? 'text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.8)] -translate-y-1' : 'text-slate-500 group-hover:text-slate-400'}`} />
-          <span className={`text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-all duration-300 absolute bottom-1 ${activeTab === 'dashboard' ? 'opacity-100 text-cyan-300' : 'opacity-0 text-slate-500'}`}>Hub</span>
+          <div className={`absolute -top-px w-6 h-0.5 rounded-b-full transition-all duration-300 ${activeTab === 'dashboard' ? 'bg-accent-500 shadow-[0_0_10px_rgba(var(--theme-400-rgb),0.8)]' : 'bg-transparent'}`} />
+          <BarChart3 className={`w-[22px] h-[22px] transition-all duration-300 ${activeTab === 'dashboard' ? 'text-accent-400 drop-shadow-[0_0_8px_rgba(var(--theme-400-rgb),0.8)] -translate-y-1' : 'text-slate-500 group-hover:text-slate-400'}`} />
+          <span className={`text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-all duration-300 absolute bottom-1 ${activeTab === 'dashboard' ? 'opacity-100 text-accent-300' : 'opacity-0 text-slate-500'}`}>Hub</span>
         </Button>
 
         <div className="flex flex-col items-center justify-center w-[20%] group relative z-10">
           <div className="absolute inset-x-0 -top-10 flex justify-center">
             <div className="relative">
-              <div className="absolute inset-0 bg-cyan-500/20 rounded-full blur-xl animate-pulse group-hover:bg-cyan-500/40 transition-all duration-300"></div>
+              <div className="absolute inset-0 bg-accent-500/20 rounded-full blur-xl animate-pulse group-hover:bg-accent-500/40 transition-all duration-300"></div>
               <Button 
                 variant="primary"
                 onClick={onOpenBrainDump}
-                className="!p-0 relative w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-cyan-400 to-emerald-500 text-slate-950 hover:from-cyan-300 hover:to-emerald-400 shadow-[0_4px_20px_rgba(6,182,212,0.5)] active:scale-95 transition-transform border-[3px] border-slate-900 overflow-hidden group/dump !rounded-full shrink-0"
+                className="!p-0 relative w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-accent-400 to-emerald-500 text-slate-950 hover:from-accent-300 hover:to-emerald-400 shadow-[0_4px_20px_rgba(var(--theme-500-rgb),0.5)] active:scale-95 transition-transform border-[3px] border-slate-900 overflow-hidden group/dump !rounded-full shrink-0"
               >
                 <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20 mix-blend-overlay pointer-events-none"></div>
                 <BrainCircuit className="w-6 h-6 stroke-[2]" />

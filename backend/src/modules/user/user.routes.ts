@@ -19,6 +19,7 @@ router.put('/:id', (req, res, next) => {
       name: z.string().optional(),
       title: z.string().optional(),
       avatar_color: z.string().optional(),
+      avatar_icon: z.string().optional(),
       custom_main_bg: z.string().nullable().optional(),
       custom_char_bg: z.string().nullable().optional(),
       custom_character: z.string().nullable().optional(),
@@ -32,6 +33,7 @@ router.put('/:id', (req, res, next) => {
       SET name = COALESCE(?, name), 
           title = COALESCE(?, title),
           avatar_color = COALESCE(?, avatar_color),
+          avatar_icon = COALESCE(?, avatar_icon),
           custom_main_bg = COALESCE(?, custom_main_bg),
           custom_char_bg = COALESCE(?, custom_char_bg),
           custom_character = COALESCE(?, custom_character),
@@ -44,6 +46,7 @@ router.put('/:id', (req, res, next) => {
       parsed.name ?? null, 
       parsed.title ?? null, 
       parsed.avatar_color ?? null, 
+      parsed.avatar_icon ?? null,
       parsed.custom_main_bg ?? null, 
       parsed.custom_char_bg ?? null, 
       parsed.custom_character ?? null, 
@@ -60,7 +63,7 @@ router.put('/:id', (req, res, next) => {
 
 router.post('/:id/buy-item', (req, res, next) => {
   try {
-    const { itemId, cost } = req.body;
+    const { itemId, cost, overrideCoins } = req.body;
     const userId = req.params.id;
     
     db.transaction(() => {
@@ -71,12 +74,16 @@ router.post('/:id/buy-item', (req, res, next) => {
       const totalLogs: any = db.prepare('SELECT COUNT(*) as count FROM quest_logs WHERE goal_id IN (SELECT id FROM goals WHERE user_id = ?)').get(userId);
       const logCount = totalLogs ? totalLogs.count : 0;
       const totalEarned = (user.level * 100) + (logCount * 10);
-      const availableCoins = totalEarned - (user.spent_coins || 0);
+      const actualCoins = totalEarned - (user.spent_coins || 0);
+      const availableCoins = overrideCoins !== undefined && overrideCoins !== null ? overrideCoins : actualCoins;
 
       if (availableCoins < cost) {
         throw new Error('Insufficient coins');
       }
 
+      // If they used overidden coins, adjust spent_coins differently?
+      // Not actually necessary, we can just subtract the cost, even if it brings spent_coins very high.
+      // But let's just use regular spent_coins addition.
       let newHp = user.hp;
       let newMana = user.mana;
       let newUnlockedItems = [];
@@ -123,6 +130,45 @@ router.post('/:id/buy-item', (req, res, next) => {
     
     res.json(db.prepare('SELECT * FROM users WHERE id = ?').get(userId));
   } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+router.post('/:id/sandbox', (req, res) => {
+  const userId = req.params.id;
+  const { hp, mana, level, coins_delta } = req.body;
+  try {
+    const user: any = db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    let queryArgs: (number|string)[] = [];
+    let setClauses = [];
+    
+    if (hp !== undefined && hp !== null) {
+      setClauses.push('hp = ?');
+      queryArgs.push(hp);
+    }
+    if (mana !== undefined && mana !== null) {
+      setClauses.push('mana = ?');
+      queryArgs.push(mana);
+    }
+    if (level !== undefined && level !== null) {
+      setClauses.push('level = ?');
+      queryArgs.push(level);
+    }
+    if (coins_delta !== undefined && coins_delta !== null) {
+      setClauses.push('spent_coins = spent_coins - ?'); // To add coins, we subtract from spent_coins
+      queryArgs.push(coins_delta);
+    }
+    
+    if (setClauses.length > 0) {
+      queryArgs.push(userId);
+      db.prepare(`UPDATE users SET ${setClauses.join(', ')} WHERE id = ?`).run(...queryArgs);
+    }
+    res.json(db.prepare('SELECT * FROM users WHERE id = ?').get(userId));
+  } catch(err: any) {
     res.status(400).json({ error: err.message });
   }
 });

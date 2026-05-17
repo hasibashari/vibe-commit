@@ -21,7 +21,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             "w-full h-11 bg-slate-900 border text-sm rounded-lg px-4 focus:outline-none transition-colors placeholder:text-slate-600",
             error 
               ? "border-rose-500/50 focus:border-rose-500 text-rose-500" 
-              : "border-slate-800 text-slate-200 focus:border-cyan-500/50",
+              : "border-slate-800 text-slate-200 focus:border-accent-500/50",
             className
           )}
           {...props}
@@ -48,7 +48,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, React.TextareaHTML
             "w-full min-h-[100px] bg-slate-900 border text-sm rounded-lg p-4 focus:outline-none transition-colors placeholder:text-slate-600 resize-y",
             error 
               ? "border-rose-500/50 focus:border-rose-500 text-rose-500" 
-              : "border-slate-800 text-slate-200 focus:border-cyan-500/50",
+              : "border-slate-800 text-slate-200 focus:border-accent-500/50",
             className
           )}
           {...props}

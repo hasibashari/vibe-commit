@@ -19,11 +19,11 @@ export const GroundLayer: React.FC = () => {
           {/* We use a repeating block texture setup that feels like an RPG grid */}
           {Array.from({ length: 40 }).map((_, i) => (
             <div key={i} className="flex-none w-[30px] h-8 relative">
-              <div className="absolute top-0 w-full h-[2px] bg-cyan-900/40" />
-              <div className="absolute top-[2px] w-[2px] h-full bg-cyan-900/30" />
+              <div className="absolute top-0 w-full h-[2px] bg-accent-900/40" />
+              <div className="absolute top-[2px] w-[2px] h-full bg-accent-900/30" />
               <div className="absolute top-[14px] w-full h-[1px] bg-slate-800/50" />
               {i % 3 === 0 && (
-                <div className="absolute top-[6px] left-[6px] w-[4px] h-[2px] bg-cyan-700/50 rounded" />
+                <div className="absolute top-[6px] left-[6px] w-[4px] h-[2px] bg-accent-700/50 rounded" />
               )}
               {i % 5 === 1 && (
                 <div className="absolute top-[20px] left-[15px] w-[6px] h-[2px] bg-emerald-700/40 rounded" />

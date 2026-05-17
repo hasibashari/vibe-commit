@@ -15,7 +15,7 @@ export function FirstTimeOnboarding({ onComplete }: FirstTimeOnboardingProps) {
     {
       title: "SYSTEM AWAKENING",
       text: "Selamat datang di Nexus. Ini bukan sekadar to-do list biasa, ini adalah sistem pelacak progres hidupmu yang dirancang layaknya RPG.",
-      icon: <Zap className="w-12 h-12 text-cyan-400 mb-4 drop-shadow-[0_0_15px_rgba(34,211,238,0.6)]" />,
+      icon: <Zap className="w-12 h-12 text-accent-400 mb-4 drop-shadow-[0_0_15px_rgba(var(--theme-400-rgb),0.6)]" />,
       highlight: "RPG"
     },
     {
@@ -58,7 +58,7 @@ export function FirstTimeOnboarding({ onComplete }: FirstTimeOnboardingProps) {
     <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 sm:p-6 bg-[#0A0C10]/95 backdrop-blur-xl overflow-hidden font-sans">
       {/* Background visual effects */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden flex items-center justify-center">
-        <div className="w-[800px] h-[800px] bg-gradient-to-tr from-cyan-900/20 via-transparent to-rose-900/20 rounded-full blur-3xl opacity-50 animate-pulse"></div>
+        <div className="w-[800px] h-[800px] bg-gradient-to-tr from-accent-900/20 via-transparent to-rose-900/20 rounded-full blur-3xl opacity-50 animate-pulse"></div>
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03]"></div>
       </div>
 
@@ -71,10 +71,10 @@ export function FirstTimeOnboarding({ onComplete }: FirstTimeOnboardingProps) {
         <div className="bg-slate-900/80 border border-slate-700/50 shadow-[0_0_50px_rgba(0,0,0,0.5),inset_0_1px_rgba(255,255,255,0.1)] rounded-2xl p-8 sm:p-10 relative overflow-hidden">
            
            {/* Decorative corner borders */}
-           <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-cyan-500/30 rounded-tl-xl"></div>
-           <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-cyan-500/30 rounded-tr-xl"></div>
-           <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-cyan-500/30 rounded-bl-xl"></div>
-           <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-cyan-500/30 rounded-br-xl"></div>
+           <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-accent-500/30 rounded-tl-xl"></div>
+           <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/30 rounded-tr-xl"></div>
+           <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-accent-500/30 rounded-bl-xl"></div>
+           <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-accent-500/30 rounded-br-xl"></div>
 
           <AnimatePresence mode="wait">
             <motion.div 
@@ -99,7 +99,7 @@ export function FirstTimeOnboarding({ onComplete }: FirstTimeOnboardingProps) {
               
               <p className="text-slate-400 text-sm sm:text-base leading-relaxed mb-8 min-h-[80px]">
                 {steps[step].text.split(' ').map((word, i) => (
-                  <span key={i} className={steps[step].highlight.includes(word.replace(/[^a-zA-Z]/g, '')) ? 'text-cyan-300 font-semibold' : ''}>
+                  <span key={i} className={steps[step].highlight.includes(word.replace(/[^a-zA-Z]/g, '')) ? 'text-accent-300 font-semibold' : ''}>
                     {word}{' '}
                   </span>
                 ))}
@@ -115,8 +115,8 @@ export function FirstTimeOnboarding({ onComplete }: FirstTimeOnboardingProps) {
                   key={i} 
                   className={`w-2 h-2 rounded-full transition-all duration-300 ${
                     i === step 
-                      ? 'bg-cyan-400 w-6 shadow-[0_0_8px_rgba(34,211,238,0.8)]' 
-                      : i < step ? 'bg-cyan-900' : 'bg-slate-800'
+                      ? 'bg-accent-400 w-6 shadow-[0_0_8px_rgba(var(--theme-400-rgb),0.8)]' 
+                      : i < step ? 'bg-accent-900' : 'bg-slate-800'
                   }`}
                 />
               ))}
@@ -129,14 +129,14 @@ export function FirstTimeOnboarding({ onComplete }: FirstTimeOnboardingProps) {
                 disabled={isTyping}
                 className="w-full py-4 relative group overflow-hidden"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-cyan-600/20 to-emerald-600/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-accent-600/20 to-emerald-600/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 <div className="absolute top-0 left-0 w-full h-[2px] bg-white opacity-20 -translate-y-4 group-hover:animate-scanline"></div>
 
                 <span className="relative flex items-center gap-2">
                   {step === steps.length - 1 ? (
                     <><Stars className="w-4 h-4 text-amber-400" /> Mulai Petualangan</>
                   ) : (
-                    <>Selanjutnya <ArrowRight className="w-4 h-4 text-cyan-400" /></>
+                    <>Selanjutnya <ArrowRight className="w-4 h-4 text-accent-400" /></>
                   )}
                 </span>
               </Button>

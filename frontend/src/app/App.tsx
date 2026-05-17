@@ -42,7 +42,7 @@ export default function App() {
   const {
     goals, setGoals, user, achievements, latestDump, burnoutMonitor,
     expPopups, recentlyCompletedIds, updateProfile, resetProfile, nudge,
-    isLoading
+    isLoading, updateSandbox
   } = useDashboardContext();
 
   const {
@@ -135,10 +135,6 @@ export default function App() {
 
   // --- DEV SANDBOX INJECTION ---
   const [devOverrides, setDevOverrides] = useState<import('../shared/components/DevSandboxPanel').DevOverrides>({
-    hp: null,
-    mana: null,
-    level: null,
-    coins: null,
     anxietyScore: null,
     sigmaVariance: null,
     themeVibe: null,
@@ -148,9 +144,6 @@ export default function App() {
 
   const effectiveUser = user ? { ...user } : null;
   if (effectiveUser) {
-    if (devOverrides.hp !== null) effectiveUser.hp = devOverrides.hp;
-    if (devOverrides.mana !== null) effectiveUser.mana = devOverrides.mana;
-    if (devOverrides.level !== null) effectiveUser.level = devOverrides.level;
     if (devOverrides.themeVibe !== null) effectiveUser.theme_vibe = devOverrides.themeVibe;
     if (devOverrides.unlockAllShop) {
       effectiveUser.unlocked_items = JSON.stringify([
@@ -159,7 +152,7 @@ export default function App() {
     }
   }
 
-  const effectiveCoins = devOverrides.coins !== null ? devOverrides.coins : baseCoins;
+  const effectiveCoins = baseCoins;
   const effectiveAnxietyScore = devOverrides.anxietyScore !== null ? devOverrides.anxietyScore : (latestDump?.anxietyScore || 5);
   const effectiveSigmaVariance = devOverrides.sigmaVariance !== null ? devOverrides.sigmaVariance : stats.sigma;
   
@@ -168,16 +161,20 @@ export default function App() {
     : achievements;
   // -----------------------------
 
+  useEffect(() => {
+    const currentTheme = effectiveUser?.theme_vibe || 'midnight';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+  }, [effectiveUser?.theme_vibe]);
 
   if (isLoading) {
     return (
-      <div className="flex h-[100dvh] w-full items-center justify-center bg-[#0A0C10] text-cyan-400">
+      <div className="flex h-[100dvh] w-full items-center justify-center bg-[#0A0C10] text-accent-400">
         <div className="flex flex-col items-center gap-4">
           <svg className="h-10 w-10 animate-spin opacity-75" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
           </svg>
-          <div className="text-xs font-mono uppercase tracking-widest text-cyan-500/70 animate-pulse">Initializing System...</div>
+          <div className="text-xs font-mono uppercase tracking-widest text-accent-500/70 animate-pulse">Initializing System...</div>
         </div>
       </div>
     );
@@ -200,6 +197,7 @@ export default function App() {
             sigmaVariance={effectiveSigmaVariance} 
             customMainBg={effectiveUser.custom_main_bg}
             themeVibe={effectiveUser.theme_vibe}
+            hp={effectiveUser.hp}
           />
         }
         header={<TopBar hp={effectiveUser.hp} mana={effectiveUser.mana} level={effectiveUser.level} exp={effectiveUser.exp} coins={effectiveCoins} user={effectiveUser} onOpenProfile={() => setIsProfileOpen(true)} onOpenSettings={() => setIsSettingsOpen(true)} />}
@@ -283,7 +281,7 @@ export default function App() {
           }
         />
       </MainLayout>
-      <DevSandboxPanel overrides={devOverrides} setOverrides={setDevOverrides} />
+      <DevSandboxPanel overrides={devOverrides} setOverrides={setDevOverrides} user={effectiveUser} sandboxAction={updateSandbox} />
     </>
   );
 }

@@ -10,14 +10,14 @@ export interface ButtonProps extends Omit<HTMLMotionProps<"button">, "ref"> {
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'primary', size = 'md', isLoading, children, disabled, ...props }, ref) => {
-    const baseStyles = "inline-flex items-center justify-center font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-cyan-500 disabled:pointer-events-none disabled:opacity-50";
+    const baseStyles = "inline-flex items-center justify-center font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent-500 disabled:pointer-events-none disabled:opacity-50";
     
     const variants = {
-      primary: "bg-cyan-500 text-black hover:bg-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.15)] hover:shadow-[0_0_20px_rgba(6,182,212,0.3)]",
+      primary: "bg-accent-500 text-black hover:bg-accent-400 shadow-[0_0_15px_rgba(var(--theme-500-rgb),0.15)] hover:shadow-[0_0_20px_rgba(var(--theme-500-rgb),0.3)]",
       secondary: "bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 hover:text-white",
       danger: "bg-rose-500/10 border border-rose-500/20 text-rose-500 hover:bg-rose-500/20 hover:text-rose-400",
       ghost: "text-slate-400 hover:text-white hover:bg-white/5",
-      icon: "bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 hover:text-cyan-400",
+      icon: "bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 hover:text-accent-400",
     };
 
     const sizes = {

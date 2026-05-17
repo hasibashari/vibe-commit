@@ -34,12 +34,12 @@ export const AIChatModal: React.FC<AIChatModalProps> = ({ isOpen, onClose, user,
     >
       <div className="flex justify-between items-center px-4 py-3 border-b border-white/5 bg-slate-800/20 shrink-0">
         <div className="flex items-center gap-2">
-          <div className="p-1.5 bg-cyan-500/10 rounded-md">
-            <Sparkles className="w-4 h-4 text-cyan-400" />
+          <div className="p-1.5 bg-accent-500/10 rounded-md">
+            <Sparkles className="w-4 h-4 text-accent-400" />
           </div>
           <div>
             <h3 className="font-display font-bold text-slate-200">AI Companion</h3>
-            <p className="text-xs text-cyan-400 font-mono tracking-wider">ONLINE</p>
+            <p className="text-xs text-accent-400 font-mono tracking-wider">ONLINE</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -75,9 +75,9 @@ export const AIChatModal: React.FC<AIChatModalProps> = ({ isOpen, onClose, user,
         {isTyping && (
           <div className="flex justify-start">
             <div className="bg-slate-800 border border-slate-700/50 rounded-xl rounded-tl-sm px-4 py-3 flex gap-1 items-center">
-              <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-              <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-              <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce"></div>
+              <div className="w-1.5 h-1.5 bg-accent-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+              <div className="w-1.5 h-1.5 bg-accent-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+              <div className="w-1.5 h-1.5 bg-accent-400 rounded-full animate-bounce"></div>
             </div>
           </div>
         )}
@@ -85,7 +85,7 @@ export const AIChatModal: React.FC<AIChatModalProps> = ({ isOpen, onClose, user,
       </div>
 
       <div className="p-4 border-t border-white/5 bg-slate-900/50 shrink-0">
-        <div className="flex items-end gap-2 bg-slate-800/50 border border-white/5 rounded-xl p-1 focus-within:border-cyan-500/50 focus-within:bg-slate-800/80 transition-colors">
+        <div className="flex items-end gap-2 bg-slate-800/50 border border-white/5 rounded-xl p-1 focus-within:border-accent-500/50 focus-within:bg-slate-800/80 transition-colors">
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}

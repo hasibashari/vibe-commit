@@ -11,7 +11,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
     
     const variants = {
       default: "bg-slate-900/50 border border-slate-800",
-      interactive: "bg-slate-900/50 border border-slate-800 hover:border-cyan-500/30 hover:bg-slate-800/50 transition-colors cursor-pointer",
+      interactive: "bg-slate-900/50 border border-slate-800 hover:border-accent-500/30 hover:bg-slate-800/50 transition-colors cursor-pointer",
       bordered: "bg-transparent border border-white/10",
     };
 

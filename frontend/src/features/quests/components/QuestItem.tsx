@@ -24,7 +24,7 @@ export function QuestItem({ goal, onLog, onEdit, onDrop, isSelected, isCompleted
       transition={{ duration: 0.2 }}
       onClick={onClick}
       className={`group relative p-5 rounded-lg border transition-all cursor-pointer ${
-        isSelected && !isCompleted ? 'bg-cyan-500/5 border-cyan-800' : 'bg-slate-900/30 border-slate-800 hover:border-slate-700'
+        isSelected && !isCompleted ? 'bg-accent-500/5 border-accent-800' : 'bg-slate-900/30 border-slate-800 hover:border-slate-700'
       } ${
         isCompleted ? 'opacity-50 grayscale hover:opacity-80' : ''
       }`}
@@ -37,7 +37,7 @@ export function QuestItem({ goal, onLog, onEdit, onDrop, isSelected, isCompleted
           </div>
           <h3 className={`text-base font-bold tracking-tight transition-colors ${
             isCompleted ? 'line-through text-slate-500' :
-            isSelected ? 'text-cyan-400' : 'text-white'
+            isSelected ? 'text-accent-400' : 'text-white'
           }`}>{goal.title}</h3>
           <p className={`text-xs leading-snug transition-all ${!isSelected ? 'line-clamp-2' : ''} ${isCompleted ? 'text-slate-600' : 'text-slate-500'}`}>
             {goal.description}
@@ -50,7 +50,7 @@ export function QuestItem({ goal, onLog, onEdit, onDrop, isSelected, isCompleted
             disabled={isCompleted}
             className={`w-12 h-12 md:w-10 md:h-10 rounded border flex items-center justify-center transition-all shrink-0 ${
               isCompleted ? 'bg-emerald-500/20 text-emerald-500 border-emerald-500/50 cursor-default' :
-              isSelected ? 'bg-cyan-500 text-black border-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.4)]' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500 hover:border-emerald-400 hover:text-black hover:shadow-[0_0_15px_rgba(16,185,129,0.4)]'
+              isSelected ? 'bg-accent-500 text-black border-accent-400 shadow-[0_0_15px_rgba(var(--theme-500-rgb),0.4)]' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500 hover:border-emerald-400 hover:text-black hover:shadow-[0_0_15px_rgba(16,185,129,0.4)]'
             }`}
           >
             <Check className="w-6 h-6 md:w-5 md:h-5 stroke-[2.5]" />
@@ -73,7 +73,7 @@ export function QuestItem({ goal, onLog, onEdit, onDrop, isSelected, isCompleted
             </div>
             <div className="flex flex-col">
               <span className="text-xs text-slate-600 font-bold uppercase tracking-[0.2em] mb-0.5">Reward / EXP</span>
-              <span className={`text-xs font-mono tabular-nums ${isCompleted ? 'text-slate-600' : 'text-cyan-400'}`}>+{(goal.difficulty * 10).toFixed(0)}</span>
+              <span className={`text-xs font-mono tabular-nums ${isCompleted ? 'text-slate-600' : 'text-accent-400'}`}>+{(goal.difficulty * 10).toFixed(0)}</span>
             </div>
             <div className="flex flex-col">
               <span className="text-xs text-slate-600 font-bold uppercase tracking-[0.2em] mb-0.5">Impact</span>
@@ -85,7 +85,7 @@ export function QuestItem({ goal, onLog, onEdit, onDrop, isSelected, isCompleted
             {!isCompleted && (
                <button 
                 onClick={(e) => { e.stopPropagation(); onEdit(goal); }}
-                className="w-10 h-10 md:w-8 md:h-8 flex items-center justify-center text-slate-500 hover:text-cyan-300 hover:bg-slate-800 rounded transition-colors active:scale-95"
+                className="w-10 h-10 md:w-8 md:h-8 flex items-center justify-center text-slate-500 hover:text-accent-300 hover:bg-slate-800 rounded transition-colors active:scale-95"
                 title="Edit Quest"
               >
                 <Settings2 className="w-4 h-4" />
