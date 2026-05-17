@@ -118,7 +118,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                       key={c.id}
                       onClick={() => setAvatarColor(c.id)}
                       className={`w-10 h-10 rounded-full ${c.hex} flex items-center justify-center ring-2 transition-all ${
-                        avatarColor === c.id ? `${c.ring} ring-offset-2 ring-offset-[#0A0C10] scale-110` : 'ring-transparent opacity-50'
+                        avatarColor === c.id ? `${c.ring} ring-offset-2 ring-offset-surface scale-110` : 'ring-transparent opacity-50'
                       }`}
                     />
                   ))}
@@ -165,7 +165,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                     >
                       <div className={cn(
                         "w-12 h-12 shrink-0 rounded-full flex items-center justify-center shadow-inner",
-                        ach.isUnlocked ? "bg-gradient-to-br from-indigo-500 to-cyan-500 text-white" : "bg-slate-800 text-slate-500"
+                        ach.isUnlocked ? "bg-linear-to-br from-indigo-500 to-cyan-500 text-white" : "bg-slate-800 text-slate-500"
                       )}>
                         {getIcon(ach.icon)}
                       </div>
