@@ -27,7 +27,7 @@ export const DevSandboxPanel: React.FC<DevSandboxPanelProps> = ({ overrides, set
     return null;
   }
 
-  const updateOverride = (key: keyof DevOverrides, value: any) => {
+  const updateOverride = <K extends keyof DevOverrides>(key: K, value: DevOverrides[K]) => {
     setOverrides(prev => ({ ...prev, [key]: value }));
   };
 

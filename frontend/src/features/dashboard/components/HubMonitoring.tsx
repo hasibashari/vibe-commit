@@ -30,7 +30,7 @@ export function HubMonitoring({ goals }: HubMonitoringProps) {
     return {
       allLogs: goals.flatMap(g => g.logs || []),
       totalCompleted: goals.reduce((acc, g) => acc + g.repetition_count, 0),
-      activeExp: Math.floor(goals.reduce((acc, g) => acc + (g.repetition_count > 0 ? (g.difficulty * 10 * g.reward_alpha) : 0), 0)),
+      activeExp: goals.reduce((acc, g) => acc + (g.repetition_count * Math.floor((g.difficulty || 1.0) * 10 * (g.reward_alpha || 0.5))), 0),
       completedTodayCount: completedToday
     };
   }, [goals]);

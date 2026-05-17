@@ -11,7 +11,18 @@ interface VibeEnvironmentProps {
   hp?: number;
 }
 
-const THEMES: Record<string, any> = {
+interface ThemeConfig {
+  bg: string;
+  overlayBase: string;
+  overlayDark: string;
+  vignette: string;
+  hueBase: string;
+  hueDark: string;
+  baseImage: string;
+  glow: string;
+}
+
+const THEMES: Record<string, ThemeConfig> = {
   midnight: {
     bg: 'bg-[#020617]',
     overlayBase: 'from-[#0A0C10]/60 via-[#0A0C10]/20 to-[#0A0C10]',

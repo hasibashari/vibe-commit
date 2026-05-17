@@ -1,3 +1,4 @@
+import { auth } from './firebase';
 export interface AnalyzedQuest {
   title: string;
   description: string;
@@ -14,9 +15,13 @@ export interface BrainDumpAnalysis {
 }
 
 export async function analyzeBrainDump(content: string): Promise<BrainDumpAnalysis> {
+  const token = await auth.currentUser?.getIdToken();
   const res = await fetch('/api/ai/analyze-brain-dump', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
     body: JSON.stringify({ content })
   });
   
@@ -38,9 +43,13 @@ interface AIContext {
 
 export async function chatWithAI(history: { role: 'user' | 'model', content: string }[], context: AIContext): Promise<string> {
   try {
+    const token = await auth.currentUser?.getIdToken();
     const res = await fetch('/api/ai/chat', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
       body: JSON.stringify({ history, context })
     });
     

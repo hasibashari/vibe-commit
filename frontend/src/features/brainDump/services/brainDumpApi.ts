@@ -41,17 +41,17 @@ export const saveBrainDumpApi = async (draftContent: string, analysisResult: Bra
   }
 };
 
-export const saveQuestsFromBrainDumpApi = async (quests: BrainDumpQuest[]) => {
+export const saveQuestsFromBrainDumpApi = async (quests: Partial<BrainDumpQuest & { id: string, reward_alpha: number }>[]) => {
   const user = auth.currentUser;
   if (!user) throw new Error("Not authenticated");
   try {
     await Promise.all(quests.map(res => 
-      setDoc(doc(db, 'goals', crypto.randomUUID()), {
+      setDoc(doc(db, 'goals', res.id || crypto.randomUUID()), {
         user_id: user.uid,
         title: res.title,
         description: res.description,
         difficulty: res.difficulty,
-        reward_alpha: res.rewardAlpha,
+        reward_alpha: res.rewardAlpha || res.reward_alpha,
         category: res.category,
         created_at: new Date().toISOString()
       })

@@ -17,15 +17,17 @@ import { QuestPanel } from '../features/quests/components/QuestPanel';
 import { HubMonitoring } from '../features/dashboard/components/HubMonitoring';
 import { BurnoutWarning } from '../features/character/components/BurnoutWarning';
 import { MainLayout } from './layouts/MainLayout';
+import { useToastStore } from '../store/toastStore';
 import { DashboardLayout } from './layouts/DashboardLayout';
 import { DevSandboxPanel } from '../shared/components/DevSandboxPanel';
 import { calculateStats } from '../shared/utils/vibeMath';
 import { getWeatherState } from '../shared/utils/weatherUtils';
+import { importDataAPI } from '../features/dashboard/services/dashboardApi';
 import type { Goal } from '../shared/types/goal';
-import { useAppContext } from './providers/AppProvider';
-import { useDashboardContext } from './providers/DashboardProvider';
-import { useQuestContext } from './providers/QuestProvider';
-import { useBrainDumpContext } from './providers/BrainDumpProvider';
+import { useUIStore } from '../store/uiStore';
+import { useDashboardStore } from '../store/dashboardStore';
+import { useQuestStore } from '../store/questStore';
+import { useBrainDumpStore } from '../store/brainDumpStore';
 import { useAudio } from './providers/AudioProvider';
 import { useAuthStore } from '../store/authStore';
 
@@ -35,10 +37,13 @@ export default function App() {
   const { tab } = useParams<{ tab: Tab }>();
   const navigate = useNavigate();
   const { playVictorySound, playLevelUpSound } = useAudio();
+  const toast = useToastStore(state => state.toast);
 
   const {
     user: authUser,
     isLoading: isAuthLoading,
+    hasCompletedOnboarding,
+    completeOnboarding,
     login,
     initAuth
   } = useAuthStore();
@@ -48,16 +53,20 @@ export default function App() {
     return () => unsubscribe();
   }, [initAuth]);
 
-  const {
-    isProfileOpen, setIsProfileOpen,
-    isSettingsOpen, setIsSettingsOpen
-  } = useAppContext();
+  // UI Store access
+  const isProfileOpen = useUIStore((state) => state.isProfileOpen);
+  const setIsProfileOpen = useUIStore((state) => state.setIsProfileOpen);
+  const isSettingsOpen = useUIStore((state) => state.isSettingsOpen);
+  const setIsSettingsOpen = useUIStore((state) => state.setIsSettingsOpen);
+  const isQuestEditorOpen = useUIStore((state) => state.isQuestEditorOpen);
+  const setIsQuestEditorOpen = useUIStore((state) => state.setIsQuestEditorOpen);
 
+  // Dashboard Store access
   const {
     goals, setGoals, user, achievements, latestDump, burnoutMonitor,
-    expPopups, recentlyCompletedIds, updateProfile, resetProfile, nudge,
+    expPopups, recentlyCompletedIds, updateProfile, resetProfile, deleteAccount, nudge,
     isLoading, updateSandbox, fetchData
-  } = useDashboardContext();
+  } = useDashboardStore();
 
   useEffect(() => {
     if (authUser) {
@@ -65,16 +74,18 @@ export default function App() {
     }
   }, [authUser, fetchData]);
 
+  // Quest Store access
   const {
-    selectedGoal, setSelectedGoal, isQuestEditorOpen, setIsQuestEditorOpen,
+    selectedGoal, setSelectedGoal, 
     questToDelete, setQuestToDelete, questToEdit, setQuestToEdit,
     handleLogAction, handleSaveQuest, confirmDeleteQuest, executeDeleteQuest
-  } = useQuestContext();
+  } = useQuestStore();
 
+  // Brain Dump Store access
   const {
     isBrainDumpOpen, setIsBrainDumpOpen, draftContent, setDraftContent,
     isAnalyzing, handleBrainDump, analysisResult
-  } = useBrainDumpContext();
+  } = useBrainDumpStore();
 
   const prevCompletedCountRef = useRef(recentlyCompletedIds.length);
   useEffect(() => {
@@ -94,10 +105,6 @@ export default function App() {
 
   const activeTab = tab || 'quests';
   const setActiveTab = (newTab: Tab) => navigate(`/${newTab}`);
-
-  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState<boolean>(() => {
-    return localStorage.getItem('hasCompletedOnboarding') === 'true';
-  });
 
   const handleExportData = async () => {
     try {
@@ -126,35 +133,28 @@ export default function App() {
         throw new Error('Invalid backup format');
       }
 
-      const res = await fetch(`/api/user/${user?.id || 'import'}/import`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      
-      if (!res.ok) throw new Error('Failed to import on server');
+      await importDataAPI(data);
       
       window.location.reload();
     } catch (e) {
       console.error('Import failed', e);
-      alert('Error importing data: ' + (e instanceof Error ? e.message : 'Unknown error'));
+      toast({ title: 'Gagal Import Data', description: e instanceof Error ? e.message : 'Unknown error', type: 'error' });
     }
     
     event.target.value = '';
   };
 
   const handleCompleteOnboarding = () => {
-    setHasCompletedOnboarding(true);
-    localStorage.setItem('hasCompletedOnboarding', 'true');
+    completeOnboarding();
   };
 
   const allLogs = goals.flatMap(g => g.logs || []);
-  const stats = calculateStats(allLogs as any);
-
+  const stats = calculateStats(allLogs);
   const uLevel = user?.level ?? 1;
-  const uExp = user?.exp ?? 0;
+  const uExpPercent = user?.exp ?? 0;
+  const uTotalExp = (user as UserStats & { total_exp?: number })?.total_exp ?? 0;
   const uSpentCoins = user?.spent_coins ?? 0;
-  const baseCoins = user ? ((uLevel - 1) * 100) + uExp - uSpentCoins : 0;
+  const baseCoins = user ? uTotalExp - uSpentCoins : 0;
 
   // --- DEV SANDBOX INJECTION ---
   const [devOverrides, setDevOverrides] = useState<import('../shared/components/DevSandboxPanel').DevOverrides>({
@@ -206,15 +206,28 @@ export default function App() {
   }
 
   if (!authUser) {
+    if (!hasCompletedOnboarding) {
+      return (
+        <FirstTimeOnboarding 
+          onLogin={login} 
+          showLoginStep={true} 
+        />
+      );
+    }
+
+    // Already completed onboarding but not logged in -> show login slide immediately
     return (
-      <div className="flex h-[100dvh] w-full items-center justify-center bg-[#0A0C10] text-accent-400 p-6 flex-col">
-          <div className="text-4xl font-black mb-2 text-center text-white">Vibe<span className="text-accent-500">Commit</span></div>
-          <div className="text-sm font-mono text-slate-400 max-w-sm text-center mb-8">Login required to access your operative dashboard and save progress to the cloud.</div>
-          <button onClick={() => login()} className="px-6 py-3 bg-accent-500 hover:bg-accent-400 text-[#0f1115] font-bold tracking-widest uppercase transition-colors rounded">
-             Sign In with Google
-          </button>
-      </div>
-    )
+      <FirstTimeOnboarding 
+        onLogin={login} 
+        showLoginStep={true} 
+        initialStep={4} 
+      />
+    );
+  }
+
+  if (!hasCompletedOnboarding) {
+    // If they are somehow logged in but haven't seen the onboarding (e.g. from previous version)
+    return <FirstTimeOnboarding onComplete={handleCompleteOnboarding} showLoginStep={false} />;
   }
 
   if (isLoading || !effectiveUser) {
@@ -233,12 +246,6 @@ export default function App() {
 
   return (
     <>
-      <AnimatePresence>
-        {!hasCompletedOnboarding && (
-          <FirstTimeOnboarding onComplete={handleCompleteOnboarding} />
-        )}
-      </AnimatePresence>
-      
       <MainLayout
         environment={
           <VibeEnvironment 
@@ -277,6 +284,7 @@ export default function App() {
               onExport={handleExportData} 
               onImport={handleImportData}
               onResetProgress={resetProfile}
+              onDeleteAccount={deleteAccount}
             />
             <QuestEditorModal 
               isOpen={isQuestEditorOpen} 

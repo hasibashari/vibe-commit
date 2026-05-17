@@ -3,6 +3,7 @@ import { Settings as SettingsIcon, Download, Sparkles, Globe, Activity, RefreshC
 import { Modal } from '../../../shared/components/Modal';
 import { Button } from '../../../shared/components/Button';
 import type { UserStats } from '../../../shared/types/user';
+import { useToastStore } from '../../../store/toastStore';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -12,16 +13,19 @@ interface SettingsModalProps {
   onExport: () => void;
   onImport: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onResetProgress: () => Promise<void>;
+  onDeleteAccount: () => Promise<void>;
 }
 
-export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, user, onUpdateUser, onExport, onImport, onResetProgress }) => {
+export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, user, onUpdateUser, onExport, onImport, onResetProgress, onDeleteAccount }) => {
   const [settings, setSettings] = useState({
     language: 'id',
     animations: true,
     nudgeIntensity: 'normal'
   });
   const [isResetConfirm, setIsResetConfirm] = useState(false);
+  const [isDeleteConfirm, setIsDeleteConfirm] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const toast = useToastStore((state) => state.toast);
 
   useEffect(() => {
     if (isOpen) {
@@ -45,12 +49,24 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, u
     window.location.reload();
   };
 
+  const handleDeleteAccount = async () => {
+    try {
+      await onDeleteAccount();
+      setIsDeleteConfirm(false);
+      onClose();
+      window.location.reload();
+    } catch(e) {
+      // Assuming store or API showed an error toast, we don't need to reload
+      setIsDeleteConfirm(false);
+    }
+  };
+
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, key: 'custom_main_bg' | 'custom_char_bg' | 'custom_character') => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     if (file.size > 2 * 1024 * 1024) {
-      alert("File is too large! Maximum size is 2MB per image to prevent database strain.");
+      toast({ title: 'File Terlalu Besar', description: 'Ukuran maksimum 2MB', type: 'error' });
       return;
     }
 
@@ -63,7 +79,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, u
         setIsUploading(false);
       };
       reader.onerror = () => {
-        alert("Failed to read file.");
+        toast({ title: 'Gagal', description: 'Gagal membaca file gambar', type: 'error' });
         setIsUploading(false);
       };
       reader.readAsDataURL(file);
@@ -304,6 +320,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, u
               variant="danger"
               onClick={() => setIsResetConfirm(true)}
               className="w-full gap-2"
+              disabled={isDeleteConfirm}
             >
               <RefreshCw className="w-4 h-4" />
               Reset All Progress
@@ -328,6 +345,41 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, u
                   className="flex-1"
                 >
                   Confirm Reset
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {!isDeleteConfirm ? (
+             <Button
+               variant="danger"
+               onClick={() => setIsDeleteConfirm(true)}
+               className="w-full gap-2 bg-red-900 border border-red-500 text-red-50 hover:bg-red-800"
+               disabled={isResetConfirm}
+             >
+               <X className="w-4 h-4" />
+               Delete Account
+             </Button>
+          ) : (
+            <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 flex flex-col gap-4">
+              <div className="flex items-start gap-3 text-red-400 text-sm">
+                <TriangleAlert className="w-5 h-5 shrink-0 mt-0.5" />
+                <p>Are you sure? This action will PERMANENTLY ERASE your account and all associated data. You cannot undo this.</p>
+              </div>
+              <div className="flex gap-3">
+                <Button 
+                  variant="secondary"
+                  onClick={() => setIsDeleteConfirm(false)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  variant="danger"
+                  onClick={handleDeleteAccount}
+                  className="flex-1 bg-red-600 hover:bg-red-500 text-white"
+                >
+                  Confirm Delete
                 </Button>
               </div>
             </div>

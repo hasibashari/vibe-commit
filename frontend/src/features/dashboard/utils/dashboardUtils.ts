@@ -2,9 +2,43 @@ import type { Goal } from '../../../shared/types/goal';
 import type { Log } from '../../../shared/types/log';
 import type { UserStats } from '../../../shared/types/user';
 
-export const calculateRPGStats = (allLogs: Log[], userData: UserStats) => {
+export const calculateRPGStats = (allLogs: Log[], userData: UserStats, goals: Goal[] = []) => {
+  let initialTotalExp = userData.exp || 0; // Manual / Sandbox EXP
+  let totalEarnedFromLogs = 0;
+  
+  // Calculate total EXP earned from all recorded logs based on actual difficulty
+  allLogs.forEach(log => {
+    const goal = goals.find(g => g.id === (log as any).goal_id);
+    if (goal) {
+      totalEarnedFromLogs += Math.floor(goal.difficulty * 10 * goal.reward_alpha);
+    } else {
+      totalEarnedFromLogs += 10; // Fallback if goal deleted
+    }
+  });
+  
+  const totalExp = initialTotalExp + totalEarnedFromLogs;
+  
+  // Exponential / Progressive Leveling Formula
+  // Level L requires: 50 * (L - 1) * L  total experience
+  // Which means Level 1: 0 exp, Level 2: 100 exp, Level 3: 300 exp, Level 4: 600 exp
+  const L = Math.floor((1 + Math.sqrt(1 + 4 * (totalExp / 50))) / 2);
+  
+  const maxLevel = 99;
+  const currentLevel = Math.min(L, maxLevel);
+  
+  // Calculate EXP needed for current and next level bounds
+  const currentLevelTotalExp = 50 * (currentLevel - 1) * currentLevel;
+  const nextLevelTotalExp = 50 * currentLevel * (currentLevel + 1);
+  const expIntoCurrentLevel = totalExp - currentLevelTotalExp;
+  const expNeededForNextLevel = nextLevelTotalExp - currentLevelTotalExp; // Which is 100 * currentLevel
+  
+  const expPercentage = Math.min(100, Math.floor((expIntoCurrentLevel / expNeededForNextLevel) * 100));
+
   return {
     ...userData,
+    level: currentLevel,
+    exp: expPercentage,
+    total_exp: totalExp
   };
 };
 

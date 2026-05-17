@@ -67,7 +67,7 @@ export class AiService {
       throw new Error('NOT_CONFIGURED');
     }
 
-    const prompt = `System: Kamu adalah Companion AI (teman virtual) di aplikasi produktivitas berbasis gamifikasi.
+    const systemInstruction = `Kamu adalah Companion AI (teman virtual) di aplikasi produktivitas berbasis gamifikasi.
 Status pengguna saat ini:
 - Nama: ${context.userName || "User"}
 - Level: ${context.level}
@@ -78,15 +78,27 @@ Status pengguna saat ini:
 Berperanlah sebagai asisten yang empatik, memberikan semangat, dan memiliki nuansa game (rpg).
 Jawablah dalam bahasa Indonesia dengan gaya kasual yang ramah (boleh pakai 'kamu', 'aku', bahasanya santai tapi asyik).
 Pastikan balasan tetap relatif singkat, natural, dan interaktif (1-3 kalimat).
-Ingatkan pengguna untuk istirahat jika HP/Mana sedang rendah, dan berikan motivasi untuk menyelesaikan Quest Aktif mereka.
+Ingatkan pengguna untuk istirahat jika HP/Mana sedang rendah, dan berikan motivasi untuk menyelesaikan Quest Aktif.`;
 
-Riwayat Percakapan:
-${history.map(msg => (msg.role === 'user' ? 'User' : 'AI') + ': ' + msg.content).join('\n')}
-AI:`;
+    // Map the internal history format to the GenAI SDK's expected format, excluding the last user message
+    const lastUserMessage = history[history.length - 1].content;
+    const previousHistory = history.slice(0, -1);
 
-    const response = await ai.models.generateContent({
+    const formattedHistory = previousHistory.map(msg => ({
+      role: msg.role,
+      parts: [{ text: msg.content }]
+    }));
+
+    const chatSession = ai.chats.create({
       model: "gemini-2.5-flash",
-      contents: prompt,
+      config: {
+        systemInstruction: systemInstruction,
+      },
+      history: formattedHistory
+    });
+
+    const response = await chatSession.sendMessage({
+      message: lastUserMessage
     });
 
     return response.text || "Maaf, aku lagi nge-lag nih. Boleh ulangi?";

@@ -8,13 +8,14 @@ export function calculateProbability(repetition: number, difficulty: number, alp
  * Adjusts D based on mastery level to keep the user in the "Flow" state.
  * Prevents "Binary Failure Guilt" by lowering D if success is stagnant.
  */
-export function adjustDifficultyBayesian(currentProb: number, currentD: number): number {
+export function adjustDifficultyBayesian(currentProb: number, currentD: number, repetition: number): number {
   const HIGH_THRESHOLD = 0.95; // Mastery imminent, increase challenge
   const LOW_THRESHOLD = 0.20;  // Stagnation risk, decrease friction
+  const MIN_REPETITION = 5;    // Don't decrease difficulty before minimum attempts
   
   if (currentProb > HIGH_THRESHOLD) {
     return currentD * 1.15; // Increase difficulty by 15%
-  } else if (currentProb < LOW_THRESHOLD && currentProb > 0) {
+  } else if (currentProb < LOW_THRESHOLD && repetition >= MIN_REPETITION) {
     return currentD * 0.85; // Decrease difficulty by 15%
   }
   return currentD;

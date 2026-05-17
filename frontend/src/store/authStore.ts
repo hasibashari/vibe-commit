@@ -6,6 +6,9 @@ import { useToastStore } from './toastStore';
 interface AuthStore {
   user: User | null;
   isLoading: boolean;
+  hasCompletedOnboarding: boolean;
+  completeOnboarding: () => void;
+  resetOnboarding: () => void;
   login: () => Promise<void>;
   logout: () => Promise<void>;
   initAuth: () => Unsubscribe;
@@ -14,7 +17,18 @@ interface AuthStore {
 export const useAuthStore = create<AuthStore>((set) => ({
   user: null,
   isLoading: true,
+  hasCompletedOnboarding: localStorage.getItem('hasCompletedOnboarding_v3') === 'true',
   
+  completeOnboarding: () => {
+    localStorage.setItem('hasCompletedOnboarding_v3', 'true');
+    set({ hasCompletedOnboarding: true });
+  },
+
+  resetOnboarding: () => {
+    localStorage.removeItem('hasCompletedOnboarding_v3');
+    set({ hasCompletedOnboarding: false });
+  },
+
   login: async () => {
     try {
       await loginWithGoogle();
@@ -28,6 +42,8 @@ export const useAuthStore = create<AuthStore>((set) => ({
   logout: async () => {
     try {
       await logout();
+      localStorage.removeItem('hasCompletedOnboarding_v3');
+      set({ hasCompletedOnboarding: false });
       useToastStore.getState().toast({ title: 'Logout Berhasil', type: 'info' });
     } catch (error) {
       console.error(error);
@@ -37,7 +53,13 @@ export const useAuthStore = create<AuthStore>((set) => ({
   
   initAuth: () => {
     return onAuthStateChanged(auth, (user) => {
-      set({ user, isLoading: false });
+      // If user is logged in, optionally set onboarding to true automatically
+      if (user) {
+        localStorage.setItem('hasCompletedOnboarding_v3', 'true');
+        set({ user, isLoading: false, hasCompletedOnboarding: true });
+      } else {
+        set({ user, isLoading: false });
+      }
     });
   }
 }));

@@ -57,7 +57,9 @@ export function analyzeBurnoutRisk(logs: Log[], goals: Goal[]): BurnoutPredictio
     });
 
     recentHighDiff = getHighDiffLogs(recentLogs).length;
-    historicalHighDiffAvg = getHighDiffLogs(historicalLogs).length / Math.max(1, historicalLogs.length / Math.max(1, recentLogs.length));
+    const historicalHighDiffCount = getHighDiffLogs(historicalLogs).length;
+    // Calculate expected number of high diff logs in the recent period based on historical rate
+    historicalHighDiffAvg = (historicalHighDiffCount / historicalLogs.length) * recentLogs.length;
   } else if (logs.length > 5) {
     const overallStats = calculateStats(logs);
     if (overallStats.sigma > 2.0) {
