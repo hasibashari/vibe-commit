@@ -18,6 +18,7 @@ import { HubMonitoring } from '../features/dashboard/components/HubMonitoring';
 import { BurnoutWarning } from '../features/character/components/BurnoutWarning';
 import { MainLayout } from './layouts/MainLayout';
 import { DashboardLayout } from './layouts/DashboardLayout';
+import { calculateStats } from '../shared/utils/vibeMath';
 import type { Goal } from '../shared/types/goal';
 import { useAppContext } from './providers/AppProvider';
 import { useDashboardContext } from './providers/DashboardProvider';
@@ -126,7 +127,10 @@ export default function App() {
     localStorage.setItem('hasCompletedOnboarding', 'true');
   };
 
-  const coins = user?.level * 100 + goals.reduce((acc, goal) => acc + (goal.logs?.length || 0), 0) * 10;
+  const allLogs = goals.flatMap(g => g.logs || []);
+  const stats = calculateStats(allLogs as any);
+
+  const coins = user ? (user.level * 100) + goals.reduce((acc, goal) => acc + (goal.logs?.length || 0), 0) * 10 - (user.spent_coins || 0) : 0;
 
 
   if (isLoading) {
@@ -157,7 +161,7 @@ export default function App() {
         environment={
           <VibeEnvironment 
             anxietyScore={latestDump?.anxietyScore || 5} 
-            sigmaVariance={user.mana} 
+            sigmaVariance={stats.sigma} 
             customMainBg={user.custom_main_bg}
             themeVibe={user.theme_vibe}
           />
@@ -180,6 +184,7 @@ export default function App() {
               user={user} 
               achievements={achievements}
               onSaveProfile={updateProfile} 
+              coins={coins}
             />
             <SettingsModal 
               isOpen={isSettingsOpen} 

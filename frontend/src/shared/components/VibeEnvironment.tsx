@@ -44,6 +44,15 @@ const THEMES: Record<string, any> = {
     hueLush: 'hue-rotate(340deg) saturate(1.5)',
     hueDark: 'hue-rotate(360deg) saturate(1)',
     baseImage: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=3000&auto=format&fit=crop'
+  },
+  matrix: {
+    bg: 'bg-[#000000]',
+    overlayLush: 'from-[#00ff00]/20 via-[#00ff00]/5 to-[#000000]',
+    overlayDark: 'from-[#00ff00]/40 via-[#00ff00]/10 to-[#000000]',
+    vignette: 'bg-[radial-gradient(circle_at_center,transparent_0%,#000000_100%)]',
+    hueLush: 'hue-rotate(100deg) saturate(3)',
+    hueDark: 'hue-rotate(120deg) saturate(2)',
+    baseImage: 'https://images.unsplash.com/photo-1515630278258-407f66498911?q=80&w=3000&auto=format&fit=crop'
   }
 };
 

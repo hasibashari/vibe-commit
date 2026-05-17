@@ -159,8 +159,19 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, u
             >
               <option value="midnight">Midnight Dev (Default)</option>
               <option value="emerald">Emerald Forest</option>
-              <option value="neon">Neon City</option>
               <option value="sunset">Retro Sunset</option>
+              <option 
+                value="neon" 
+                disabled={!(user.unlocked_items && user.unlocked_items.includes('aesthetic_theme_neon'))}
+              >
+                Neon City {!(user.unlocked_items && user.unlocked_items.includes('aesthetic_theme_neon')) && '(🔒 Locked)'}
+              </option>
+              <option 
+                value="matrix" 
+                disabled={!(user.unlocked_items && user.unlocked_items.includes('aesthetic_theme_matrix'))}
+              >
+                Matrix Green {!(user.unlocked_items && user.unlocked_items.includes('aesthetic_theme_matrix')) && '(🔒 Locked)'}
+              </option>
             </select>
           </div>
 
