@@ -32,6 +32,7 @@ import { useAudio } from './providers/AudioProvider';
 import { useAuthStore } from '../store/authStore';
 
 import type { Tab } from '../shared/types/navigation';
+import type { UserStats } from '../shared/types/user';
 
 export default function App() {
   const { tab } = useParams<{ tab: Tab }>();
@@ -60,6 +61,8 @@ export default function App() {
   const setIsSettingsOpen = useUIStore((state) => state.setIsSettingsOpen);
   const isQuestEditorOpen = useUIStore((state) => state.isQuestEditorOpen);
   const setIsQuestEditorOpen = useUIStore((state) => state.setIsQuestEditorOpen);
+  const isBrainDumpOpen = useUIStore((state) => state.isBrainDumpOpen);
+  const setIsBrainDumpOpen = useUIStore((state) => state.setIsBrainDumpOpen);
 
   // Dashboard Store access
   const {
@@ -83,7 +86,7 @@ export default function App() {
 
   // Brain Dump Store access
   const {
-    isBrainDumpOpen, setIsBrainDumpOpen, draftContent, setDraftContent,
+    draftContent, setDraftContent,
     isAnalyzing, handleBrainDump, analysisResult
   } = useBrainDumpStore();
 

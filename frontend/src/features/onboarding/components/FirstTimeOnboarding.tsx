@@ -75,7 +75,7 @@ export function FirstTimeOnboarding({ onComplete, onLogin, showLoginStep = false
     }
   };
 
-  const isCurrentLogin = steps[step].isLogin;
+  const isCurrentLogin = (steps[step] as any).isLogin;
 
   return (
     <div className="flex h-[100dvh] w-full items-center justify-center bg-[#0A0C10] text-accent-400 p-6 flex-col overflow-hidden font-sans relative">

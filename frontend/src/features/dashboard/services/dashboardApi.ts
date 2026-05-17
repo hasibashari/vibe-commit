@@ -30,9 +30,9 @@ export const fetchDashboardData = async () => {
     const userSnap = await getDoc(doc(db, 'users', userId));
     const userData = userSnap.exists() ? userSnap.data() : null;
 
-    const goalsWithCounts = goalsData.map((g: Partial<Goal> & { id: string }) => {
-      const logs = allLogsData.filter((log: Partial<Log> & { goal_id: string }) => log.goal_id === g.id);
-      return { ...g, repetition_count: logs.length, logs };
+    const goalsWithCounts = goalsData.map((g: any) => {
+      const logs = allLogsData.filter((log: any) => log.goal_id === g.id);
+      return { ...g, repetition_count: logs.length, logs } as Goal;
     });
 
     return { 
@@ -170,7 +170,7 @@ export const updateSandboxData = async (
   }
 };
 
-export const importDataAPI = async (data: { user?: Partial<UserStats> & { id?: string }, goals?: Array<Partial<Goal> & { createdAt?: string, logs?: Array<Partial<Log> & { completedAt?: string }> }> }) => {
+export const importDataAPI = async (data: { user?: Partial<UserStats> & { id?: string }, goals?: Array<any> }) => {
   const currentUser = auth.currentUser;
   if (!currentUser) throw new Error("Not authenticated");
   const userId = currentUser.uid;
@@ -215,7 +215,7 @@ export const importDataAPI = async (data: { user?: Partial<UserStats> & { id?: s
               goal_id: goalRef.id,
               user_id: userId,
               timestamp: log.timestamp || log.completedAt || new Date().toISOString(),
-              vibe_score: log.vibe_score ?? 8,
+              vibeScore: log.vibeScore ?? log.vibe_score ?? 8,
               notes: log.notes ?? 'Imported log'
             });
           }
