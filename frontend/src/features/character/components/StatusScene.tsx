@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, MessageCircle } from 'lucide-react';
 import { AIChatModal } from './AIChatModal';
 import { useDynamicQuotes, useEasterEgg, useTypingEffect } from '../hooks/useStatusScene';
+import { NaturalRain } from '../../../shared/components/NaturalRain';
 
 import type { Goal } from '../../../shared/types/goal';
 
@@ -18,9 +19,10 @@ interface StatsProps {
   userName?: string;
   customCharBg?: string;
   customCharacter?: string;
+  weather?: 'sunny' | 'overcast' | 'rainy' | 'default';
 }
 
-export const StatusScene: React.FC<StatsProps> = ({ hp, mana, level, goals, nudge, userName, customCharBg, customCharacter }) => {
+export const StatusScene: React.FC<StatsProps> = ({ hp, mana, level, goals, nudge, userName, customCharBg, customCharacter, weather = 'sunny' }) => {
   const [isChatOpen, setIsChatOpen] = useState(false);
 
   const { dynamicQuotes, quoteIndex } = useDynamicQuotes(hp, mana, goals, nudge, userName);
@@ -48,6 +50,12 @@ export const StatusScene: React.FC<StatsProps> = ({ hp, mana, level, goals, nudg
           </div>
         </div>
       </div>
+
+      {weather === 'rainy' && (
+        <div className="absolute inset-0 pointer-events-none z-15 overflow-hidden rounded-2xl">
+          <NaturalRain />
+        </div>
+      )}
 
       {/* Main Character Scene */}
       <div className="absolute bottom-[calc(10%+8px)] left-1/2 -translate-x-1/2 z-10 flex flex-col items-center scale-90 md:scale-95 lg:scale-[0.85] origin-bottom">

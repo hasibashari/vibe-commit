@@ -1,5 +1,7 @@
-import React, { useEffect, useMemo } from 'react';
-import { motion, useMotionValue, useSpring, useTransform } from 'motion/react';
+import React, { useEffect } from 'react';
+import { motion } from 'motion/react';
+import { useMouseParallax } from '../hooks/useMouseParallax';
+import { getWeatherState } from '../utils/weatherUtils';
 
 interface VibeEnvironmentProps {
   anxietyScore?: number;
@@ -13,98 +15,53 @@ const THEMES: Record<string, any> = {
   midnight: {
     bg: 'bg-[#020617]',
     overlayBase: 'from-[#0A0C10]/60 via-[#0A0C10]/20 to-[#0A0C10]',
-    overlayDark: 'from-[#0A0C10]/90 via-[#0A0C10]/50 to-[#0A0C10]',
+    overlayDark: 'from-[#0A0C10]/75 via-[#0A0C10]/35 to-[#0A0C10]/85',
     vignette: 'bg-[radial-gradient(ellipse_at_top,transparent_0%,#0A0C10_100%)]',
     hueBase: 'none',
-    hueDark: 'grayscale(0.5) brightness(0.7)',
+    hueDark: 'grayscale(0.35) brightness(0.8)',
     baseImage: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=3000&auto=format&fit=crop',
     glow: 'bg-cyan-500/20'
   },
   emerald: {
     bg: 'bg-[#011a14]',
     overlayBase: 'from-[#022c22]/60 via-[#011a14]/40 to-[#011a14]',
-    overlayDark: 'from-[#022c22]/90 via-[#011a14]/60 to-[#011a14]',
+    overlayDark: 'from-[#022c22]/75 via-[#011a14]/35 to-[#011a14]/85',
     vignette: 'bg-[radial-gradient(ellipse_at_top,transparent_0%,#011a14_100%)]',
     hueBase: 'none',
-    hueDark: 'grayscale(0.3) brightness(0.6)',
+    hueDark: 'grayscale(0.2) brightness(0.75)',
     baseImage: 'https://images.unsplash.com/photo-1511497584788-876760111969?q=80&w=3000&auto=format&fit=crop',
     glow: 'bg-emerald-500/15'
   },
   neon: {
     bg: 'bg-[#090014]',
     overlayBase: 'from-[#2e1065]/60 via-[#090014]/40 to-[#090014]',
-    overlayDark: 'from-[#2e1065]/90 via-[#090014]/70 to-[#090014]',
+    overlayDark: 'from-[#2e1065]/75 via-[#090014]/45 to-[#090014]/85',
     vignette: 'bg-[radial-gradient(ellipse_at_top,transparent_0%,#090014_100%)]',
     hueBase: 'saturate(1.5)',
-    hueDark: 'saturate(0.8) brightness(0.7)',
+    hueDark: 'saturate(0.8) brightness(0.8)',
     baseImage: 'https://images.unsplash.com/photo-1601042879364-f3947d3f9c16?q=80&w=3000&auto=format&fit=crop',
     glow: 'bg-fuchsia-500/20'
   },
   sunset: {
     bg: 'bg-[#1a0500]',
     overlayBase: 'from-[#450a0a]/50 via-[#1a0500]/40 to-[#1a0500]',
-    overlayDark: 'from-[#450a0a]/90 via-[#1a0500]/70 to-[#1a0500]',
+    overlayDark: 'from-[#450a0a]/75 via-[#1a0500]/45 to-[#1a0500]/85',
     vignette: 'bg-[radial-gradient(ellipse_at_top,transparent_0%,#1a0500_100%)]',
     hueBase: 'saturate(1.2) contrast(1.1)',
-    hueDark: 'saturate(0.5) brightness(0.6)',
+    hueDark: 'saturate(0.6) brightness(0.75)',
     baseImage: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=3000&auto=format&fit=crop',
     glow: 'bg-orange-500/15'
   },
   matrix: {
     bg: 'bg-[#000501]',
     overlayBase: 'from-[#002b11]/60 via-[#000501]/40 to-[#000501]',
-    overlayDark: 'from-[#002b11]/90 via-[#000501]/70 to-[#000501]',
+    overlayDark: 'from-[#002b11]/75 via-[#000501]/45 to-[#000501]/85',
     vignette: 'bg-[radial-gradient(ellipse_at_top,transparent_0%,#000501_100%)]',
     hueBase: 'contrast(1.2) saturate(1.5)',
-    hueDark: 'brightness(0.6)',
+    hueDark: 'brightness(0.75)',
     baseImage: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=3000&auto=format&fit=crop',
     glow: 'bg-green-500/10'
   }
-};
-
-const useMemoizedParticles = (count: number) => {
-  return useMemo(() => {
-    return Array.from({ length: count }).map(() => ({
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      duration: 10 + Math.random() * 20,
-      delay: -Math.random() * 20,
-      size: Math.random() * 0.5 + 0.5
-    }));
-  }, [count]);
-};
-
-const NaturalRain = () => {
-  const drops = useMemoizedParticles(50);
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-60 z-10">
-      {drops.map((p, i) => (
-        <motion.div
-          key={i}
-          className="absolute w-[2px] bg-gradient-to-b from-transparent via-white/50 to-transparent rounded-full"
-          style={{ 
-            left: `${p.x}%`,
-            height: `${5 + p.size * 10}vh`
-          }}
-          animate={{
-            y: ['-20vh', '120vh'],
-            opacity: [0, 1, 0]
-          }}
-          transition={{
-            duration: p.duration * 0.05,
-            repeat: Infinity,
-            delay: p.delay,
-            ease: 'linear'
-          }}
-        />
-      ))}
-      <motion.div
-         className="absolute inset-0 bg-white mix-blend-overlay pointer-events-none"
-         animate={{ opacity: [0, 0, 0, 0.2, 0, 0, 0, 0] }}
-         transition={{ duration: 10, repeat: Infinity, times: [0, 0.4, 0.41, 0.42, 0.43, 0.44, 0.8, 1] }}
-      />
-    </div>
-  );
 };
 
 const SunsetLight = () => {
@@ -172,41 +129,18 @@ export const VibeEnvironment: React.FC<VibeEnvironmentProps> = ({
   themeVibe = 'midnight',
   hp = 100
 }) => {
-  const getWeatherState = (): 'sunny' | 'overcast' | 'rainy' | 'default' => {
-    if (anxietyScore > 7) return 'rainy';
-    if (anxietyScore <= 3 && sigmaVariance <= 1.2) return 'sunny';
-    if (anxietyScore > 5 || sigmaVariance > 1.5) return 'overcast';
-    return 'default';
-  };
-
-  const weather = getWeatherState();
+  const weather = getWeatherState(anxietyScore, sigmaVariance);
   const isCriticalHp = hp < 20;
   const theme = THEMES[themeVibe] || THEMES.midnight;
 
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-  
-  const springConfig = { damping: 30, stiffness: 100, mass: 0.5 };
-  const mouseXSpring = useSpring(mouseX, springConfig);
-  const mouseYSpring = useSpring(mouseY, springConfig);
-  
-  const parallaxX = useTransform(mouseXSpring, [-1, 1], [10, -10]);
-  const parallaxY = useTransform(mouseYSpring, [-1, 1], [10, -10]);
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      mouseX.set((e.clientX / window.innerWidth) * 2 - 1);
-      mouseY.set((e.clientY / window.innerHeight) * 2 - 1);
-    };
-    
-    window.addEventListener('mousemove', handleMouseMove, { passive: true });
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, [mouseX, mouseY]);
+  // Instability representation: Amplified parallax when sigma variance is high
+  const instabilityMultiplier = Math.max(1, sigmaVariance / 1.2);
+  const { x: parallaxX, y: parallaxY } = useMouseParallax(10, instabilityMultiplier);
 
   const getBgStyleClasses = () => {
     switch (weather) {
       case 'rainy':
-        return 'blur-[4.5px] opacity-[0.25] mix-blend-luminosity grayscale-[40%]';
+        return 'blur-[2px] opacity-[0.38] mix-blend-luminosity grayscale-[30%]';
       case 'overcast':
         return 'blur-[2px] opacity-[0.35] mix-blend-luminosity grayscale-[20%]';
       case 'sunny':
@@ -234,15 +168,16 @@ export const VibeEnvironment: React.FC<VibeEnvironmentProps> = ({
          weather === 'rainy' ? theme.overlayDark : theme.overlayBase
       }`} />
       
-      {theme.glow && weather !== 'rainy' && (
-        <div className={`absolute top-[-10%] left-1/2 -translate-x-1/2 w-[80vw] h-[50vh] blur-[120px] rounded-[100%] pointer-events-none mix-blend-screen transition-opacity duration-[3000ms] ${theme.glow} ${weather === 'overcast' ? 'opacity-30' : 'opacity-100'}`} />
+      {theme.glow && (
+        <div className={`absolute top-[-10%] left-1/2 -translate-x-1/2 w-[80vw] h-[50vh] blur-[120px] rounded-[100%] pointer-events-none mix-blend-screen transition-opacity duration-[3000ms] ${theme.glow} ${
+          weather === 'rainy' ? 'opacity-20' : (weather === 'overcast' ? 'opacity-30' : 'opacity-100')
+        }`} />
       )}
 
       <div className={`absolute inset-0 pointer-events-none opacity-80 ${theme.vignette}`} />
 
       {weather === 'sunny' && <SunsetLight />}
       {weather === 'overcast' && <OvercastClouds />}
-      {weather === 'rainy' && <NaturalRain />}
       
       {isCriticalHp && <HeartbeatVignette />}
 
