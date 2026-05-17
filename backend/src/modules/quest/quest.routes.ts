@@ -1,12 +1,11 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import db from '../../db/database.js';
+import { QuestService } from './quest.service.js';
 
 const router = Router();
 
 router.get('/:userId', (req, res) => {
-  const goals = db.prepare('SELECT * FROM goals WHERE user_id = ?').all(req.params.userId);
-  res.json(goals);
+  res.json(QuestService.getGoalsForUser(req.params.userId));
 });
 
 router.post('/', (req, res, next) => {
@@ -20,12 +19,8 @@ router.post('/', (req, res, next) => {
       rewardAlpha: z.coerce.number().default(0.5),
       category: z.string().nullable().optional()
     });
-    const { id, userId, title, description, difficulty, rewardAlpha, category } = schema.parse(req.body);
-    db.prepare(`
-      INSERT INTO goals (id, user_id, title, description, difficulty, reward_alpha, category)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `).run(id, userId, title, description ?? null, difficulty, rewardAlpha, category ?? null);
-    res.json({ success: true });
+    const parsed = schema.parse(req.body);
+    res.json(QuestService.createGoal(parsed));
   } catch (err) {
     next(err);
   }
@@ -40,13 +35,8 @@ router.put('/:id', (req, res, next) => {
       rewardAlpha: z.coerce.number().default(0.5),
       category: z.string().nullable().optional()
     });
-    const { title, description, difficulty, rewardAlpha, category } = schema.parse(req.body);
-    db.prepare(`
-      UPDATE goals 
-      SET title = ?, description = ?, difficulty = ?, reward_alpha = ?, category = ?
-      WHERE id = ?
-    `).run(title, description ?? null, difficulty, rewardAlpha, category ?? null, req.params.id);
-    res.json({ success: true });
+    const parsed = schema.parse(req.body);
+    res.json(QuestService.updateGoal(req.params.id, parsed));
   } catch (err) {
     next(err);
   }
@@ -54,18 +44,7 @@ router.put('/:id', (req, res, next) => {
 
 router.delete('/:id', (req, res, next) => {
   try {
-    const id = req.params.id;
-    
-    const deleteLogs = db.prepare('DELETE FROM quest_logs WHERE goal_id = ?');
-    const deleteGoal = db.prepare('DELETE FROM goals WHERE id = ?');
-    
-    const transaction = db.transaction(() => {
-      deleteLogs.run(id);
-      deleteGoal.run(id);
-    });
-    
-    transaction();
-    res.json({ success: true });
+    res.json(QuestService.deleteGoal(req.params.id));
   } catch (error) {
     next(error);
   }
@@ -77,8 +56,7 @@ router.patch('/:id/difficulty', (req, res, next) => {
       difficulty: z.coerce.number()
     });
     const { difficulty } = schema.parse(req.body);
-    db.prepare('UPDATE goals SET difficulty = ? WHERE id = ?').run(difficulty, req.params.id);
-    res.json({ success: true });
+    res.json(QuestService.updateDifficulty(req.params.id, difficulty));
   } catch (err) {
     next(err);
   }

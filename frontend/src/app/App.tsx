@@ -27,6 +27,7 @@ import { useDashboardContext } from './providers/DashboardProvider';
 import { useQuestContext } from './providers/QuestProvider';
 import { useBrainDumpContext } from './providers/BrainDumpProvider';
 import { useAudio } from './providers/AudioProvider';
+import { useAuthStore } from '../store/authStore';
 
 import type { Tab } from '../shared/types/navigation';
 
@@ -36,6 +37,18 @@ export default function App() {
   const { playVictorySound, playLevelUpSound } = useAudio();
 
   const {
+    user: authUser,
+    isLoading: isAuthLoading,
+    login,
+    initAuth
+  } = useAuthStore();
+
+  useEffect(() => {
+    const unsubscribe = initAuth();
+    return () => unsubscribe();
+  }, [initAuth]);
+
+  const {
     isProfileOpen, setIsProfileOpen,
     isSettingsOpen, setIsSettingsOpen
   } = useAppContext();
@@ -43,8 +56,14 @@ export default function App() {
   const {
     goals, setGoals, user, achievements, latestDump, burnoutMonitor,
     expPopups, recentlyCompletedIds, updateProfile, resetProfile, nudge,
-    isLoading, updateSandbox
+    isLoading, updateSandbox, fetchData
   } = useDashboardContext();
+
+  useEffect(() => {
+    if (authUser) {
+      fetchData();
+    }
+  }, [authUser, fetchData]);
 
   const {
     selectedGoal, setSelectedGoal, isQuestEditorOpen, setIsQuestEditorOpen,
@@ -107,7 +126,7 @@ export default function App() {
         throw new Error('Invalid backup format');
       }
 
-      const res = await fetch(`/api/user/${user.id}/import`, {
+      const res = await fetch(`/api/user/${user?.id || 'import'}/import`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -132,7 +151,10 @@ export default function App() {
   const allLogs = goals.flatMap(g => g.logs || []);
   const stats = calculateStats(allLogs as any);
 
-  const baseCoins = user ? (user.level * 100) + goals.reduce((acc, goal) => acc + (goal.logs?.length || 0), 0) * 10 - (user.spent_coins || 0) : 0;
+  const uLevel = user?.level ?? 1;
+  const uExp = user?.exp ?? 0;
+  const uSpentCoins = user?.spent_coins ?? 0;
+  const baseCoins = user ? ((uLevel - 1) * 100) + uExp - uSpentCoins : 0;
 
   // --- DEV SANDBOX INJECTION ---
   const [devOverrides, setDevOverrides] = useState<import('../shared/components/DevSandboxPanel').DevOverrides>({
@@ -169,7 +191,33 @@ export default function App() {
     document.documentElement.setAttribute('data-theme', currentTheme);
   }, [effectiveUser?.theme_vibe]);
 
-  if (isLoading) {
+  if (isAuthLoading) {
+    return (
+      <div className="flex h-[100dvh] w-full items-center justify-center bg-[#0A0C10] text-accent-400">
+        <div className="flex flex-col items-center gap-4">
+          <svg className="h-10 w-10 animate-spin opacity-75" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+          </svg>
+          <div className="text-xs font-mono uppercase tracking-widest text-accent-500/70 animate-pulse">Authenticating...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!authUser) {
+    return (
+      <div className="flex h-[100dvh] w-full items-center justify-center bg-[#0A0C10] text-accent-400 p-6 flex-col">
+          <div className="text-4xl font-black mb-2 text-center text-white">Vibe<span className="text-accent-500">Commit</span></div>
+          <div className="text-sm font-mono text-slate-400 max-w-sm text-center mb-8">Login required to access your operative dashboard and save progress to the cloud.</div>
+          <button onClick={() => login()} className="px-6 py-3 bg-accent-500 hover:bg-accent-400 text-[#0f1115] font-bold tracking-widest uppercase transition-colors rounded">
+             Sign In with Google
+          </button>
+      </div>
+    )
+  }
+
+  if (isLoading || !effectiveUser) {
     return (
       <div className="flex h-[100dvh] w-full items-center justify-center bg-[#0A0C10] text-accent-400">
         <div className="flex flex-col items-center gap-4">
@@ -182,8 +230,6 @@ export default function App() {
       </div>
     );
   }
-
-  if (!user || !effectiveUser) return null; // Avoid render if context is not hydrated yet.
 
   return (
     <>
@@ -241,7 +287,7 @@ export default function App() {
             <DeleteQuestModal
               questId={questToDelete}
               onClose={() => setQuestToDelete(null)}
-              onConfirm={() => executeDeleteQuest(setGoals)}
+              onConfirm={() => executeDeleteQuest()}
             />
             <BrainDumpModal 
               isOpen={isBrainDumpOpen}
@@ -272,7 +318,7 @@ export default function App() {
               selectedGoal={selectedGoal}
               latestDump={latestDump}
               onSelectGoal={(goal) => {
-                setSelectedGoal(prev => (prev?.id === goal.id ? null : goal));
+                setSelectedGoal(selectedGoal?.id === goal.id ? null : goal);
               }}
               onLogAction={handleLogAction}
               onEdit={(goal) => { setQuestToEdit(goal); setIsQuestEditorOpen(true); }}

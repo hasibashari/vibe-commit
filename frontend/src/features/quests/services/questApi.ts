@@ -1,55 +1,80 @@
+import { doc, setDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { db, auth } from '../../../shared/services/firebase';
 import type { Goal } from '../../../shared/types/goal';
-import { DEFAULT_USER_ID } from '../../../shared/config/constants';
+
+function handleFirestoreError(error: unknown) {
+  console.error('Firestore Error:', error);
+  throw error;
+}
 
 export const logQuestActionApi = async (goalId: string, logId: string) => {
-  await fetch('/api/logs', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id: logId, goalId, vibeScore: 8, notes: 'Auto-logged from dashboard' })
-  });
+  const user = auth.currentUser;
+  if (!user) throw new Error("Not authenticated");
+  try {
+    await setDoc(doc(db, 'quest_logs', logId), {
+      goal_id: goalId,
+      user_id: user.uid,
+      timestamp: new Date().toISOString(),
+      vibeScore: 8,
+      notes: 'Auto-logged from dashboard'
+    });
+  } catch (err) {
+    handleFirestoreError(err);
+  }
 };
 
 export const updateQuestDifficultyApi = async (goalId: string, newDifficulty: number) => {
-  await fetch(`/api/goals/${goalId}/difficulty`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ difficulty: newDifficulty })
-  });
+  const user = auth.currentUser;
+  if (!user) throw new Error("Not authenticated");
+  try {
+    await updateDoc(doc(db, 'goals', goalId), {
+      difficulty: newDifficulty
+    });
+  } catch (err) {
+    handleFirestoreError(err);
+  }
 };
 
 export const updateQuestApi = async (questId: string, questData: Partial<Goal>) => {
-  await fetch(`/api/goals/${questId}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
+  const user = auth.currentUser;
+  if (!user) throw new Error("Not authenticated");
+  try {
+    await updateDoc(doc(db, 'goals', questId), {
       title: questData.title,
       description: questData.description,
       difficulty: questData.difficulty,
-      rewardAlpha: questData.reward_alpha,
+      reward_alpha: questData.reward_alpha,
       category: questData.category
-    })
-  });
+    });
+  } catch (err) {
+    handleFirestoreError(err);
+  }
 };
 
 export const createQuestApi = async (questData: Partial<Goal>, id: string) => {
-  await fetch('/api/goals', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      id,
-      userId: DEFAULT_USER_ID,
+  const user = auth.currentUser;
+  if (!user) throw new Error("Not authenticated");
+  try {
+    await setDoc(doc(db, 'goals', id), {
+      user_id: user.uid,
       title: questData.title,
       description: questData.description,
       difficulty: questData.difficulty,
-      rewardAlpha: questData.reward_alpha,
-      category: questData.category
-    })
-  });
+      reward_alpha: questData.reward_alpha,
+      category: questData.category,
+      created_at: new Date().toISOString()
+    });
+  } catch (err) {
+    handleFirestoreError(err);
+  }
 };
 
 export const deleteQuestApi = async (questId: string) => {
-  const response = await fetch(`/api/goals/${questId}`, { method: 'DELETE' });
-  if (!response.ok) {
-    throw new Error('Failed to delete node from server');
+  const user = auth.currentUser;
+  if (!user) throw new Error("Not authenticated");
+  try {
+    await deleteDoc(doc(db, 'goals', questId));
+  } catch (err) {
+    handleFirestoreError(err);
   }
 };

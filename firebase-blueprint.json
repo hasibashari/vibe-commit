@@ -1,0 +1,85 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile data",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "title": { "type": "string" },
+        "avatar_color": { "type": "string" },
+        "hp": { "type": "number" },
+        "mana": { "type": "number" },
+        "level": { "type": "number" },
+        "exp": { "type": "number" },
+        "custom_main_bg": { "type": "string" },
+        "custom_char_bg": { "type": "string" },
+        "custom_character": { "type": "string" },
+        "theme_vibe": { "type": "string" },
+        "bgm_theme": { "type": "string" },
+        "bgm_muted": { "type": "number" },
+        "spent_coins": { "type": "number" },
+        "last_penalty_date": { "type": "string" },
+        "shield_until": { "type": "string" },
+        "unlocked_items": { "type": "string" },
+        "avatar_icon": { "type": "string" }
+      }
+    },
+    "Goal": {
+      "title": "Goal",
+      "description": "A user's quest or goal",
+      "type": "object",
+      "properties": {
+        "user_id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "difficulty": { "type": "number" },
+        "reward_alpha": { "type": "number" },
+        "category": { "type": "string" },
+        "created_at": { "type": "string" }
+      },
+      "required": ["user_id", "title"]
+    },
+    "QuestLog": {
+      "title": "QuestLog",
+      "description": "Log entry for a goal",
+      "type": "object",
+      "properties": {
+        "goal_id": { "type": "string" },
+        "user_id": { "type": "string" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["goal_id", "user_id"]
+    },
+    "BrainDump": {
+      "title": "BrainDump",
+      "description": "Brain dump and analysis",
+      "type": "object",
+      "properties": {
+        "user_id": { "type": "string" },
+        "raw_content": { "type": "string" },
+        "analysis": { "type": "string" },
+        "created_at": { "type": "string" }
+      },
+      "required": ["user_id"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "goals/{goalId}": {
+      "schema": "Goal",
+      "description": "Goals"
+    },
+    "quest_logs/{logId}": {
+      "schema": "QuestLog",
+      "description": "Quest Logs"
+    },
+    "brain_dumps/{dumpId}": {
+      "schema": "BrainDump",
+      "description": "Brain Dumps"
+    }
+  }
+}

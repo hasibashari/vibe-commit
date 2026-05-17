@@ -75,14 +75,14 @@ export function BrainDumpModal({
             )}
           </div>
 
-          <div className="flex gap-4 mt-6">
+          <div className="flex flex-wrap justify-center gap-3 sm:gap-4 mt-6 w-full">
             {['Main Quest', 'Daily Quest', 'Side Quest'].map(cat => {
               const count = analysisResult.quests.filter((q: { category: string }) => q.category === cat).length;
               if (count === 0) return null;
               return (
-                <div key={cat} className="bg-slate-900 border border-slate-800 rounded-lg p-4 min-w-[120px]">
-                  <div className="text-3xl font-black text-accent-400 mb-1">{count}</div>
-                  <div className="text-xs font-mono uppercase tracking-widest text-slate-500">{cat}</div>
+                <div key={cat} className="bg-slate-900 border border-slate-800 rounded-lg p-3 sm:p-4 min-w-[100px] sm:min-w-[120px] flex-1">
+                  <div className="text-2xl sm:text-3xl font-black text-accent-400 mb-1">{count}</div>
+                  <div className="text-[10px] sm:text-xs font-mono uppercase tracking-widest text-slate-500">{cat}</div>
                 </div>
               );
             })}

@@ -1,17 +1,12 @@
-import React, { createContext, useContext, ReactNode } from 'react';
-import { useDashboardState } from '../../features/dashboard/hooks/useDashboardState';
-
-const DashboardContext = createContext<ReturnType<typeof useDashboardState> | undefined>(undefined);
+import React, { ReactNode } from 'react';
+import { useDashboardStore } from '../../store/dashboardStore';
 
 export function DashboardProvider({ children }: { children: ReactNode }) {
-  const state = useDashboardState();
-  return <DashboardContext.Provider value={state}>{children}</DashboardContext.Provider>;
+  // fetching is now controlled by App.tsx observing auth state
+  return <>{children}</>;
 }
 
 export function useDashboardContext() {
-  const context = useContext(DashboardContext);
-  if (context === undefined) {
-    throw new Error('useDashboardContext must be used within DashboardProvider');
-  }
-  return context;
+  const state = useDashboardStore();
+  return state;
 }
