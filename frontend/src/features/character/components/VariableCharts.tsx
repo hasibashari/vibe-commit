@@ -46,7 +46,7 @@ export const VariableCharts: React.FC<{ goals: { category: string }[] }> = ({ go
            <div key={d.name} className="flex items-center text-xs font-mono w-full">
              <div className="w-2.5 h-2.5 rounded-[2px] shrink-0 mr-3" style={{ backgroundColor: COLORS[i % COLORS.length] }}></div>
              <span className="text-slate-400 capitalize whitespace-nowrap">{d.name}</span>
-             <div className="flex-1 border-b border-dashed border-slate-700 mx-3 opacity-50 relative top-[1px]"></div>
+             <div className="flex-1 border-b border-dashed border-slate-700 mx-3 opacity-50 relative top-px"></div>
              <span className="text-white font-bold">{d.value}</span>
            </div>
          ))}

@@ -7,7 +7,7 @@ interface ExpPopupRendererProps {
 
 export function ExpPopupRenderer({ popups }: ExpPopupRendererProps) {
   return (
-    <div className="fixed inset-0 pointer-events-none z-[100] flex items-center justify-center">
+    <div className="fixed inset-0 pointer-events-none z-100 flex items-center justify-center">
       <AnimatePresence>
         {popups.map(popup => (
           <motion.div

@@ -21,7 +21,7 @@ export const GroundLayer: React.FC = () => {
             <div key={i} className="flex-none w-[30px] h-8 relative">
               <div className="absolute top-0 w-full h-[2px] bg-cyan-900/40" />
               <div className="absolute top-[2px] w-[2px] h-full bg-cyan-900/30" />
-              <div className="absolute top-[14px] w-full h-[1px] bg-slate-800/50" />
+              <div className="absolute top-[14px] w-full h-px bg-slate-800/50" />
               {i % 3 === 0 && (
                 <div className="absolute top-[6px] left-[6px] w-[4px] h-[2px] bg-cyan-700/50 rounded" />
               )}
@@ -32,7 +32,7 @@ export const GroundLayer: React.FC = () => {
           ))}
         </motion.div>
       </div>
-      <div className="absolute top-4 w-full h-full bg-gradient-to-b from-slate-900/80 to-slate-950" />
+      <div className="absolute top-4 w-full h-full bg-linear-to-b from-slate-900/80 to-slate-950" />
     </div>
   );
 };

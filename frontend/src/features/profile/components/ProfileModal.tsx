@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Save, Trophy, Sword, Star, Crown, Swords, Shield, X, ShoppingBag, Heart, Zap, Lock, Palette, Monitor } from 'lucide-react';
+import { Save, Trophy, Sword, Star, Crown, Swords, Shield, X, Heart, Zap, Lock, Palette, Monitor } from 'lucide-react';
 import { Achievement } from '../../dashboard/utils/dashboardUtils';
 import { useDashboardContext } from '../../../app/providers/DashboardProvider';
 import { cn } from '../../../shared/utils/cn';
@@ -105,7 +105,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
 
       <div className="p-4 sm:p-6">
         <AnimatePresence mode="wait">
-          {activeTab === 'profile' ? (
+          {activeTab === 'profile' && (
             <motion.div 
               key="profile"
               initial={{ opacity: 0, x: -10 }}
@@ -139,7 +139,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                         onClick={() => !isLocked && setAvatarColor(c.id)}
                         disabled={isLocked}
                         className={`relative w-10 h-10 rounded-full ${c.hex} flex items-center justify-center ring-2 transition-all ${
-                          avatarColor === c.id ? `${c.ring} ring-offset-2 ring-offset-[#0A0C10] scale-110` : 'ring-transparent opacity-50'
+                          avatarColor === c.id ? `${c.ring} ring-offset-2 ring-offset-surface scale-110` : 'ring-transparent opacity-50'
                         } ${isLocked ? 'grayscale opacity-30 cursor-not-allowed' : 'cursor-pointer hover:opacity-100'}`}
                       >
                         {isLocked && <Lock className="w-4 h-4 text-white/70 absolute" />}
@@ -160,7 +160,9 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                 </Button>
               </div>
             </motion.div>
-          ) : (
+          )}
+
+          {activeTab === 'badges' && (
             <motion.div 
               key="badges"
               initial={{ opacity: 0, x: 10 }}
@@ -230,7 +232,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                 
                 {/* HP Elixir */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-xl border bg-slate-900 border-slate-800 hover:border-emerald-500/30 transition-colors group">
-                  <div className="w-12 h-12 shrink-0 rounded-full flex items-center justify-center shadow-inner bg-gradient-to-br from-emerald-500/20 to-emerald-500/5 text-emerald-400 group-hover:scale-110 transition-transform">
+                  <div className="w-12 h-12 shrink-0 rounded-full flex items-center justify-center shadow-inner bg-linear-to-br from-emerald-500/20 to-emerald-500/5 text-emerald-400 group-hover:scale-110 transition-transform">
                     <Heart className="w-6 h-6" fill="currentColor" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -258,7 +260,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
 
                 {/* Mana Tonic */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-xl border bg-slate-900 border-slate-800 hover:border-cyan-500/30 transition-colors group">
-                  <div className="w-12 h-12 shrink-0 rounded-full flex items-center justify-center shadow-inner bg-gradient-to-br from-cyan-500/20 to-cyan-500/5 text-cyan-400 group-hover:scale-110 transition-transform">
+                  <div className="w-12 h-12 shrink-0 rounded-full flex items-center justify-center shadow-inner bg-linear-to-br from-cyan-500/20 to-cyan-500/5 text-cyan-400 group-hover:scale-110 transition-transform">
                     <Zap className="w-6 h-6" fill="currentColor" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -286,7 +288,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
 
                 {/* Streak Shield */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-xl border bg-slate-900 border-slate-800 hover:border-indigo-500/30 transition-colors group">
-                  <div className="w-12 h-12 shrink-0 rounded-full flex items-center justify-center shadow-inner bg-gradient-to-br from-indigo-500/20 to-indigo-500/5 text-indigo-400 group-hover:scale-110 transition-transform">
+                  <div className="w-12 h-12 shrink-0 rounded-full flex items-center justify-center shadow-inner bg-linear-to-br from-indigo-500/20 to-indigo-500/5 text-indigo-400 group-hover:scale-110 transition-transform">
                     <Shield className="w-6 h-6" fill="currentColor" />
                   </div>
                   <div className="flex-1 min-w-0">
