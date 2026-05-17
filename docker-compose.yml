@@ -1,0 +1,13 @@
+services:
+  app:
+    build: .
+    container_name: vibe-commit-app
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./vibe_commit.db:/app/vibe_commit.db
+

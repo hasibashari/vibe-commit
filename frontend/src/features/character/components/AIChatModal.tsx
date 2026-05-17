@@ -98,7 +98,7 @@ export const AIChatModal: React.FC<AIChatModalProps> = ({ isOpen, onClose, user,
             variant="primary"
             onClick={handleSend}
             disabled={!input.trim() || isTyping}
-            className="p-2.5 flex-shrink-0 mb-0.5 mr-0.5 rounded-lg h-auto"
+            className="p-2.5 shrink-0 mb-0.5 mr-0.5 rounded-lg h-auto"
           >
             <Send className="w-4 h-4" />
           </Button>

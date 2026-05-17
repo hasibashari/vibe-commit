@@ -71,13 +71,13 @@ export const StatusScene: React.FC<StatsProps> = ({ hp, mana, level, goals, nudg
                 <MessageCircle className="w-4 h-4 text-white" />
               </button>
 
-              <p className="text-sm text-slate-200 font-sans text-center leading-relaxed font-medium min-h-[40px] break-words cursor-default mt-0.5">
+              <p className="text-sm text-slate-200 font-sans text-center leading-relaxed font-medium min-h-[40px] wrap-break-word cursor-default mt-0.5">
                 "{displayedText}
                 {isTyping && <span className="inline-block w-1 h-3.5 ml-0.5 bg-cyan-400 animate-pulse align-middle"></span>}
                 "
               </p>
               {/* Bubble Tail */}
-              <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-slate-900/80 border-b border-r border-cyan-500/30 group-hover/chat:border-cyan-400/50 transform rotate-45 translate-y-[-1px] backdrop-blur-md transition-all duration-300"></div>
+              <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-slate-900/80 border-b border-r border-cyan-500/30 group-hover/chat:border-cyan-400/50 transform rotate-45 -translate-y-px backdrop-blur-md transition-all duration-300"></div>
             </div>
           </motion.div>
         </AnimatePresence>

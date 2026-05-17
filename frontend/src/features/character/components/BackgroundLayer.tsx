@@ -15,7 +15,7 @@ export const BackgroundLayer: React.FC<BackgroundLayerProps> = ({ imageUrl }) =>
         style={{ backgroundImage: `url(${bgImg})` }}
       />
       {/* Overlay to ensure UI readability */}
-      <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/60 to-slate-900/40" />
+      <div className="absolute inset-0 bg-linear-to-t from-slate-950 via-slate-900/60 to-slate-900/40" />
       
       {/* Optional decorative atmosphere elements */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-20">
