@@ -1,7 +1,8 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
 import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore';
-import firebaseConfig from '../../../../firebase-applet-config.json';
+
+const firebaseConfig = (import.meta as any).env?.VITE_FIREBASE_CONFIG || {};
 
 const app = initializeApp(firebaseConfig);
 
