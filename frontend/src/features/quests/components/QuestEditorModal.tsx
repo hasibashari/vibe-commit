@@ -66,7 +66,7 @@ export const QuestEditorModal: React.FC<QuestEditorModalProps> = ({ isOpen, onCl
           <div className="space-y-1.5">
             <label className="text-xs font-bold uppercase tracking-widest text-slate-500 flex justify-between">
               <span>Tingkat Kesulitan</span>
-              <span className="text-cyan-400 font-mono">{formData.difficulty.toFixed(1)}</span>
+              <span className="text-accent-400 font-mono">{formData.difficulty.toFixed(1)}</span>
             </label>
             <input 
               type="range" 
@@ -96,7 +96,7 @@ export const QuestEditorModal: React.FC<QuestEditorModalProps> = ({ isOpen, onCl
           <select 
               value={formData.category}
               onChange={(e) => setFormData({...formData, category: e.target.value})}
-              className="w-full h-11 bg-slate-900 border border-slate-800 text-sm rounded-lg px-4 focus:outline-none focus:border-cyan-500/50 transition-colors text-slate-200"
+              className="w-full h-11 bg-slate-900 border border-slate-800 text-sm rounded-lg px-4 focus:outline-none focus:border-accent-500/50 transition-colors text-slate-200"
           >
             <option value="Main Quest">👑 Main Quest (Tujuan Utama)</option>
             <option value="Daily Quest">📅 Daily Quest (Misi Harian)</option>

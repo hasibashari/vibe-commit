@@ -43,7 +43,7 @@ export function HubMonitoring({ goals }: HubMonitoringProps) {
     >
       <div className="flex flex-col gap-1 mb-2">
         <h3 className="text-lg md:text-xl font-bold text-white tracking-tight flex items-center gap-2">
-          <Activity className="w-5 h-5 text-cyan-400" />
+          <Activity className="w-5 h-5 text-accent-400" />
           Command Hub
         </h3>
         <p className="text-xs md:text-sm text-slate-400">Monitoring global progress dan statistik aktivitas.</p>
@@ -103,7 +103,7 @@ export function HubMonitoring({ goals }: HubMonitoringProps) {
             <div className="flex flex-col gap-3 min-w-0">
               <div className="px-1">
                 <h4 className="text-xs font-bold text-slate-300 tracking-widest uppercase flex items-center gap-2 mb-1.5">
-                  <TrendingUp className="w-4 h-4 text-cyan-500" /> Global Consistency
+                  <TrendingUp className="w-4 h-4 text-accent-500" /> Global Consistency
                 </h4>
                  <p className="text-xs font-mono text-slate-500 leading-relaxed">
                   Riwayat aktivitas 90 hari terakhir.

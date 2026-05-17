@@ -104,7 +104,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, u
             <button 
               onClick={() => updateSetting('language', 'id')}
               className={`py-2 px-3 text-sm font-bold uppercase tracking-wider rounded border transition-colors ${
-                settings.language === 'id' ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-400' : 'bg-slate-900 border-slate-800 text-slate-500 hover:bg-slate-800'
+                settings.language === 'id' ? 'bg-accent-500/20 border-accent-500/50 text-accent-400' : 'bg-slate-900 border-slate-800 text-slate-500 hover:bg-slate-800'
               }`}
             >
               Indonesian
@@ -112,7 +112,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, u
             <button 
               onClick={() => updateSetting('language', 'en')}
               className={`py-2 px-3 text-sm font-bold uppercase tracking-wider rounded border transition-colors ${
-                settings.language === 'en' ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-400' : 'bg-slate-900 border-slate-800 text-slate-500 hover:bg-slate-800'
+                settings.language === 'en' ? 'bg-accent-500/20 border-accent-500/50 text-accent-400' : 'bg-slate-900 border-slate-800 text-slate-500 hover:bg-slate-800'
               }`}
             >
               English
@@ -133,7 +133,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, u
             </div>
             <button 
               onClick={() => updateSetting('animations', !settings.animations)}
-              className={`relative w-12 h-6 rounded-full transition-colors ${settings.animations ? 'bg-cyan-500' : 'bg-slate-700'}`}
+              className={`relative w-12 h-6 rounded-full transition-colors ${settings.animations ? 'bg-accent-500' : 'bg-slate-700'}`}
             >
               <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${settings.animations ? 'translate-x-7' : 'translate-x-1'}`} />
             </button>
@@ -155,7 +155,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, u
             <select
               value={user.theme_vibe || 'midnight'}
               onChange={(e) => onUpdateUser({ theme_vibe: e.target.value })}
-              className="bg-slate-800 border border-slate-700 text-sm rounded-lg px-3 py-2 text-slate-200 outline-none focus:border-cyan-500 w-full sm:w-auto"
+              className="bg-slate-800 border border-slate-700 text-sm rounded-lg px-3 py-2 text-slate-200 outline-none focus:border-accent-500 w-full sm:w-auto"
             >
               <option value="midnight">Midnight Dev (Default)</option>
               <option value="emerald">Emerald Forest</option>
@@ -183,7 +183,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, u
             <select
               value={user.bgm_theme || 'dynamic'}
               onChange={(e) => onUpdateUser({ bgm_theme: e.target.value })}
-              className="bg-slate-800 border border-slate-700 text-sm rounded-lg px-3 py-2 text-slate-200 outline-none focus:border-cyan-500 w-full sm:w-auto"
+              className="bg-slate-800 border border-slate-700 text-sm rounded-lg px-3 py-2 text-slate-200 outline-none focus:border-accent-500 w-full sm:w-auto"
             >
               <option value="dynamic">Adaptive (Based on Anxiety)</option>
               <option value="nature">Nature / Acoustic</option>

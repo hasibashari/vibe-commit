@@ -3,6 +3,7 @@ export interface UserStats {
   name?: string;
   title?: string;
   avatar_color?: string;
+  avatar_icon?: string;
   custom_main_bg?: string;
   custom_char_bg?: string;
   custom_character?: string;

@@ -26,6 +26,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   const [name, setName] = useState(user?.name || '');
   const [title, setTitle] = useState(user?.title || '');
   const [avatarColor, setAvatarColor] = useState(user?.avatar_color || 'indigo');
+  const [avatarIcon, setAvatarIcon] = useState(user?.avatar_icon || 'shield');
   const [activeTab, setActiveTab] = useState<'profile' | 'badges' | 'shop'>('profile');
   const [isBuying, setIsBuying] = useState<string | null>(null);
 
@@ -35,15 +36,15 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   } catch(e) {}
 
   const colors = [
-    { id: 'indigo', hex: 'bg-indigo-500', ring: 'ring-indigo-400' },
-    { id: 'emerald', hex: 'bg-emerald-500', ring: 'ring-emerald-400' },
-    { id: 'amber', hex: 'bg-amber-500', ring: 'ring-amber-400' },
-    { id: 'cyan', hex: 'bg-cyan-500', ring: 'ring-cyan-400', premium: true, unlockId: 'aesthetic_color_cyan' },
-    { id: 'rose', hex: 'bg-rose-500', ring: 'ring-rose-400', premium: true, unlockId: 'aesthetic_color_rose' },
+    { id: 'indigo', hex: 'bg-indigo-500', ring: 'ring-indigo-400', text: 'text-indigo-400', from: 'from-indigo-500/20' },
+    { id: 'emerald', hex: 'bg-emerald-500', ring: 'ring-emerald-400', text: 'text-emerald-400', from: 'from-emerald-500/20' },
+    { id: 'amber', hex: 'bg-amber-500', ring: 'ring-amber-400', text: 'text-amber-400', from: 'from-amber-500/20' },
+    { id: 'cyan', hex: 'bg-accent-500', ring: 'ring-accent-400', text: 'text-accent-400', from: 'from-accent-500/20', premium: true, unlockId: 'aesthetic_color_cyan' },
+    { id: 'rose', hex: 'bg-rose-500', ring: 'ring-rose-400', text: 'text-rose-400', from: 'from-rose-500/20', premium: true, unlockId: 'aesthetic_color_rose' },
   ];
 
   const handleSave = async () => {
-    await onSaveProfile({ name, title, avatar_color: avatarColor });
+    await onSaveProfile({ name, title, avatar_color: avatarColor, avatar_icon: avatarIcon });
     onClose();
   };
 
@@ -114,6 +115,19 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
               className="flex flex-col gap-6"
             >
               <div className="flex flex-col gap-4">
+                <div className="flex items-center gap-4 bg-slate-800/30 p-4 rounded-xl border border-white/5 mb-2">
+                  <div className={`relative w-16 h-16 rounded-2xl flex flex-col items-center justify-center shadow-inner overflow-hidden ring-2 ${colors.find(c => c.id === avatarColor)?.ring || 'ring-indigo-400'}`}>
+                    <div className={cn("absolute inset-0 bg-gradient-to-tr to-purple-500/20", colors.find(c => c.id === avatarColor)?.from)}></div>
+                    <div className={cn("z-10", colors.find(c => c.id === avatarColor)?.text)}>
+                      {getIcon(avatarIcon)}
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-white font-mono text-lg">{name || 'Explorer'}</h3>
+                    <p className="text-sm text-slate-400">{title || 'Novice Operative'}</p>
+                  </div>
+                </div>
+
                 <Input 
                   label="Call Sign (Name)"
                   value={name} 
@@ -196,11 +210,29 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                         {getIcon(ach.icon)}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h5 className="text-sm font-bold text-slate-200 truncate">{ach.title}</h5>
+                        <div className="flex justify-between items-start gap-2">
+                          <h5 className="text-sm font-bold text-slate-200 truncate">{ach.title}</h5>
+                          {ach.isUnlocked && (
+                            <button
+                              onClick={() => {
+                                setAvatarIcon(ach.icon);
+                                setActiveTab('profile'); // Send them back to profile to see it, and save it.
+                              }}
+                              className={cn(
+                                "text-[10px] px-2 py-1 rounded-sm uppercase tracking-wider font-bold transition-colors border",
+                                avatarIcon === ach.icon 
+                                  ? "bg-indigo-500/20 text-indigo-300 border-indigo-500/30" 
+                                  : "bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700 hover:text-white"
+                              )}
+                            >
+                              {avatarIcon === ach.icon ? 'Equipped' : 'Equip'}
+                            </button>
+                          )}
+                        </div>
                         <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">{ach.description}</p>
                         <div className="mt-2 h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
                           <div 
-                            className={cn("h-full transition-all duration-1000", ach.isUnlocked ? "bg-cyan-400" : "bg-slate-500")}
+                            className={cn("h-full transition-all duration-1000", ach.isUnlocked ? "bg-accent-400" : "bg-slate-500")}
                             style={{ width: `${(ach.progress / (ach.maxProgress || 1)) * 100}%` }}
                           />
                         </div>
@@ -246,7 +278,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                     disabled={coins < 150 || isBuying === 'hp_elixir'}
                     onClick={async () => {
                       setIsBuying('hp_elixir');
-                      await buyItem('hp_elixir', 150);
+                      await buyItem('hp_elixir', 150, coins);
                       setIsBuying(null);
                     }}
                   >
@@ -274,7 +306,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                     disabled={coins < 200 || isBuying === 'mana_tonic'}
                     onClick={async () => {
                       setIsBuying('mana_tonic');
-                      await buyItem('mana_tonic', 200);
+                      await buyItem('mana_tonic', 200, coins);
                       setIsBuying(null);
                     }}
                   >
@@ -309,7 +341,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                     disabled={coins < 500 || isBuying === 'streak_shield'}
                     onClick={async () => {
                       setIsBuying('streak_shield');
-                      await buyItem('streak_shield', 500);
+                      await buyItem('streak_shield', 500, coins);
                       setIsBuying(null);
                     }}
                   >
@@ -324,14 +356,14 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                 {/* Aesthetics Heading */}
                 <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest mt-4">Aesthetics</h4>
 
-                {/* Cyberpunk Cyan Avatar */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-xl border bg-slate-900 border-slate-800 hover:border-cyan-500/30 transition-colors group">
-                  <div className="w-12 h-12 shrink-0 rounded-full flex items-center justify-center shadow-inner bg-cyan-500/20 text-cyan-400 group-hover:scale-110 transition-transform">
+                {/* Adaptive Accent Avatar */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-xl border bg-slate-900 border-slate-800 hover:border-accent-500/30 transition-colors group">
+                  <div className="w-12 h-12 shrink-0 rounded-full flex items-center justify-center shadow-inner bg-accent-500/20 text-accent-400 group-hover:scale-110 transition-transform">
                     <Palette className="w-6 h-6" fill="currentColor" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h5 className="text-sm font-bold text-slate-200">Warna Premium: Cyberpunk Cyan</h5>
-                    <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">Buka warna cyan yang menyala terang untuk avatarmu.</p>
+                    <h5 className="text-sm font-bold text-slate-200">Warna Premium: Adaptive Accent</h5>
+                    <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">Buka warna yang menyala terang dan beradaptasi dengan tema senada.</p>
                   </div>
                   <Button 
                     variant="primary" 
@@ -340,7 +372,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                     disabled={unlockedItems.includes('aesthetic_color_cyan') || coins < 300 || user.level < 5 || isBuying === 'aesthetic_color_cyan'}
                     onClick={async () => {
                       setIsBuying('aesthetic_color_cyan');
-                      await buyItem('aesthetic_color_cyan', 300);
+                      await buyItem('aesthetic_color_cyan', 300, coins);
                       setIsBuying(null);
                     }}
                   >
@@ -368,7 +400,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                     disabled={unlockedItems.includes('aesthetic_color_rose') || coins < 300 || user.level < 5 || isBuying === 'aesthetic_color_rose'}
                     onClick={async () => {
                       setIsBuying('aesthetic_color_rose');
-                      await buyItem('aesthetic_color_rose', 300);
+                      await buyItem('aesthetic_color_rose', 300, coins);
                       setIsBuying(null);
                     }}
                   >
@@ -396,7 +428,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                     disabled={unlockedItems.includes('aesthetic_theme_matrix') || coins < 800 || user.level < 8 || isBuying === 'aesthetic_theme_matrix'}
                     onClick={async () => {
                       setIsBuying('aesthetic_theme_matrix');
-                      await buyItem('aesthetic_theme_matrix', 800);
+                      await buyItem('aesthetic_theme_matrix', 800, coins);
                       setIsBuying(null);
                     }}
                   >
@@ -424,7 +456,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                     disabled={unlockedItems.includes('aesthetic_theme_neon') || coins < 800 || user.level < 8 || isBuying === 'aesthetic_theme_neon'}
                     onClick={async () => {
                       setIsBuying('aesthetic_theme_neon');
-                      await buyItem('aesthetic_theme_neon', 800);
+                      await buyItem('aesthetic_theme_neon', 800, coins);
                       setIsBuying(null);
                     }}
                   >
@@ -452,7 +484,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                     disabled={unlockedItems.includes('aesthetic_title_vanguard') || coins < 1000 || isBuying === 'aesthetic_title_vanguard'}
                     onClick={async () => {
                       setIsBuying('aesthetic_title_vanguard');
-                      await buyItem('aesthetic_title_vanguard', 1000);
+                      await buyItem('aesthetic_title_vanguard', 1000, coins);
                       onSaveProfile({ title: 'Code Vanguard' });
                       setIsBuying(null);
                     }}
@@ -481,7 +513,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                     disabled={unlockedItems.includes('aesthetic_title_legendary') || coins < 1500 || isBuying === 'aesthetic_title_legendary'}
                     onClick={async () => {
                       setIsBuying('aesthetic_title_legendary');
-                      await buyItem('aesthetic_title_legendary', 1500);
+                      await buyItem('aesthetic_title_legendary', 1500, coins);
                       onSaveProfile({ title: 'Legendary Committer' });
                       setIsBuying(null);
                     }}

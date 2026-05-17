@@ -28,14 +28,24 @@
   --color-surface-raised: #0f1219;
   --color-surface-overlay: #1a1f2e;
   --color-border: rgba(148, 163, 184, 0.15);
-  --color-border-active: rgba(6, 182, 212, 0.5);
+  --color-border-active: rgba(var(--theme-500-rgb), 0.5);
   
   /* Status Colors */
   --color-hp: #10b981;
-  --color-mana: #06b6d4;
+  --color-mana: var(--theme-500);
   --color-exp: #f59e0b;
   --color-danger: #f43f5e;
-  --color-accent: #06b6d4;
+  --color-accent: var(--theme-500);
+
+  /* Map accent to our theme variables */
+  --color-accent-200: var(--theme-200);
+  --color-accent-300: var(--theme-300);
+  --color-accent-400: var(--theme-400);
+  --color-accent-500: var(--theme-500);
+  --color-accent-600: var(--theme-600);
+  --color-accent-700: var(--theme-700);
+  --color-accent-800: var(--theme-800);
+  --color-accent-900: var(--theme-900);
 
   /* Component Tokens */
   --radius-sm: 0.375rem;
@@ -43,6 +53,12 @@
   --radius-lg: 0.75rem;
   --radius-xl: 1rem;
   --radius-modal: 1rem;
+
+  /* Premium Adaptive Surface Injection */
+  --color-slate-950: rgba(var(--surface-base), 1);
+  --color-slate-900: rgba(var(--surface-raised), 1);
+  --color-slate-800: rgba(var(--surface-overlay), 1);
+  --color-slate-700: rgba(var(--surface-border), 1);
 
   @keyframes scanline {
     from {
@@ -52,6 +68,107 @@
       transform: translateY(100%);
     }
   }
+}
+
+:root {
+  /* Default Cyan (Midnight/Default) */
+  --theme-200: #a5f3fc;
+  --theme-300: #67e8f9;
+  --theme-400: #22d3ee;
+  --theme-500: #06b6d4;
+  --theme-600: #0891b2;
+  --theme-700: #0e7490;
+  --theme-800: #155e75;
+  --theme-900: #164e63;
+  --theme-400-rgb: 34, 211, 238;
+  --theme-500-rgb: 6, 182, 212;
+  --theme-500-glow: rgba(6, 182, 212, 0.4);
+
+  /* Default Surface mapping - Midnight Blue-Gray */
+  --surface-base: 2, 6, 23;        /* slate-950 */
+  --surface-raised: 15, 23, 42;    /* slate-900 */
+  --surface-overlay: 30, 41, 59;   /* slate-800 */
+  --surface-border: 51, 65, 85;    /* slate-700 */
+}
+
+/* Vibe Overrides - Surface Colors that blend better with themes */
+[data-theme="matrix"] {
+  --surface-base: 0, 5, 2;
+  --surface-raised: 2, 18, 10;
+  --surface-overlay: 4, 30, 18;
+  --surface-border: 6, 50, 30;
+
+  --theme-200: #a7f3d0;
+  --theme-300: #6ee7b7;
+  --theme-400: #34d399;
+  --theme-500: #10b981;
+  --theme-600: #059669;
+  --theme-700: #047857;
+  --theme-800: #065f46;
+  --theme-900: #064e3b;
+  --theme-400-rgb: 52, 211, 153;
+  --theme-500-rgb: 16, 185, 129;
+  --theme-500-glow: rgba(16, 185, 129, 0.4);
+}
+
+[data-theme="neon"] {
+  --surface-base: 10, 0, 15;
+  --surface-raised: 25, 5, 35;
+  --surface-overlay: 45, 10, 60;
+  --surface-border: 65, 20, 85;
+
+  /* Synthwave Purple/Pink */
+  --theme-200: #f5d0fe;
+  --theme-300: #f0abfc;
+  --theme-400: #e879f9;
+  --theme-500: #d946ef;
+  --theme-600: #c026d3;
+  --theme-700: #a21caf;
+  --theme-800: #86198f;
+  --theme-900: #701a75;
+  --theme-400-rgb: 232, 121, 249;
+  --theme-500-rgb: 217, 70, 239;
+  --theme-500-glow: rgba(217, 70, 239, 0.4);
+}
+
+[data-theme="sunset"] {
+  --surface-base: 15, 5, 0;
+  --surface-raised: 30, 10, 2;
+  --surface-overlay: 50, 18, 5;
+  --surface-border: 75, 25, 10;
+
+  /* Retro Sunset Orange */
+  --theme-200: #fed7aa;
+  --theme-300: #fdba74;
+  --theme-400: #fb923c;
+  --theme-500: #f97316;
+  --theme-600: #ea580c;
+  --theme-700: #c2410c;
+  --theme-800: #9a3412;
+  --theme-900: #7c2d12;
+  --theme-400-rgb: 251, 146, 60;
+  --theme-500-rgb: 249, 115, 22;
+  --theme-500-glow: rgba(249, 115, 22, 0.4);
+}
+
+[data-theme="emerald"] {
+  --surface-base: 1, 10, 5;
+  --surface-raised: 5, 25, 15;
+  --surface-overlay: 10, 40, 25;
+  --surface-border: 15, 60, 35;
+
+  /* Emerald Forest Green (Slightly different from Matrix, softer) */
+  --theme-200: #bbf7d0;
+  --theme-300: #86efac;
+  --theme-400: #4ade80;
+  --theme-500: #22c55e;
+  --theme-600: #16a34a;
+  --theme-700: #15803d;
+  --theme-800: #166534;
+  --theme-900: #14532d;
+  --theme-400-rgb: 74, 222, 128;
+  --theme-500-rgb: 34, 197, 94;
+  --theme-500-glow: rgba(34, 197, 94, 0.4);
 }
 
 

@@ -19,7 +19,7 @@ export const BackgroundLayer: React.FC<BackgroundLayerProps> = ({ imageUrl }) =>
       
       {/* Optional decorative atmosphere elements */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-20">
-        <div className="absolute w-[300px] h-[300px] bg-cyan-500/20 top-[-100px] left-[-100px] rounded-full blur-3xl mix-blend-screen" />
+        <div className="absolute w-[300px] h-[300px] bg-accent-500/20 top-[-100px] left-[-100px] rounded-full blur-3xl mix-blend-screen" />
         <div className="absolute w-[300px] h-[300px] bg-emerald-500/10 bottom-1/4 right-[-100px] rounded-full blur-3xl mix-blend-screen" />
       </div>
     </div>

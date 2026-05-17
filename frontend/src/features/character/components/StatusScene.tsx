@@ -41,8 +41,8 @@ export const StatusScene: React.FC<StatsProps> = ({ hp, mana, level, goals, nudg
       <div className="absolute top-6 left-0 w-full px-6 flex justify-between items-start z-20">
         <div className="flex flex-col">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-            <p className="text-xs text-cyan-400 font-mono tracking-widest uppercase mt-1 drop-shadow-md">
+            <Sparkles className="w-3.5 h-3.5 text-accent-400" />
+            <p className="text-xs text-accent-400 font-mono tracking-widest uppercase mt-1 drop-shadow-md">
               AI Companion
             </p>
           </div>
@@ -60,7 +60,7 @@ export const StatusScene: React.FC<StatsProps> = ({ hp, mana, level, goals, nudg
             exit={{ opacity: 0, y: -10, scale: 0.9 }}
             className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 w-[85vw] max-w-[260px] lg:max-w-[250px] z-20 group/chat"
           >
-            <div className="bg-slate-900/80 hover:bg-slate-800/90 backdrop-blur-md border border-cyan-500/30 group-hover/chat:border-cyan-400/50 rounded-2xl p-3 shadow-[0_0_20px_rgba(34,211,238,0.1)] group-hover/chat:shadow-[0_0_25px_rgba(34,211,238,0.2)] relative transition-all duration-300">
+            <div className="bg-slate-900/80 hover:bg-slate-800/90 backdrop-blur-md border border-accent-500/30 group-hover/chat:border-accent-400/50 rounded-2xl p-3 shadow-[0_0_20px_rgba(var(--theme-400-rgb),0.1)] group-hover/chat:shadow-[0_0_25px_rgba(var(--theme-400-rgb),0.2)] relative transition-all duration-300">
 
               
               <button 
@@ -73,7 +73,7 @@ export const StatusScene: React.FC<StatsProps> = ({ hp, mana, level, goals, nudg
 
               <p className="text-sm text-slate-200 font-sans text-center leading-relaxed font-medium min-h-[40px] wrap-break-word cursor-default mt-0.5">
                 "{displayedText}
-                {isTyping && <span className="inline-block w-1 h-3.5 ml-0.5 bg-cyan-400 animate-pulse align-middle"></span>}
+                {isTyping && <span className="inline-block w-1 h-3.5 ml-0.5 bg-accent-400 animate-pulse align-middle"></span>}
                 "
               </p>
               {/* Bubble Tail */}

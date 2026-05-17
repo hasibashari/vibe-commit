@@ -178,10 +178,10 @@ export function QuestPanel({
             onClick={() => toggleCategory('Daily Quest')}
             className="flex items-center justify-between px-1 group"
           >
-            <h3 className={`text-xs font-bold uppercase tracking-[0.2em] flex items-center gap-2 transition-colors ${expandedCategory === 'Daily Quest' ? 'text-cyan-300' : 'text-cyan-400/70 group-hover:text-cyan-300'}`}>
+            <h3 className={`text-xs font-bold uppercase tracking-[0.2em] flex items-center gap-2 transition-colors ${expandedCategory === 'Daily Quest' ? 'text-accent-300' : 'text-accent-400/70 group-hover:text-accent-300'}`}>
               <Calendar className="w-4 h-4" /> Daily Quest ({dailyQuests.length})
             </h3>
-            {expandedCategory !== 'Daily Quest' ? <ChevronUp className="w-4 h-4 text-slate-500 group-hover:text-cyan-400/70" /> : <ChevronDown className="w-4 h-4 text-slate-500 group-hover:text-cyan-400/70" />}
+            {expandedCategory !== 'Daily Quest' ? <ChevronUp className="w-4 h-4 text-slate-500 group-hover:text-accent-400/70" /> : <ChevronDown className="w-4 h-4 text-slate-500 group-hover:text-accent-400/70" />}
           </button>
 
           <div className={`space-y-3 overflow-hidden transition-all duration-300 ${expandedCategory === 'Daily Quest' ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0 pointer-events-none'}`}>

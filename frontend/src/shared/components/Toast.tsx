@@ -50,13 +50,13 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 "pointer-events-auto flex items-start gap-3 p-4 rounded-xl border shadow-lg bg-surface/95 backdrop-blur-xl",
                 t.type === 'success' && "border-emerald-500/20",
                 t.type === 'error' && "border-rose-500/20",
-                t.type === 'info' && "border-cyan-500/20"
+                t.type === 'info' && "border-accent-500/20"
               )}
             >
               <div className="shrink-0 mt-0.5">
                 {t.type === 'success' && <CheckCircle className="w-5 h-5 text-emerald-400" />}
                 {t.type === 'error' && <AlertCircle className="w-5 h-5 text-rose-400" />}
-                {t.type === 'info' && <Info className="w-5 h-5 text-cyan-400" />}
+                {t.type === 'info' && <Info className="w-5 h-5 text-accent-400" />}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold text-white">{t.title}</p>

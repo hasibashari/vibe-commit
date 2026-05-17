@@ -90,12 +90,32 @@ export function useDashboardState() {
     }
   };
 
-  const buyItem = async (itemId: string, cost: number) => {
+  const updateSandbox = async (payload: { hp?: number | null; mana?: number | null; level?: number | null; coins_delta?: number | null }) => {
+    try {
+      const res = await fetch(`/api/user/${user.id || DEFAULT_USER_ID}/sandbox`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setUser(prev => ({ ...prev, ...data }));
+        if (payload.level !== undefined && payload.level !== null) {
+          const allLogs = goals.flatMap(g => g.logs || []);
+          setAchievements(calculateAchievements(allLogs, data.level));
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const buyItem = async (itemId: string, cost: number, overrideCoins?: number | null) => {
     try {
       const res = await fetch(`/api/user/${user.id || DEFAULT_USER_ID}/buy-item`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ itemId, cost }),
+        body: JSON.stringify({ itemId, cost, overrideCoins }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({ error: 'Pembelian gagal' }));
@@ -132,6 +152,7 @@ export function useDashboardState() {
     recentlyCompletedIds,
     updateProfile,
     resetProfile,
+    updateSandbox,
     buyItem,
     isLoading
   };

@@ -1,12 +1,9 @@
 import React, { useState } from 'react';
 import { Settings, X, Unlock, Zap, Coins } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import type { UserStats } from '../types/user';
 
 export type DevOverrides = {
-  hp: number | null;
-  mana: number | null;
-  level: number | null;
-  coins: number | null;
   anxietyScore: number | null;
   sigmaVariance: number | null;
   themeVibe: string | null;
@@ -17,9 +14,11 @@ export type DevOverrides = {
 type DevSandboxPanelProps = {
   overrides: DevOverrides;
   setOverrides: React.Dispatch<React.SetStateAction<DevOverrides>>;
+  user: UserStats;
+  sandboxAction: (payload: { hp?: number | null; mana?: number | null; level?: number | null; coins_delta?: number | null }) => Promise<void>;
 };
 
-export const DevSandboxPanel: React.FC<DevSandboxPanelProps> = ({ overrides, setOverrides }) => {
+export const DevSandboxPanel: React.FC<DevSandboxPanelProps> = ({ overrides, setOverrides, user, sandboxAction }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const updateOverride = (key: keyof DevOverrides, value: any) => {
@@ -58,63 +57,63 @@ export const DevSandboxPanel: React.FC<DevSandboxPanelProps> = ({ overrides, set
 
             <div className="p-4 space-y-6 overflow-y-auto max-h-[70vh] custom-scrollbar">
               
-              {/* STATS CONTROLLER */}
+              {/* STATS CONTROLLER (Saved to DB) */}
               <div className="space-y-4">
-                <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Stats Controller</h4>
+                <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex justify-between">
+                  <span>Game State (Real DB)</span>
+                  <span className="text-fuchsia-500/70 lowercase normal-case">persists</span>
+                </h4>
                 
                 <div className="space-y-2">
                   <div className="flex justify-between text-xs text-slate-300">
-                    <span>HP Override</span>
-                    <span>{overrides.hp !== null ? overrides.hp : 'Default'}</span>
+                    <span>HP Base</span>
+                    <span>{user.hp} / 100</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <input 
                       type="range" min="0" max="100" 
-                      value={overrides.hp !== null ? overrides.hp : ''}
-                      onChange={(e) => updateOverride('hp', parseInt(e.target.value))}
+                      value={user.hp || 0}
+                      onChange={(e) => sandboxAction({ hp: parseInt(e.target.value) })}
                       className="w-full accent-fuchsia-500"
                     />
-                    <button onClick={() => updateOverride('hp', null)} className="text-[10px] text-fuchsia-400 px-2 py-1 bg-fuchsia-400/10 rounded">Reset</button>
+                    <button onClick={() => sandboxAction({ hp: 100 })} className="text-[10px] text-fuchsia-400 px-2 py-1 bg-fuchsia-400/10 rounded">Max</button>
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <div className="flex justify-between text-xs text-slate-300">
-                    <span>Mana Override</span>
-                    <span>{overrides.mana !== null ? overrides.mana : 'Default'}</span>
+                    <span>Mana Base</span>
+                    <span>{user.mana} / 100</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <input 
                       type="range" min="0" max="100" 
-                      value={overrides.mana !== null ? overrides.mana : ''}
-                      onChange={(e) => updateOverride('mana', parseInt(e.target.value))}
+                      value={user.mana || 0}
+                      onChange={(e) => sandboxAction({ mana: parseInt(e.target.value) })}
                       className="w-full accent-fuchsia-500"
                     />
-                    <button onClick={() => updateOverride('mana', null)} className="text-[10px] text-fuchsia-400 px-2 py-1 bg-fuchsia-400/10 rounded">Reset</button>
+                    <button onClick={() => sandboxAction({ mana: 100 })} className="text-[10px] text-fuchsia-400 px-2 py-1 bg-fuchsia-400/10 rounded">Max</button>
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <div className="flex justify-between text-xs text-slate-300">
-                    <span>Coins Override</span>
-                    <span>{overrides.coins !== null ? overrides.coins : 'Default'}</span>
+                    <span>Coins Increment</span>
                   </div>
                   <div className="flex gap-2">
-                    <button onClick={() => updateOverride('coins', (overrides.coins || 0) + 100)} className="flex-1 text-[10px] py-1.5 bg-slate-800 rounded border border-slate-700 hover:bg-slate-700 text-slate-200 flex items-center justify-center gap-1"><Coins className="w-3 h-3"/> +100</button>
-                    <button onClick={() => updateOverride('coins', (overrides.coins || 0) + 1000)} className="flex-1 text-[10px] py-1.5 bg-slate-800 rounded border border-slate-700 hover:bg-slate-700 text-slate-200 flex items-center justify-center gap-1"><Coins className="w-3 h-3"/> +1000</button>
-                    <button onClick={() => updateOverride('coins', null)} className="px-3 text-[10px] py-1.5 bg-fuchsia-400/10 text-fuchsia-400 rounded">Reset</button>
+                    <button onClick={() => sandboxAction({ coins_delta: 100 })} className="flex-1 text-[10px] py-1.5 bg-slate-800 rounded border border-slate-700 hover:bg-slate-700 text-slate-200 flex items-center justify-center gap-1"><Coins className="w-3 h-3"/> +100</button>
+                    <button onClick={() => sandboxAction({ coins_delta: 1000 })} className="flex-1 text-[10px] py-1.5 bg-slate-800 rounded border border-slate-700 hover:bg-slate-700 text-slate-200 flex items-center justify-center gap-1"><Coins className="w-3 h-3"/> +1000</button>
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <div className="flex justify-between text-xs text-slate-300">
                     <span>Level Override</span>
-                    <span>{overrides.level !== null ? `Level ${overrides.level}` : 'Default'}</span>
+                    <span>{`Level ${user.level}`}</span>
                   </div>
                   <div className="flex gap-2">
-                    <button onClick={() => updateOverride('level', 1)} className="flex-1 text-[10px] py-1.5 bg-slate-800 rounded border border-slate-700 hover:bg-slate-700 text-slate-200">Level 1</button>
-                    <button onClick={() => updateOverride('level', 10)} className="flex-1 text-[10px] py-1.5 bg-slate-800 rounded border border-slate-700 hover:bg-slate-700 text-slate-200">Level 10</button>
-                    <button onClick={() => updateOverride('level', null)} className="px-3 text-[10px] py-1.5 bg-fuchsia-400/10 text-fuchsia-400 rounded">Reset</button>
+                    <button onClick={() => sandboxAction({ level: 1 })} className="flex-1 text-[10px] py-1.5 bg-slate-800 rounded border border-slate-700 hover:bg-slate-700 text-slate-200">Level 1</button>
+                    <button onClick={() => sandboxAction({ level: 10 })} className="flex-1 text-[10px] py-1.5 bg-slate-800 rounded border border-slate-700 hover:bg-slate-700 text-slate-200">Level 10</button>
                   </div>
                 </div>
               </div>

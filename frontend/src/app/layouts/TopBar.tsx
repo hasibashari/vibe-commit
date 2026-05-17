@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Heart, Zap, Star, Shield, Settings, Volume2, VolumeX } from 'lucide-react';
+import { Heart, Zap, Star, Shield, Sword, Swords, Crown, Trophy, Settings, Volume2, VolumeX } from 'lucide-react';
 import { useAudio } from '../providers/AudioProvider';
 import { Button } from '../../shared/components/Button';
 
@@ -22,13 +22,26 @@ export const TopBar: React.FC<TopBarProps> = ({ hp, mana, level, exp, coins, use
   const avatarColorMap: Record<string, { from: string; text: string }> = {
     indigo: { from: 'from-indigo-500/20', text: 'text-indigo-400' },
     rose: { from: 'from-rose-500/20', text: 'text-rose-400' },
-    cyan: { from: 'from-cyan-500/20', text: 'text-cyan-400' },
+    cyan: { from: 'from-accent-500/20', text: 'text-accent-400' },
     emerald: { from: 'from-emerald-500/20', text: 'text-emerald-400' },
     amber: { from: 'from-amber-500/20', text: 'text-amber-400' },
   };
 
   const cColor = user?.avatar_color || 'indigo';
   const colorClasses = avatarColorMap[cColor] || avatarColorMap.indigo;
+
+  const getIcon = (iconName: string, className: string) => {
+    switch (iconName) {
+      case 'Sword': return <Sword className={className} />;
+      case 'Shield': return <Shield className={className} />;
+      case 'Swords': return <Swords className={className} />;
+      case 'Star': return <Star className={className} />;
+      case 'Crown': return <Crown className={className} />;
+      default: return <Trophy className={className} />;
+    }
+  };
+
+  const avatarIcon = user?.avatar_icon || 'Shield';
 
   return (
     <header className="sticky top-0 z-50 transition-all duration-300 w-full bg-surface/95 backdrop-blur-xl border-b border-white/5 flex flex-col lg:flex-row lg:items-center justify-between px-4 pb-3 pt-[max(env(safe-area-inset-top,0px),0.75rem)] md:px-6 shadow-sm gap-4 lg:gap-0">
@@ -38,11 +51,11 @@ export const TopBar: React.FC<TopBarProps> = ({ hp, mana, level, exp, coins, use
         <div className="flex items-center gap-3">
           <button onClick={onOpenProfile} className="relative w-10 h-10 md:w-12 md:h-12 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center overflow-hidden shadow-inner group hover:border-slate-400 transition-colors shrink-0">
             <div className={`absolute inset-0 bg-linear-to-tr ${colorClasses.from} to-purple-500/20`}></div>
-            <Shield className={`w-5 h-5 md:w-6 md:h-6 ${colorClasses.text} group-hover:scale-110 transition-transform`} />
+            {getIcon(avatarIcon, `w-5 h-5 md:w-6 md:h-6 ${colorClasses.text} group-hover:scale-110 transition-transform`)}
           </button>
           
           <div className="flex flex-col">
-            <button onClick={onOpenProfile} className="font-display text-sm md:text-base font-bold text-white tracking-wide text-left hover:text-cyan-400 transition-colors">
+            <button onClick={onOpenProfile} className="font-display text-sm md:text-base font-bold text-white tracking-wide text-left hover:text-accent-400 transition-colors">
               {user?.name || 'Player_One'}
             </button>
             <span className="text-xs font-mono text-slate-400 uppercase tracking-widest">{user?.title || 'Novice Operative'}</span>
@@ -92,7 +105,7 @@ export const TopBar: React.FC<TopBarProps> = ({ hp, mana, level, exp, coins, use
         {/* MP Bar */}
         <div className="flex flex-col gap-1 min-w-[80px] flex-1 lg:flex-none lg:w-32">
           <div className="flex justify-between items-center text-xs font-bold tracking-widest uppercase">
-            <span className="text-cyan-400 flex items-center gap-1"><Zap className="w-3 h-3" fill="currentColor" /> MP</span>
+            <span className="text-accent-400 flex items-center gap-1"><Zap className="w-3 h-3" fill="currentColor" /> MP</span>
             <span className="text-slate-200">{mana.toFixed(0)}</span>
           </div>
           <div className="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden border border-white/5">
