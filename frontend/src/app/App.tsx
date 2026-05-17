@@ -20,6 +20,7 @@ import { MainLayout } from './layouts/MainLayout';
 import { DashboardLayout } from './layouts/DashboardLayout';
 import { DevSandboxPanel } from '../shared/components/DevSandboxPanel';
 import { calculateStats } from '../shared/utils/vibeMath';
+import { getWeatherState } from '../shared/utils/weatherUtils';
 import type { Goal } from '../shared/types/goal';
 import { useAppContext } from './providers/AppProvider';
 import { useDashboardContext } from './providers/DashboardProvider';
@@ -156,6 +157,8 @@ export default function App() {
   const effectiveAnxietyScore = devOverrides.anxietyScore !== null ? devOverrides.anxietyScore : (latestDump?.anxietyScore || 5);
   const effectiveSigmaVariance = devOverrides.sigmaVariance !== null ? devOverrides.sigmaVariance : stats.sigma;
   
+  const effectiveWeather = getWeatherState(effectiveAnxietyScore, effectiveSigmaVariance);
+
   const effectiveAchievements = devOverrides.unlockAllBadges 
     ? achievements.map(a => ({ ...a, isUnlocked: true, progress: 100 }))
     : achievements;
@@ -256,7 +259,7 @@ export default function App() {
           activeTab={activeTab}
           rightSidebar={
             <>
-              <StatusScene hp={effectiveUser.hp} mana={effectiveUser.mana} level={effectiveUser.level} goals={goals} nudge={nudge} userName={effectiveUser.name} customCharBg={effectiveUser.custom_char_bg} customCharacter={effectiveUser.custom_character} />
+              <StatusScene hp={effectiveUser.hp} mana={effectiveUser.mana} level={effectiveUser.level} goals={goals} nudge={nudge} userName={effectiveUser.name} customCharBg={effectiveUser.custom_char_bg} customCharacter={effectiveUser.custom_character} weather={effectiveWeather} />
               <BurnoutWarning burnoutMonitor={burnoutMonitor} />
             </>
           }
