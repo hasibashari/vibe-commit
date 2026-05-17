@@ -38,7 +38,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={{ toast }}>
       {children}
-      <div className="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-[200] flex flex-col gap-2 pointer-events-none w-full max-w-sm">
+      <div className="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-200 flex flex-col gap-2 pointer-events-none w-full max-w-sm">
         <AnimatePresence>
           {toasts.map((t) => (
             <motion.div
@@ -47,7 +47,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, x: 20, scale: 0.95 }}
               className={cn(
-                "pointer-events-auto flex items-start gap-3 p-4 rounded-xl border shadow-lg bg-[#0A0C10]/95 backdrop-blur-xl",
+                "pointer-events-auto flex items-start gap-3 p-4 rounded-xl border shadow-lg bg-surface/95 backdrop-blur-xl",
                 t.type === 'success' && "border-emerald-500/20",
                 t.type === 'error' && "border-rose-500/20",
                 t.type === 'info' && "border-cyan-500/20"
@@ -68,7 +68,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 variant="ghost"
                 size="icon"
                 onClick={() => removeToast(t.id)}
-                className="shrink-0 w-6 h-6 !p-0 text-slate-500 hover:text-white transition-colors"
+                className="shrink-0 w-6 h-6 p-0! text-slate-500 hover:text-white transition-colors"
                 aria-label="Close"
               >
                 <X className="w-4 h-4" />

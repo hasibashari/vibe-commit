@@ -63,12 +63,12 @@ export const VibeEnvironment: React.FC<VibeEnvironmentProps> = ({
   const theme = THEMES[themeVibe] || THEMES.midnight;
 
   return (
-    <div className={`fixed inset-0 z-[-1] pointer-events-none overflow-hidden transition-colors duration-[2000ms] ${theme.bg}`}>
+    <div className={`fixed inset-0 z-[-1] pointer-events-none overflow-hidden transition-colors duration-2000 ${theme.bg}`}>
       
       {/* 1. Cinematic RPG Background Image */}
       <div 
-        className={`absolute inset-0 bg-cover bg-[center_top] bg-no-repeat transition-all duration-[3000ms] ease-in-out ${
-          isLush ? 'opacity-[0.35] mix-blend-screen' : 'opacity-[0.15] mix-blend-luminosity grayscale-[50%]'
+        className={`absolute inset-0 bg-cover bg-position-[center_top] bg-no-repeat transition-all duration-3000 ease-in-out ${
+          isLush ? 'opacity-[0.35] mix-blend-screen' : 'opacity-[0.15] mix-blend-luminosity grayscale-50'
         }`}
         style={{
           // A stylized dark fantasy / Sci-Fi moody landscape
@@ -78,7 +78,7 @@ export const VibeEnvironment: React.FC<VibeEnvironmentProps> = ({
       />
 
       {/* 2. Atmosphere & Readability Overlays */}
-      <div className={`absolute inset-0 bg-gradient-to-b transition-all duration-[2000ms] ease-in-out ${
+      <div className={`absolute inset-0 bg-linear-to-b transition-all duration-2000 ease-in-out ${
         isLush ? theme.overlayLush : theme.overlayDark
       }`} />
       
@@ -89,13 +89,13 @@ export const VibeEnvironment: React.FC<VibeEnvironmentProps> = ({
       {fogOpacity > 0 && (
         <React.Fragment>
           <motion.div 
-            className="absolute inset-0 bg-gradient-to-t from-slate-200 to-transparent mix-blend-overlay transition-opacity duration-1000 pointer-events-none"
+            className="absolute inset-0 bg-linear-to-t from-slate-200 to-transparent mix-blend-overlay transition-opacity duration-1000 pointer-events-none"
             style={{ opacity: fogOpacity * 0.5 }}
           />
           <motion.div 
             animate={{ x: [0, -200, 0] }}
             transition={{ repeat: Infinity, duration: 40, ease: "linear" }}
-            className="absolute bottom-[15vh] -left-[50%] w-[200%] h-[20vh] bg-gradient-to-r from-transparent via-slate-400/10 to-transparent blur-3xl pointer-events-none"
+            className="absolute bottom-[15vh] left-[-50%] w-[200%] h-[20vh] bg-linear-to-r from-transparent via-slate-400/10 to-transparent blur-3xl pointer-events-none"
             style={{ opacity: fogOpacity + 0.2 }}
           />
         </React.Fragment>
