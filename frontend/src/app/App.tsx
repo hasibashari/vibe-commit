@@ -18,6 +18,7 @@ import { HubMonitoring } from '../features/dashboard/components/HubMonitoring';
 import { BurnoutWarning } from '../features/character/components/BurnoutWarning';
 import { MainLayout } from './layouts/MainLayout';
 import { DashboardLayout } from './layouts/DashboardLayout';
+import { DevSandboxPanel } from '../shared/components/DevSandboxPanel';
 import { calculateStats } from '../shared/utils/vibeMath';
 import type { Goal } from '../shared/types/goal';
 import { useAppContext } from './providers/AppProvider';
@@ -130,7 +131,42 @@ export default function App() {
   const allLogs = goals.flatMap(g => g.logs || []);
   const stats = calculateStats(allLogs as any);
 
-  const coins = user ? (user.level * 100) + goals.reduce((acc, goal) => acc + (goal.logs?.length || 0), 0) * 10 - (user.spent_coins || 0) : 0;
+  const baseCoins = user ? (user.level * 100) + goals.reduce((acc, goal) => acc + (goal.logs?.length || 0), 0) * 10 - (user.spent_coins || 0) : 0;
+
+  // --- DEV SANDBOX INJECTION ---
+  const [devOverrides, setDevOverrides] = useState<import('../shared/components/DevSandboxPanel').DevOverrides>({
+    hp: null,
+    mana: null,
+    level: null,
+    coins: null,
+    anxietyScore: null,
+    sigmaVariance: null,
+    themeVibe: null,
+    unlockAllBadges: false,
+    unlockAllShop: false,
+  });
+
+  const effectiveUser = user ? { ...user } : null;
+  if (effectiveUser) {
+    if (devOverrides.hp !== null) effectiveUser.hp = devOverrides.hp;
+    if (devOverrides.mana !== null) effectiveUser.mana = devOverrides.mana;
+    if (devOverrides.level !== null) effectiveUser.level = devOverrides.level;
+    if (devOverrides.themeVibe !== null) effectiveUser.theme_vibe = devOverrides.themeVibe;
+    if (devOverrides.unlockAllShop) {
+      effectiveUser.unlocked_items = JSON.stringify([
+        'aesthetic_color_cyan', 'aesthetic_color_rose', 'aesthetic_theme_matrix', 'aesthetic_theme_neon', 'aesthetic_title_vanguard', 'aesthetic_title_legendary'
+      ]);
+    }
+  }
+
+  const effectiveCoins = devOverrides.coins !== null ? devOverrides.coins : baseCoins;
+  const effectiveAnxietyScore = devOverrides.anxietyScore !== null ? devOverrides.anxietyScore : (latestDump?.anxietyScore || 5);
+  const effectiveSigmaVariance = devOverrides.sigmaVariance !== null ? devOverrides.sigmaVariance : stats.sigma;
+  
+  const effectiveAchievements = devOverrides.unlockAllBadges 
+    ? achievements.map(a => ({ ...a, isUnlocked: true, progress: 100 }))
+    : achievements;
+  // -----------------------------
 
 
   if (isLoading) {
@@ -147,7 +183,7 @@ export default function App() {
     );
   }
 
-  if (!user) return null; // Avoid render if context is not hydrated yet.
+  if (!user || !effectiveUser) return null; // Avoid render if context is not hydrated yet.
 
   return (
     <>
@@ -160,13 +196,13 @@ export default function App() {
       <MainLayout
         environment={
           <VibeEnvironment 
-            anxietyScore={latestDump?.anxietyScore || 5} 
-            sigmaVariance={stats.sigma} 
-            customMainBg={user.custom_main_bg}
-            themeVibe={user.theme_vibe}
+            anxietyScore={effectiveAnxietyScore} 
+            sigmaVariance={effectiveSigmaVariance} 
+            customMainBg={effectiveUser.custom_main_bg}
+            themeVibe={effectiveUser.theme_vibe}
           />
         }
-        header={<TopBar hp={user.hp} mana={user.mana} level={user.level} exp={user.exp} coins={coins} user={user} onOpenProfile={() => setIsProfileOpen(true)} onOpenSettings={() => setIsSettingsOpen(true)} />}
+        header={<TopBar hp={effectiveUser.hp} mana={effectiveUser.mana} level={effectiveUser.level} exp={effectiveUser.exp} coins={effectiveCoins} user={effectiveUser} onOpenProfile={() => setIsProfileOpen(true)} onOpenSettings={() => setIsSettingsOpen(true)} />}
         bottomNav={
           <BottomBar 
             activeTab={activeTab}
@@ -181,15 +217,15 @@ export default function App() {
             <ProfileModal 
               isOpen={isProfileOpen} 
               onClose={() => setIsProfileOpen(false)} 
-              user={user} 
-              achievements={achievements}
+              user={effectiveUser} 
+              achievements={effectiveAchievements}
               onSaveProfile={updateProfile} 
-              coins={coins}
+              coins={effectiveCoins}
             />
             <SettingsModal 
               isOpen={isSettingsOpen} 
               onClose={() => setIsSettingsOpen(false)} 
-              user={user}
+              user={effectiveUser}
               onUpdateUser={updateProfile}
               onExport={handleExportData} 
               onImport={handleImportData}
@@ -222,7 +258,7 @@ export default function App() {
           activeTab={activeTab}
           rightSidebar={
             <>
-              <StatusScene hp={user.hp} mana={user.mana} level={user.level} goals={goals} nudge={nudge} userName={user.name} customCharBg={user.custom_char_bg} customCharacter={user.custom_character} />
+              <StatusScene hp={effectiveUser.hp} mana={effectiveUser.mana} level={effectiveUser.level} goals={goals} nudge={nudge} userName={effectiveUser.name} customCharBg={effectiveUser.custom_char_bg} customCharacter={effectiveUser.custom_character} />
               <BurnoutWarning burnoutMonitor={burnoutMonitor} />
             </>
           }
@@ -247,6 +283,7 @@ export default function App() {
           }
         />
       </MainLayout>
+      <DevSandboxPanel overrides={devOverrides} setOverrides={setDevOverrides} />
     </>
   );
 }
