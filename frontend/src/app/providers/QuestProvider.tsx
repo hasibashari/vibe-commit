@@ -1,19 +1,20 @@
-import React, { createContext, useContext, ReactNode } from 'react';
-import { useQuest } from '../../features/quests/hooks/useQuest';
-import { useDashboardContext } from './DashboardProvider';
-
-const QuestContext = createContext<ReturnType<typeof useQuest> | undefined>(undefined);
+import React, { ReactNode } from 'react';
+import { useQuestStore } from '../../store/questStore';
+import { useUIStore } from '../../store/uiStore';
 
 export function QuestProvider({ children }: { children: ReactNode }) {
-  const { goals, fetchData, setExpPopups } = useDashboardContext();
-  const state = useQuest(goals, fetchData, setExpPopups);
-  return <QuestContext.Provider value={state}>{children}</QuestContext.Provider>;
+  return <>{children}</>;
 }
 
 export function useQuestContext() {
-  const context = useContext(QuestContext);
-  if (context === undefined) {
-    throw new Error('useQuestContext must be used within QuestProvider');
-  }
-  return context;
+  const questState = useQuestStore();
+  const isQuestEditorOpen = useUIStore((state) => state.isQuestEditorOpen);
+  const setIsQuestEditorOpen = useUIStore((state) => state.setIsQuestEditorOpen);
+
+  // Merge the UI state that was previously in useQuest hook into the returned object to preserve component compat
+  return {
+    ...questState,
+    isQuestEditorOpen,
+    setIsQuestEditorOpen
+  };
 }

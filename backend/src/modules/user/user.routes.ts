@@ -1,16 +1,11 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import db from '../../db/database.js';
+import { UserService } from './user.service.js';
 
 const router = Router();
 
 router.get('/:id', (req, res) => {
-  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id);
-  if (!user) {
-    db.prepare('INSERT INTO users (id, name, title, avatar_color) VALUES (?, ?, ?, ?)').run(req.params.id, 'Explorer', 'Novice Operative', 'indigo');
-    return res.json(db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id));
-  }
-  res.json(user);
+  res.json(UserService.getUser(req.params.id));
 });
 
 router.put('/:id', (req, res, next) => {
@@ -28,34 +23,7 @@ router.put('/:id', (req, res, next) => {
       bgm_muted: z.number().int().optional()
     });
     const parsed = schema.parse(req.body);
-    const stmt = db.prepare(`
-      UPDATE users 
-      SET name = COALESCE(?, name), 
-          title = COALESCE(?, title),
-          avatar_color = COALESCE(?, avatar_color),
-          avatar_icon = COALESCE(?, avatar_icon),
-          custom_main_bg = COALESCE(?, custom_main_bg),
-          custom_char_bg = COALESCE(?, custom_char_bg),
-          custom_character = COALESCE(?, custom_character),
-          theme_vibe = COALESCE(?, theme_vibe),
-          bgm_theme = COALESCE(?, bgm_theme),
-          bgm_muted = COALESCE(?, bgm_muted)
-      WHERE id = ?
-    `);
-    stmt.run(
-      parsed.name ?? null, 
-      parsed.title ?? null, 
-      parsed.avatar_color ?? null, 
-      parsed.avatar_icon ?? null,
-      parsed.custom_main_bg ?? null, 
-      parsed.custom_char_bg ?? null, 
-      parsed.custom_character ?? null, 
-      parsed.theme_vibe ?? null, 
-      parsed.bgm_theme ?? null, 
-      parsed.bgm_muted ?? null, 
-      req.params.id
-    );
-    res.json(db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id));
+    res.json(UserService.updateUser(req.params.id, parsed));
   } catch (err) {
     next(err);
   }
@@ -63,131 +31,29 @@ router.put('/:id', (req, res, next) => {
 
 router.post('/:id/buy-item', (req, res, next) => {
   try {
-    const { itemId, cost, overrideCoins } = req.body;
-    const userId = req.params.id;
-    
-    db.transaction(() => {
-      const user: any = db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
-      if (!user) throw new Error('User not found');
-      
-      // Calculate available coins by finding total quest logs + level derived coins
-      const totalLogs: any = db.prepare('SELECT COUNT(*) as count FROM quest_logs WHERE goal_id IN (SELECT id FROM goals WHERE user_id = ?)').get(userId);
-      const logCount = totalLogs ? totalLogs.count : 0;
-      const totalEarned = (user.level * 100) + (logCount * 10);
-      const actualCoins = totalEarned - (user.spent_coins || 0);
-      const availableCoins = overrideCoins !== undefined && overrideCoins !== null ? overrideCoins : actualCoins;
-
-      if (availableCoins < cost) {
-        throw new Error('Insufficient coins');
-      }
-
-      // If they used overidden coins, adjust spent_coins differently?
-      // Not actually necessary, we can just subtract the cost, even if it brings spent_coins very high.
-      // But let's just use regular spent_coins addition.
-      let newHp = user.hp;
-      let newMana = user.mana;
-      let newUnlockedItems = [];
-      try {
-        newUnlockedItems = JSON.parse(user.unlocked_items || '[]');
-      } catch (e) {
-        newUnlockedItems = [];
-      }
-
-      if (itemId === 'hp_elixir') {
-        newHp = user.hp + 30; // Uncapped to act as an offset against stateless penalty
-      } else if (itemId === 'mana_tonic') {
-        newMana = user.mana + 20;
-      } else if (itemId === 'streak_shield') {
-        // Shield expires tomorrow at 23:59:59
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        tomorrow.setHours(23, 59, 59, 999);
-        
-        db.prepare('UPDATE users SET shield_until = ?, spent_coins = spent_coins + ? WHERE id = ?')
-          .run(tomorrow.toISOString(), cost, userId);
-        return; // Early return to avoid overwriting hp/mana unnecessarily in the stmt below
-      } else if (itemId.startsWith('aesthetic_')) {
-        if (newUnlockedItems.includes(itemId)) {
-          throw new Error('Item already owned');
-        }
-        newUnlockedItems.push(itemId);
-      } else {
-        throw new Error('Invalid item');
-      }
-
-      const stmtStr = itemId.startsWith('aesthetic_') 
-        ? `UPDATE users SET hp = ?, mana = ?, spent_coins = spent_coins + ?, unlocked_items = ? WHERE id = ?`
-        : `UPDATE users SET hp = ?, mana = ?, spent_coins = spent_coins + ? WHERE id = ?`;
-      
-      const stmt = db.prepare(stmtStr);
-      
-      if (itemId.startsWith('aesthetic_')) {
-        stmt.run(newHp, newMana, cost, JSON.stringify(newUnlockedItems), userId);
-      } else {
-        stmt.run(newHp, newMana, cost, userId);
-      }
-    })();
-    
-    res.json(db.prepare('SELECT * FROM users WHERE id = ?').get(userId));
+    const schema = z.object({ itemId: z.string() });
+    const { itemId } = schema.parse(req.body);
+    res.json(UserService.buyItem(req.params.id, itemId));
   } catch (err: any) {
-    res.status(400).json({ error: err.message });
+    next(err);
   }
 });
 
 router.post('/:id/sandbox', (req, res) => {
-  const userId = req.params.id;
-  const { hp, mana, level, coins_delta } = req.body;
+  if (process.env.NODE_ENV === 'production') {
+    return res.status(403).json({ error: 'Sandbox mode is disabled in production' });
+  }
+
   try {
-    const user: any = db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-    
-    let queryArgs: (number|string)[] = [];
-    let setClauses = [];
-    
-    if (hp !== undefined && hp !== null) {
-      setClauses.push('hp = ?');
-      queryArgs.push(hp);
-    }
-    if (mana !== undefined && mana !== null) {
-      setClauses.push('mana = ?');
-      queryArgs.push(mana);
-    }
-    if (level !== undefined && level !== null) {
-      setClauses.push('level = ?');
-      queryArgs.push(level);
-    }
-    if (coins_delta !== undefined && coins_delta !== null) {
-      setClauses.push('spent_coins = spent_coins - ?'); // To add coins, we subtract from spent_coins
-      queryArgs.push(coins_delta);
-    }
-    
-    if (setClauses.length > 0) {
-      queryArgs.push(userId);
-      db.prepare(`UPDATE users SET ${setClauses.join(', ')} WHERE id = ?`).run(...queryArgs);
-    }
-    res.json(db.prepare('SELECT * FROM users WHERE id = ?').get(userId));
+    const { hp, mana, level, coins_delta } = req.body;
+    res.json(UserService.sandboxUpdate(req.params.id, { hp, mana, level, coins_delta }));
   } catch(err: any) {
     res.status(400).json({ error: err.message });
   }
 });
 
 router.post('/:id/reset', (req, res) => {
-  const userId = req.params.id;
-  // Transaction to delete everything for user
-  const dropData = db.transaction(() => {
-    // Delete logs
-    db.prepare('DELETE FROM quest_logs WHERE goal_id IN (SELECT id FROM goals WHERE user_id = ?)').run(userId);
-    // Delete goals
-    db.prepare('DELETE FROM goals WHERE user_id = ?').run(userId);
-    // Delete brain dumps
-    db.prepare('DELETE FROM brain_dumps WHERE user_id = ?').run(userId);
-    // Reset User stats
-    db.prepare('UPDATE users SET hp = 100, mana = 100, level = 1, exp = 0 WHERE id = ?').run(userId);
-  });
-  
-  dropData();
+  UserService.resetUser(req.params.id);
   res.json({ success: true });
 });
 
@@ -212,91 +78,8 @@ router.post('/:id/import', (req, res, next) => {
       goals: z.array(z.any()).optional().nullable()
     });
     
-    const { user, goals } = importSchema.parse(req.body);
-    const userId = req.params.id;
-
-    const importData = db.transaction(() => {
-      // Delete existing data
-      db.prepare('DELETE FROM quest_logs WHERE goal_id IN (SELECT id FROM goals WHERE user_id = ?)').run(userId);
-      db.prepare('DELETE FROM goals WHERE user_id = ?').run(userId);
-
-      // Update user stats
-      if (user) {
-        const stmt = db.prepare(`
-          UPDATE users 
-          SET name = COALESCE(?, name), 
-              title = COALESCE(?, title),
-              avatar_color = COALESCE(?, avatar_color),
-              custom_main_bg = COALESCE(?, custom_main_bg),
-              custom_char_bg = COALESCE(?, custom_char_bg),
-              custom_character = COALESCE(?, custom_character),
-              theme_vibe = COALESCE(?, theme_vibe),
-              bgm_theme = COALESCE(?, bgm_theme),
-              bgm_muted = COALESCE(?, bgm_muted),
-              hp = COALESCE(?, hp),
-              mana = COALESCE(?, mana),
-              level = COALESCE(?, level),
-              exp = COALESCE(?, exp)
-          WHERE id = ?
-        `);
-        stmt.run(
-          user.name ?? null, 
-          user.title ?? null, 
-          user.avatar_color ?? null, 
-          user.custom_main_bg ?? null, 
-          user.custom_char_bg ?? null, 
-          user.custom_character ?? null, 
-          user.theme_vibe ?? null, 
-          user.bgm_theme ?? null, 
-          user.bgm_muted ?? null, 
-          user.hp ?? null, 
-          user.mana ?? null, 
-          user.level ?? null, 
-          user.exp ?? null, 
-          userId
-        );
-      }
-
-      // Insert goals
-      if (goals && Array.isArray(goals)) {
-        const insertGoal = db.prepare(`
-          INSERT INTO goals (id, user_id, title, description, category, difficulty, reward_alpha, created_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        `);
-        const insertLog = db.prepare(`
-          INSERT INTO quest_logs (id, goal_id, timestamp)
-          VALUES (?, ?, ?)
-        `);
-        
-        const crypto = require('crypto');
-
-        for (const goal of goals) {
-          insertGoal.run(
-            goal.id, 
-            userId, 
-            goal.title, 
-            goal.description ?? null, 
-            goal.category ?? null, 
-            goal.difficulty ?? 1.0, 
-            goal.reward_alpha ?? 0.5, 
-            goal.createdAt || new Date().toISOString()
-          );
-
-          if (goal.logs && Array.isArray(goal.logs)) {
-            for (const log of goal.logs) {
-              const logId = log.id || crypto.randomUUID();
-              insertLog.run(
-                logId,
-                goal.id,
-                log.timestamp || log.completedAt || new Date().toISOString()
-              );
-            }
-          }
-        }
-      }
-    });
-
-    importData();
+    const parsed = importSchema.parse(req.body);
+    UserService.importData(req.params.id, parsed);
     res.json({ success: true });
   } catch (err) {
     next(err);

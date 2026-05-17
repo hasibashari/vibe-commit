@@ -1,5 +1,5 @@
-import { DEFAULT_USER_ID } from '../../../shared/config/constants';
-import type { Goal } from '../../../shared/types/goal';
+import { doc, setDoc } from 'firebase/firestore';
+import { db, auth } from '../../../shared/services/firebase';
 
 interface BrainDumpAnalysisResult {
   anxietyLevel: string;
@@ -16,38 +16,47 @@ interface BrainDumpQuest {
   category: string;
 }
 
+function handleFirestoreError(error: unknown) {
+  console.error('Firestore Error:', error);
+  throw error;
+}
+
 export const saveBrainDumpApi = async (draftContent: string, analysisResult: BrainDumpAnalysisResult) => {
-  await fetch('/api/brain-dump', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      id: crypto.randomUUID(),
-      userId: DEFAULT_USER_ID,
-      rawContent: draftContent,
-      analysis: {
+  const user = auth.currentUser;
+  if (!user) throw new Error("Not authenticated");
+  try {
+    const id = crypto.randomUUID();
+    await setDoc(doc(db, 'brain_dumps', id), {
+      user_id: user.uid,
+      raw_content: draftContent,
+      created_at: new Date().toISOString(),
+      analysis: JSON.stringify({
         anxietyLevel: analysisResult.anxietyLevel,
         anxietyScore: analysisResult.anxietyScore,
         summary: analysisResult.analysisSummary
-      }
-    })
-  });
+      })
+    });
+  } catch (err) {
+    handleFirestoreError(err);
+  }
 };
 
 export const saveQuestsFromBrainDumpApi = async (quests: BrainDumpQuest[]) => {
-  await Promise.all(quests.map(res => 
-    fetch('/api/goals', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        id: crypto.randomUUID(),
-        userId: DEFAULT_USER_ID,
+  const user = auth.currentUser;
+  if (!user) throw new Error("Not authenticated");
+  try {
+    await Promise.all(quests.map(res => 
+      setDoc(doc(db, 'goals', crypto.randomUUID()), {
+        user_id: user.uid,
         title: res.title,
         description: res.description,
         difficulty: res.difficulty,
-        rewardAlpha: res.rewardAlpha,
+        reward_alpha: res.rewardAlpha,
         category: res.category,
-        isExperimental: false
+        created_at: new Date().toISOString()
       })
-    })
-  ));
+    ));
+  } catch (err) {
+    handleFirestoreError(err);
+  }
 };

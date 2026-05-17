@@ -29,12 +29,47 @@ router.post('/', (req, res, next) => {
       notes: z.string().nullable().optional()
     });
     const { id, goalId, vibeScore, notes } = schema.parse(req.body);
-    db.prepare('INSERT INTO quest_logs (id, goal_id, vibe_score, notes) VALUES (?, ?, ?, ?)').run(
-      id, 
-      goalId, 
-      vibeScore ?? null, 
-      notes ?? null
-    );
+    
+    db.transaction(() => {
+      db.prepare('INSERT INTO quest_logs (id, goal_id, vibe_score, notes) VALUES (?, ?, ?, ?)').run(
+        id, 
+        goalId, 
+        vibeScore ?? null, 
+        notes ?? null
+      );
+
+      // Fetch user associated with this goal
+      const goal: any = db.prepare('SELECT user_id, difficulty, reward_alpha FROM goals WHERE id = ?').get(goalId);
+      if (goal) {
+        const user: any = db.prepare('SELECT id, hp, mana, level, exp, last_penalty_date FROM users WHERE id = ?').get(goal.user_id);
+        if (user) {
+          // Math calculation for game logic!
+          const expGain = Math.floor(10 * (goal.difficulty || 1.0) * (goal.reward_alpha || 0.5));
+          let newExp = user.exp + expGain;
+          let newLevel = user.level;
+          
+          const EXP_PER_LEVEL = 100;
+          if (newExp >= EXP_PER_LEVEL) {
+             const levelsGained = Math.floor(newExp / EXP_PER_LEVEL);
+             newLevel += levelsGained;
+             newExp = newExp % EXP_PER_LEVEL;
+          }
+
+          // Completing a request restores some HP (e.g., +5) up to 100
+          const newHp = Math.min(100, user.hp + 5);
+          
+          // Completing a task costs some Mana (Focus) - representing effort
+          // Don't let it drop below 0
+          const newMana = Math.max(0, user.mana - 10);
+          
+          const todayStr = new Date().toISOString().split('T')[0];
+
+          db.prepare('UPDATE users SET hp = ?, mana = ?, level = ?, exp = ?, last_penalty_date = ? WHERE id = ?')
+            .run(newHp, newMana, newLevel, newExp, todayStr, user.id);
+        }
+      }
+    })();
+    
     res.json({ success: true });
   } catch (err) {
     next(err);

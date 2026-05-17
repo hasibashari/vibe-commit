@@ -21,6 +21,12 @@ type DevSandboxPanelProps = {
 export const DevSandboxPanel: React.FC<DevSandboxPanelProps> = ({ overrides, setOverrides, user, sandboxAction }) => {
   const [isOpen, setIsOpen] = useState(false);
 
+  // Menyembunyikan opsi Dev Sandbox pada Production Deployment agar tidak bisa diakses
+  // sandbox ini di-design hanya untuk testing lokal environment (pengembangan)
+  if (typeof process !== 'undefined' && process.env.NODE_ENV === 'production') {
+    return null;
+  }
+
   const updateOverride = (key: keyof DevOverrides, value: any) => {
     setOverrides(prev => ({ ...prev, [key]: value }));
   };

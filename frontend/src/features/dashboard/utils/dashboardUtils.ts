@@ -3,74 +3,8 @@ import type { Log } from '../../../shared/types/log';
 import type { UserStats } from '../../../shared/types/user';
 
 export const calculateRPGStats = (allLogs: Log[], userData: UserStats) => {
-  const now = new Date();
-  now.setHours(0, 0, 0, 0);
-
-  let isShieldActive = false;
-  if (userData.shield_until) {
-    const shieldDate = new Date(userData.shield_until);
-    if (now.getTime() <= shieldDate.getTime()) {
-      isShieldActive = true;
-    }
-  }
-
-  let maxTimestamp = 0;
-  if (allLogs.length > 0) {
-    allLogs.forEach((l: Log) => {
-      let dateStr = l.timestamp;
-      if (typeof dateStr === 'string' && dateStr.includes(' ')) {
-        dateStr = dateStr.replace(' ', 'T');
-      }
-      const time = new Date(dateStr).getTime();
-      if (!isNaN(time) && time > maxTimestamp) maxTimestamp = time;
-    });
-  }
-
-  // If shield was bought, it acts as if the user logged in on the day the shield expired
-  if (userData.shield_until) {
-    // Shield expiration is at 23:59:59 of a certain day. 
-    // We treat the "last log" as the midnight of the day the shield was purchased for.
-    const shieldDate = new Date(userData.shield_until);
-    shieldDate.setHours(0, 0, 0, 0);
-    if (shieldDate.getTime() > maxTimestamp) {
-      maxTimestamp = shieldDate.getTime();
-    }
-  }
-
-  // HP: Drops if no activity. Max 100.
-  let daysSinceLastLog = 0;
-  if (maxTimestamp > 0) {
-    const lastLogDate = new Date(maxTimestamp);
-    lastLogDate.setHours(0, 0, 0, 0);
-    daysSinceLastLog = Math.floor((now.getTime() - lastLogDate.getTime()) / (1000 * 60 * 60 * 24));
-  } else {
-    daysSinceLastLog = 0; // New user penalty setup
-  }
-
-  if (isShieldActive) {
-    daysSinceLastLog = 0;
-  }
-
-  const baseHp = userData.hp ?? 100;
-  const baseMana = userData.mana ?? 100;
-
-  const calculatedHp = Math.max(0, Math.min(100, baseHp - daysSinceLastLog * 15));
-
-  // Mana (Focus): Drops as you complete tasks today (limits burnout). Starts at baseMana.
-  const todayDateStr = new Date().toISOString().split('T')[0];
-  const logsToday = allLogs.filter((l: Log) => {
-    if (!l.timestamp) return false;
-    const logDateStr = typeof l.timestamp === 'string' ? l.timestamp.split(' ')[0].split('T')[0] : '';
-    return logDateStr === todayDateStr;
-  }).length;
-  const calculatedMana = Math.max(0, Math.min(100, baseMana - logsToday * 10)); // Each task costs ~10 focus
-
   return {
     ...userData,
-    hp: calculatedHp,
-    mana: calculatedMana,
-    level: Math.floor(allLogs.length / 10) + 1,
-    exp: (allLogs.length % 10) * 10,
   };
 };
 

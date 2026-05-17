@@ -66,7 +66,7 @@ export const TopBar: React.FC<TopBarProps> = ({ hp, mana, level, exp, coins, use
         <div className="flex lg:hidden items-center gap-2">
           <div className="flex items-center gap-1.5 bg-white/5 px-2.5 py-1.5 rounded-md border border-white/10">
             <Star className="w-3.5 h-3.5 text-amber-400" fill="currentColor" />
-            <span className="text-xs font-mono font-bold text-amber-400">{coins}</span>
+            <span className="text-xs font-mono font-bold text-amber-400">{coins || 0}</span>
           </div>
           <Button variant="secondary" size="icon" onClick={toggleMute} className="w-8 h-8 rounded-lg p-0!">
             {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-cyan-400" />}
@@ -83,8 +83,8 @@ export const TopBar: React.FC<TopBarProps> = ({ hp, mana, level, exp, coins, use
         {/* EXP Bar (Moved here for better grid) */}
         <div className="flex flex-col gap-1 min-w-[80px] flex-1 lg:flex-none lg:w-32">
           <div className="flex justify-between items-center text-xs font-bold tracking-widest uppercase">
-            <span className="text-amber-400">Lv {level}</span>
-            <span className="text-slate-400">{exp.toFixed(0)} <span className="text-slate-600">%</span></span>
+            <span className="text-amber-400">Lv {level ?? 1}</span>
+            <span className="text-slate-400">{(exp ?? 0).toFixed(0)} <span className="text-slate-600">%</span></span>
           </div>
           <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden p-px">
             <motion.div initial={{ width: 0 }} animate={{ width: `${exp}%` }} className="h-full bg-amber-400 rounded-full"></motion.div>
@@ -95,7 +95,7 @@ export const TopBar: React.FC<TopBarProps> = ({ hp, mana, level, exp, coins, use
         <div className="flex flex-col gap-1 min-w-[80px] flex-1 lg:flex-none lg:w-32">
           <div className="flex justify-between items-center text-xs font-bold tracking-widest uppercase">
             <span className="text-emerald-400 flex items-center gap-1"><Heart className="w-3 h-3" fill="currentColor" /> HP</span>
-            <span className="text-slate-200">{hp.toFixed(0)}</span>
+            <span className="text-slate-200">{(hp ?? 100).toFixed(0)}</span>
           </div>
           <div className="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden border border-white/5">
             <motion.div initial={{ width: 0 }} animate={{ width: `${hp}%` }} className="h-full bg-linear-to-r from-emerald-500 to-emerald-400"></motion.div>
@@ -106,7 +106,7 @@ export const TopBar: React.FC<TopBarProps> = ({ hp, mana, level, exp, coins, use
         <div className="flex flex-col gap-1 min-w-[80px] flex-1 lg:flex-none lg:w-32">
           <div className="flex justify-between items-center text-xs font-bold tracking-widest uppercase">
             <span className="text-accent-400 flex items-center gap-1"><Zap className="w-3 h-3" fill="currentColor" /> MP</span>
-            <span className="text-slate-200">{mana.toFixed(0)}</span>
+            <span className="text-slate-200">{(mana ?? 100).toFixed(0)}</span>
           </div>
           <div className="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden border border-white/5">
             <motion.div initial={{ width: 0 }} animate={{ width: `${mana}%` }} className="h-full bg-linear-to-r from-cyan-500 to-cyan-400"></motion.div>
@@ -116,7 +116,7 @@ export const TopBar: React.FC<TopBarProps> = ({ hp, mana, level, exp, coins, use
         {/* Coins/Points - Desktop */}
         <div className="hidden lg:flex items-center gap-1.5 bg-white/5 px-2.5 py-1.5 rounded-md border border-white/10 shrink-0">
           <Star className="w-3.5 h-3.5 text-amber-400" fill="currentColor" />
-          <span className="text-xs font-mono font-bold text-amber-400">{coins}</span>
+          <span className="text-xs font-mono font-bold text-amber-400">{coins || 0}</span>
         </div>
 
         <div className="hidden lg:flex items-center gap-2 shrink-0">
