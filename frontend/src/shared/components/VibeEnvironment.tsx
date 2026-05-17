@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { motion } from 'motion/react';
 import { useMouseParallax } from '../hooks/useMouseParallax';
 import { getWeatherState } from '../utils/weatherUtils';
