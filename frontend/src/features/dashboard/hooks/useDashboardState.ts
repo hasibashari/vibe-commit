@@ -5,6 +5,7 @@ import { fetchDashboardData, updateProfileData, resetProfileData } from '../serv
 import type { UserStats } from '../../../shared/types/user';
 import { calculateRPGStats, getCompletedIdsToday, calculateAchievements, Achievement } from '../utils/dashboardUtils';
 import { useToast } from '../../../shared/components/Toast';
+import { DEFAULT_USER_ID } from '../../../shared/config/constants';
 
 export function useDashboardState() {
   const [goals, setGoals] = useState<Goal[]>([]);
@@ -39,7 +40,7 @@ export function useDashboardState() {
         setLatestDump(JSON.parse(dumpsData[0].analysis));
       }
       
-      const calculatedUser = calculateRPGStats(allLogs, userData, 100, 100);
+      const calculatedUser = calculateRPGStats(allLogs, userData);
       setUser(calculatedUser);
       
       const newAchievements = calculateAchievements(allLogs, calculatedUser.level);
@@ -60,7 +61,7 @@ export function useDashboardState() {
       const updatedUser = await updateProfileData(undefined, data);
       setUser(prev => {
         const allLogs = goals.flatMap(g => (g.logs || []).map((l: import('../../../shared/types/log').Log) => ({ ...l, goal_id: g.id })));
-        return calculateRPGStats(allLogs, { ...prev, ...updatedUser }, 100, 100);
+        return calculateRPGStats(allLogs, { ...prev, ...updatedUser });
       });
       if (!silent) {
         toast({ title: "Profil Disimpan", type: 'success' });
@@ -89,6 +90,30 @@ export function useDashboardState() {
     }
   };
 
+  const buyItem = async (itemId: string, cost: number) => {
+    try {
+      const res = await fetch(`/api/user/${user.id || DEFAULT_USER_ID}/buy-item`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ itemId, cost }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({ error: 'Pembelian gagal' }));
+        throw new Error(data.error);
+      }
+      const updatedUser = await res.json();
+      setUser(prev => {
+        const allLogs = goals.flatMap(g => (g.logs || []).map((l: import('../../../shared/types/log').Log) => ({ ...l, goal_id: g.id })));
+        return calculateRPGStats(allLogs, { ...prev, ...updatedUser });
+      });
+      toast({ title: "Pembelian Berhasil", type: 'success' });
+      return true;
+    } catch (e: any) {
+      toast({ title: e.message || "Gagal membeli item", type: 'error' });
+      return false;
+    }
+  };
+
   useEffect(() => {
     fetchData();
   }, [fetchData]);
@@ -107,6 +132,7 @@ export function useDashboardState() {
     recentlyCompletedIds,
     updateProfile,
     resetProfile,
+    buyItem,
     isLoading
   };
 }

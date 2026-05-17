@@ -13,4 +13,8 @@ export interface UserStats {
   mana: number;
   level: number;
   exp: number;
+  spent_coins?: number;
+  last_penalty_date?: string | null;
+  shield_until?: string | null;
+  unlocked_items?: string;
 }

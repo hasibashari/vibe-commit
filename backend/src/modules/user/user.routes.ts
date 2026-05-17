@@ -58,6 +58,75 @@ router.put('/:id', (req, res, next) => {
   }
 });
 
+router.post('/:id/buy-item', (req, res, next) => {
+  try {
+    const { itemId, cost } = req.body;
+    const userId = req.params.id;
+    
+    db.transaction(() => {
+      const user: any = db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
+      if (!user) throw new Error('User not found');
+      
+      // Calculate available coins by finding total quest logs + level derived coins
+      const totalLogs: any = db.prepare('SELECT COUNT(*) as count FROM quest_logs WHERE goal_id IN (SELECT id FROM goals WHERE user_id = ?)').get(userId);
+      const logCount = totalLogs ? totalLogs.count : 0;
+      const totalEarned = (user.level * 100) + (logCount * 10);
+      const availableCoins = totalEarned - (user.spent_coins || 0);
+
+      if (availableCoins < cost) {
+        throw new Error('Insufficient coins');
+      }
+
+      let newHp = user.hp;
+      let newMana = user.mana;
+      let newUnlockedItems = [];
+      try {
+        newUnlockedItems = JSON.parse(user.unlocked_items || '[]');
+      } catch (e) {
+        newUnlockedItems = [];
+      }
+
+      if (itemId === 'hp_elixir') {
+        newHp = user.hp + 30; // Uncapped to act as an offset against stateless penalty
+      } else if (itemId === 'mana_tonic') {
+        newMana = user.mana + 20;
+      } else if (itemId === 'streak_shield') {
+        // Shield expires tomorrow at 23:59:59
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(23, 59, 59, 999);
+        
+        db.prepare('UPDATE users SET shield_until = ?, spent_coins = spent_coins + ? WHERE id = ?')
+          .run(tomorrow.toISOString(), cost, userId);
+        return; // Early return to avoid overwriting hp/mana unnecessarily in the stmt below
+      } else if (itemId.startsWith('aesthetic_')) {
+        if (newUnlockedItems.includes(itemId)) {
+          throw new Error('Item already owned');
+        }
+        newUnlockedItems.push(itemId);
+      } else {
+        throw new Error('Invalid item');
+      }
+
+      const stmtStr = itemId.startsWith('aesthetic_') 
+        ? `UPDATE users SET hp = ?, mana = ?, spent_coins = spent_coins + ?, unlocked_items = ? WHERE id = ?`
+        : `UPDATE users SET hp = ?, mana = ?, spent_coins = spent_coins + ? WHERE id = ?`;
+      
+      const stmt = db.prepare(stmtStr);
+      
+      if (itemId.startsWith('aesthetic_')) {
+        stmt.run(newHp, newMana, cost, JSON.stringify(newUnlockedItems), userId);
+      } else {
+        stmt.run(newHp, newMana, cost, userId);
+      }
+    })();
+    
+    res.json(db.prepare('SELECT * FROM users WHERE id = ?').get(userId));
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 router.post('/:id/reset', (req, res) => {
   const userId = req.params.id;
   // Transaction to delete everything for user

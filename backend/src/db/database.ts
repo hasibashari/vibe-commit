@@ -27,6 +27,10 @@ export function initDb() {
   if (!hasUserCol('theme_vibe')) db.exec("ALTER TABLE users ADD COLUMN theme_vibe TEXT DEFAULT 'midnight'");
   if (!hasUserCol('bgm_theme')) db.exec("ALTER TABLE users ADD COLUMN bgm_theme TEXT DEFAULT 'nature'");
   if (!hasUserCol('bgm_muted')) db.exec("ALTER TABLE users ADD COLUMN bgm_muted INTEGER DEFAULT 0");
+  if (!hasUserCol('spent_coins')) db.exec("ALTER TABLE users ADD COLUMN spent_coins INTEGER DEFAULT 0");
+  if (!hasUserCol('last_penalty_date')) db.exec("ALTER TABLE users ADD COLUMN last_penalty_date TEXT DEFAULT null");
+  if (!hasUserCol('shield_until')) db.exec("ALTER TABLE users ADD COLUMN shield_until TEXT DEFAULT null");
+  if (!hasUserCol('unlocked_items')) db.exec("ALTER TABLE users ADD COLUMN unlocked_items TEXT DEFAULT '[]'");
 
   const goalCols = db.pragma('table_info(goals)') as any[];
   const hasGoalCol = (name: string) => goalCols.some((c) => c.name === name);
