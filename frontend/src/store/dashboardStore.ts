@@ -51,8 +51,17 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
       set({ isLoading: true });
       const { goalsWithCounts, dumpsData, userData } = await fetchDashboardData();
       
+      let activeUserData = userData;
+      if (!activeUserData) {
+        try {
+          activeUserData = await updateProfileData();
+        } catch (initErr) {
+          console.error("Failed to auto-initialize user profile:", initErr);
+        }
+      }
+      
       const allLogs = goalsWithCounts.flatMap(g => (g.logs || []).map((l: Log) => ({ ...l, goal_id: g.id })));
-      const calculatedUser = calculateRPGStats(allLogs, userData, goalsWithCounts);
+      const calculatedUser = calculateRPGStats(allLogs, activeUserData, goalsWithCounts);
       
       set({
         goals: goalsWithCounts as Goal[],

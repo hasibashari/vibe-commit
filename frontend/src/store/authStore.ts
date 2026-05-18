@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { Unsubscribe, User, onAuthStateChanged } from 'firebase/auth';
-import { auth, loginWithGoogle, logout } from '../shared/services/firebase';
+import { auth, loginWithGoogle, logout, getRedirectResult } from '../shared/services/firebase';
 import { useToastStore } from './toastStore';
 
 interface AuthStore {
@@ -85,6 +85,38 @@ export const useAuthStore = create<AuthStore>((set) => ({
   },
   
   initAuth: () => {
+    // Process redirect result when app initializes
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result?.user) {
+          useToastStore.getState().toast({ title: 'Login Berhasil!', type: 'success' });
+        }
+      })
+      .catch((error: any) => {
+        console.error('Redirect login error:', error);
+        const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
+        
+        if (error.code === 'auth/unauthorized-domain') {
+          useToastStore.getState().toast({ 
+            title: 'Domain Tidak Diizinkan', 
+            description: `Tambahkan domain ini ke Firebase Auth > Settings > Authorized domains: ${currentOrigin || 'origin saat ini'}.`, 
+            type: 'error' 
+          });
+        } else if (error.code === 'auth/network-request-failed') {
+          useToastStore.getState().toast({ 
+            title: 'Koneksi Gagal', 
+            description: 'Firebase Emulator tidak berjalan.', 
+            type: 'error' 
+          });
+        } else {
+          useToastStore.getState().toast({ 
+            title: 'Gagal Login', 
+            description: `Error: ${error.message || 'Unknown error'}`, 
+            type: 'error' 
+          });
+        }
+      });
+
     return onAuthStateChanged(auth, (user) => {
       // If user is logged in, optionally set onboarding to true automatically
       if (user) {

@@ -33,7 +33,6 @@ import { useAudio } from './providers/AudioProvider';
 import { useAuthStore } from '../store/authStore';
 
 import type { Tab } from '../shared/types/navigation';
-import type { UserStats } from '../shared/types/user';
 
 export default function App() {
   const { tab } = useParams<{ tab: Tab }>();
@@ -197,7 +196,7 @@ export default function App() {
 
   if (isAuthLoading) {
     return (
-      <div className="flex h-[100dvh] w-full items-center justify-center bg-[#0A0C10] text-accent-400">
+      <div className="flex h-dvh w-full items-center justify-center bg-surface text-accent-400">
         <div className="flex flex-col items-center gap-4">
           <svg className="h-10 w-10 animate-spin opacity-75" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />

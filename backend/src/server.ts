@@ -12,7 +12,7 @@ import aiRoutes from './modules/ai/ai.routes.js';
 
 async function startServer() {
   const app = express();
-  const PORT = Number(process.env.PORT) || 3000;
+  const PORT = Number(process.env.PORT) || 5173;
 
   // Trust proxy for secure headers
   app.set('trust proxy', 1);
@@ -31,6 +31,7 @@ async function startServer() {
   app.use(helmet({
     contentSecurityPolicy: false, 
     crossOriginEmbedderPolicy: false,
+    crossOriginOpenerPolicy: false,
   }));
   app.use(cors());
 

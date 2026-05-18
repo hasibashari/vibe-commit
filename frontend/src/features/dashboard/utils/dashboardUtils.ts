@@ -2,8 +2,9 @@ import type { Goal } from '../../../shared/types/goal';
 import type { Log } from '../../../shared/types/log';
 import type { UserStats } from '../../../shared/types/user';
 
-export const calculateRPGStats = (allLogs: Log[], userData: UserStats, goals: Goal[] = []) => {
-  let initialTotalExp = userData.exp || 0; // Manual / Sandbox EXP
+export const calculateRPGStats = (allLogs: Log[], userData: UserStats | null | undefined, goals: Goal[] = []) => {
+  const safeUserData = userData || { hp: 100, mana: 100, level: 1, exp: 0 };
+  let initialTotalExp = safeUserData.exp || 0; // Manual / Sandbox EXP
   let totalEarnedFromLogs = 0;
   
   // Calculate total EXP earned from all recorded logs based on actual difficulty
@@ -35,7 +36,7 @@ export const calculateRPGStats = (allLogs: Log[], userData: UserStats, goals: Go
   const expPercentage = Math.min(100, Math.floor((expIntoCurrentLevel / expNeededForNextLevel) * 100));
 
   return {
-    ...userData,
+    ...safeUserData,
     level: currentLevel,
     exp: expPercentage,
     total_exp: totalExp
