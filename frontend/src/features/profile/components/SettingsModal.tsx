@@ -12,9 +12,10 @@ interface SettingsModalProps {
   onExport: () => void;
   onImport: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onResetProgress: () => Promise<void>;
+  onLogout: () => Promise<void>;
 }
 
-export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, user, onUpdateUser, onExport, onImport, onResetProgress }) => {
+export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, user, onUpdateUser, onExport, onImport, onResetProgress, onLogout }) => {
   const [settings, setSettings] = useState({
     language: 'id',
     animations: true,
@@ -294,6 +295,19 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, u
               Import Local Backup
             </Button>
           </div>
+        </div>
+
+        {/* Session Management */}
+        <div className="flex flex-col gap-3 pt-6 border-t border-white/5">
+          <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-widest">Session Control</h4>
+          <Button 
+            variant="secondary"
+            onClick={onLogout}
+            className="w-full gap-2 border-indigo-500/30 hover:border-indigo-500/80 hover:bg-indigo-500/10 text-indigo-300 pointer-events-auto cursor-pointer"
+          >
+            <Activity className="w-4 h-4 rotate-90" />
+            DEACTIVATE SESSION (LOG OUT)
+          </Button>
         </div>
 
         <div className="flex flex-col gap-4 pt-6 border-t border-white/5">

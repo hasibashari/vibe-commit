@@ -1,17 +1,31 @@
-import { initializeApp } from 'firebase/app';
-import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
-import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore';
+// Mocking Firebase Client for 100% Offline Local Integration
+// This maintains type safety and prevents compilation errors in other components.
 
-const firebaseConfig = (import.meta as any).env?.VITE_FIREBASE_CONFIG || {};
+export const db = {} as any;
 
-const app = initializeApp(firebaseConfig);
+export const auth = {
+  get currentUser() {
+    const localUserStr = localStorage.getItem('vibe_commit_user');
+    if (!localUserStr) return null;
+    try {
+      const user = JSON.parse(localUserStr);
+      return {
+        uid: user.id,
+        displayName: user.username,
+        email: `${user.username.toLowerCase()}@local`
+      };
+    } catch (e) {
+      return null;
+    }
+  }
+} as any;
 
-export const db = initializeFirestore(app, {
-  localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
-}, firebaseConfig.firestoreDatabaseId);
+export const googleProvider = {} as any;
 
-export const auth = getAuth(app);
-export const googleProvider = new GoogleAuthProvider();
+export const loginWithGoogle = async () => {
+  throw new Error("Google login is disabled in offline mode");
+};
 
-export const loginWithGoogle = () => signInWithPopup(auth, googleProvider);
-export const logout = () => signOut(auth);
+export const logout = async () => {
+  localStorage.removeItem('vibe_commit_user');
+};

@@ -13,6 +13,7 @@ import questRoutes from './modules/quest/quest.routes.js';
 import logRoutes from './modules/quest/log.routes.js';
 import brainDumpRoutes from './modules/brain-dump/brain-dump.routes.js';
 import aiRoutes from './modules/ai/ai.routes.js';
+import authRoutes from './modules/auth/auth.routes.js';
 
 // Initialize schema
 initDb();
@@ -49,6 +50,7 @@ async function startServer() {
   app.use('/api/', apiLimiter);
 
   // Use Modules
+  app.use('/api/auth', authRoutes);
   app.use('/api/user', userRoutes);
   app.use('/api/goals', questRoutes);
   app.use('/api/logs', logRoutes);
