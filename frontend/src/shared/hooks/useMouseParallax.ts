@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useMotionValue, useSpring, useTransform, MotionValue } from 'motion/react';
+import { useMotionValue, useSpring, useTransform } from 'motion/react';
 
 export const useMouseParallax = (baseParallax: number = 10, multiplier: number = 1) => {
   const mouseX = useMotionValue(0);

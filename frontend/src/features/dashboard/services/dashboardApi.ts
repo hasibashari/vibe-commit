@@ -1,4 +1,4 @@
-import { getDoc, doc, setDoc, updateDoc, collection, query, where, getDocs, writeBatch } from 'firebase/firestore';
+import { getDoc, doc, setDoc, collection, query, where, getDocs, writeBatch } from 'firebase/firestore';
 import { deleteUser, reauthenticateWithPopup } from 'firebase/auth';
 import { db, auth, googleProvider } from '../../../shared/services/firebase';
 import type { UserStats } from '../../../shared/types/user';

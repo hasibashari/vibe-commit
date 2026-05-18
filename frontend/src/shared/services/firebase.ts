@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut } from 'firebase/auth';
+import { getAuth, signInWithPopup, getRedirectResult, GoogleAuthProvider, signOut } from 'firebase/auth';
 import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore';
 const firebaseConfig = (import.meta as any).env?.VITE_FIREBASE_CONFIG || {};
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Target, Check, ChevronRight, Settings2, Trash2 } from 'lucide-react';
+import { Check, Settings2, Trash2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import type { Goal } from '../../../shared/types/goal';
 

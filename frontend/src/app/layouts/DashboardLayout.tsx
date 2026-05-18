@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import { ReactNode } from 'react';
 import type { Tab } from '../../shared/types/navigation';
 import { cn } from '../../shared/utils/cn';
 

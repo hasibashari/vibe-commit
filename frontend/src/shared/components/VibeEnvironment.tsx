@@ -30,8 +30,9 @@ const THEMES: Record<string, ThemeConfig> = {
     vignette: 'bg-[radial-gradient(ellipse_at_top,transparent_0%,#0A0C10_100%)]',
     hueBase: 'none',
     hueDark: 'grayscale(0.35) brightness(0.8)',
-    baseImage: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=3000&auto=format&fit=crop',
-    glow: 'bg-cyan-500/20'
+    baseImage:
+      'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=3000&auto=format&fit=crop',
+    glow: 'bg-cyan-500/20',
   },
   emerald: {
     bg: 'bg-[#011a14]',
@@ -40,8 +41,9 @@ const THEMES: Record<string, ThemeConfig> = {
     vignette: 'bg-[radial-gradient(ellipse_at_top,transparent_0%,#011a14_100%)]',
     hueBase: 'none',
     hueDark: 'grayscale(0.2) brightness(0.75)',
-    baseImage: 'https://images.unsplash.com/photo-1511497584788-876760111969?q=80&w=3000&auto=format&fit=crop',
-    glow: 'bg-emerald-500/15'
+    baseImage:
+      'https://images.unsplash.com/photo-1511497584788-876760111969?q=80&w=3000&auto=format&fit=crop',
+    glow: 'bg-emerald-500/15',
   },
   neon: {
     bg: 'bg-[#090014]',
@@ -50,8 +52,9 @@ const THEMES: Record<string, ThemeConfig> = {
     vignette: 'bg-[radial-gradient(ellipse_at_top,transparent_0%,#090014_100%)]',
     hueBase: 'saturate(1.5)',
     hueDark: 'saturate(0.8) brightness(0.8)',
-    baseImage: 'https://images.unsplash.com/photo-1601042879364-f3947d3f9c16?q=80&w=3000&auto=format&fit=crop',
-    glow: 'bg-fuchsia-500/20'
+    baseImage:
+      'https://images.unsplash.com/photo-1601042879364-f3947d3f9c16?q=80&w=3000&auto=format&fit=crop',
+    glow: 'bg-fuchsia-500/20',
   },
   sunset: {
     bg: 'bg-[#1a0500]',
@@ -60,8 +63,9 @@ const THEMES: Record<string, ThemeConfig> = {
     vignette: 'bg-[radial-gradient(ellipse_at_top,transparent_0%,#1a0500_100%)]',
     hueBase: 'saturate(1.2) contrast(1.1)',
     hueDark: 'saturate(0.6) brightness(0.75)',
-    baseImage: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=3000&auto=format&fit=crop',
-    glow: 'bg-orange-500/15'
+    baseImage:
+      'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=3000&auto=format&fit=crop',
+    glow: 'bg-orange-500/15',
   },
   matrix: {
     bg: 'bg-[#000501]',
@@ -70,28 +74,29 @@ const THEMES: Record<string, ThemeConfig> = {
     vignette: 'bg-[radial-gradient(ellipse_at_top,transparent_0%,#000501_100%)]',
     hueBase: 'contrast(1.2) saturate(1.5)',
     hueDark: 'brightness(0.75)',
-    baseImage: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=3000&auto=format&fit=crop',
-    glow: 'bg-green-500/10'
-  }
+    baseImage:
+      'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=3000&auto=format&fit=crop',
+    glow: 'bg-green-500/10',
+  },
 };
 
 const SunsetLight = () => {
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none mix-blend-screen opacity-60 z-10">
-      <motion.div 
-        className="absolute top-0 -right-[10%] w-[50%] h-[120%] bg-gradient-to-l from-orange-400/30 to-transparent blur-[100px] origin-right"
+    <div className='absolute inset-0 overflow-hidden pointer-events-none mix-blend-screen opacity-60 z-10'>
+      <motion.div
+        className='absolute top-0 -right-[10%] w-[50%] h-[120%] bg-gradient-to-l from-orange-400/30 to-transparent blur-[100px] origin-right'
         animate={{ opacity: [0.3, 0.6, 0.3], scale: [1, 1.05, 1] }}
-        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+        transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
       />
-      <motion.div 
-        className="absolute top-[10%] right-0 w-[40%] h-[80%] bg-gradient-to-l from-amber-300/20 to-transparent blur-[80px]"
+      <motion.div
+        className='absolute top-[10%] right-0 w-[40%] h-[80%] bg-gradient-to-l from-amber-300/20 to-transparent blur-[80px]'
         animate={{ opacity: [0.2, 0.5, 0.2] }}
-        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+        transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
       />
-      <motion.div 
-        className="absolute bottom-0 -left-[10%] w-[40%] h-[80%] bg-gradient-to-r from-rose-400/20 to-transparent blur-[120px]"
+      <motion.div
+        className='absolute bottom-0 -left-[10%] w-[40%] h-[80%] bg-gradient-to-r from-rose-400/20 to-transparent blur-[120px]'
         animate={{ opacity: [0.2, 0.4, 0.2] }}
-        transition={{ duration: 15, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+        transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
       />
     </div>
   );
@@ -99,46 +104,47 @@ const SunsetLight = () => {
 
 const OvercastClouds = () => {
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none z-10 opacity-70">
-      <motion.div 
-        className="absolute -top-[10%] -left-[10%] w-[70%] h-[50%] bg-slate-400/20 blur-[80px] rounded-full mix-blend-overlay"
+    <div className='absolute inset-0 overflow-hidden pointer-events-none z-10 opacity-70'>
+      <motion.div
+        className='absolute -top-[10%] -left-[10%] w-[70%] h-[50%] bg-slate-400/20 blur-[80px] rounded-full mix-blend-overlay'
         animate={{ x: [0, 50, 0], opacity: [0.3, 0.5, 0.3] }}
-        transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
+        transition={{ duration: 25, repeat: Infinity, ease: 'easeInOut' }}
       />
-      <motion.div 
-        className="absolute top-[20%] -right-[10%] w-[60%] h-[60%] bg-slate-500/20 blur-[100px] rounded-full mix-blend-overlay"
+      <motion.div
+        className='absolute top-[20%] -right-[10%] w-[60%] h-[60%] bg-slate-500/20 blur-[100px] rounded-full mix-blend-overlay'
         animate={{ x: [0, -60, 0], opacity: [0.3, 0.6, 0.3] }}
-        transition={{ duration: 30, repeat: Infinity, ease: "easeInOut", delay: 3 }}
+        transition={{ duration: 30, repeat: Infinity, ease: 'easeInOut', delay: 3 }}
       />
-      <motion.div 
-        className="absolute -bottom-[20%] left-[20%] w-[80%] h-[50%] bg-slate-600/15 blur-[120px] rounded-full mix-blend-overlay"
+      <motion.div
+        className='absolute -bottom-[20%] left-[20%] w-[80%] h-[50%] bg-slate-600/15 blur-[120px] rounded-full mix-blend-overlay'
         animate={{ x: [-30, 40, -30], opacity: [0.2, 0.4, 0.2] }}
-        transition={{ duration: 35, repeat: Infinity, ease: "easeInOut", delay: 5 }}
+        transition={{ duration: 35, repeat: Infinity, ease: 'easeInOut', delay: 5 }}
       />
-      <div className="absolute inset-0 bg-slate-900/10 mix-blend-multiply" />
+      <div className='absolute inset-0 bg-slate-900/10 mix-blend-multiply' />
     </div>
   );
 };
 
 const HeartbeatVignette = () => {
   return (
-    <motion.div 
-      className="absolute inset-0 pointer-events-none mix-blend-multiply z-20"
+    <motion.div
+      className='absolute inset-0 pointer-events-none mix-blend-multiply z-20'
       style={{
-        background: 'radial-gradient(ellipse at center, transparent 40%, rgba(220, 38, 38, 0.3) 100%)'
+        background:
+          'radial-gradient(ellipse at center, transparent 40%, rgba(220, 38, 38, 0.3) 100%)',
       }}
       animate={{ opacity: [0.3, 1, 0.3] }}
-      transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
+      transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
     />
   );
 };
 
-export const VibeEnvironment: React.FC<VibeEnvironmentProps> = ({ 
-  anxietyScore = 5, 
+export const VibeEnvironment: React.FC<VibeEnvironmentProps> = ({
+  anxietyScore = 5,
   sigmaVariance = 1.0,
   customMainBg,
   themeVibe = 'midnight',
-  hp = 100
+  hp = 100,
 }) => {
   const weather = getWeatherState(anxietyScore, sigmaVariance);
   const isCriticalHp = hp < 20;
@@ -162,36 +168,44 @@ export const VibeEnvironment: React.FC<VibeEnvironmentProps> = ({
   };
 
   return (
-    <div className={`fixed inset-0 z-[-1] pointer-events-none overflow-hidden transition-colors duration-[2000ms] ${theme.bg}`}>
-      
-      <motion.div 
+    <div
+      className={`fixed inset-0 z-[-1] pointer-events-none overflow-hidden transition-colors duration-[2000ms] ${theme.bg}`}
+    >
+      <motion.div
         className={`absolute -inset-[30px] bg-cover bg-[center_top] bg-no-repeat transition-all duration-[3000ms] ease-in-out ${getBgStyleClasses()}`}
         style={{
           backgroundImage: `url('${customMainBg || theme.baseImage}')`,
-          filter: customMainBg ? 'none' : (weather === 'rainy' ? theme.hueDark : theme.hueBase),
+          filter: customMainBg ? 'none' : weather === 'rainy' ? theme.hueDark : theme.hueBase,
           x: parallaxX,
           y: parallaxY,
-          scale: 1.02
+          scale: 1.02,
         }}
       />
 
-      <div className={`absolute inset-0 bg-gradient-to-b transition-all duration-[2000ms] ease-in-out ${
-         weather === 'rainy' ? theme.overlayDark : theme.overlayBase
-      }`} />
-      
+      <div
+        className={`absolute inset-0 bg-gradient-to-b transition-all duration-[2000ms] ease-in-out ${
+          weather === 'rainy' ? theme.overlayDark : theme.overlayBase
+        }`}
+      />
+
       {theme.glow && (
-        <div className={`absolute top-[-10%] left-1/2 -translate-x-1/2 w-[80vw] h-[50vh] blur-[120px] rounded-[100%] pointer-events-none mix-blend-screen transition-opacity duration-[3000ms] ${theme.glow} ${
-          weather === 'rainy' ? 'opacity-20' : (weather === 'overcast' ? 'opacity-30' : 'opacity-100')
-        }`} />
+        <div
+          className={`absolute top-[-10%] left-1/2 -translate-x-1/2 w-[80vw] h-[50vh] blur-[120px] rounded-[100%] pointer-events-none mix-blend-screen transition-opacity duration-[3000ms] ${theme.glow} ${
+            weather === 'rainy'
+              ? 'opacity-20'
+              : weather === 'overcast'
+                ? 'opacity-30'
+                : 'opacity-100'
+          }`}
+        />
       )}
 
       <div className={`absolute inset-0 pointer-events-none opacity-80 ${theme.vignette}`} />
 
       {weather === 'sunny' && <SunsetLight />}
       {weather === 'overcast' && <OvercastClouds />}
-      
-      {isCriticalHp && <HeartbeatVignette />}
 
+      {isCriticalHp && <HeartbeatVignette />}
     </div>
   );
 };

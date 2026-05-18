@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Target, RotateCcw, BrainCircuit, ChevronRight, Crown, Calendar, Bookmark, ChevronDown, ChevronUp } from 'lucide-react';
+import { Target, BrainCircuit, ChevronRight, Crown, Calendar, Bookmark, ChevronDown, ChevronUp } from 'lucide-react';
 import { QuestItem } from './QuestItem';
 import { Button } from '../../../shared/components/Button';
 import type { Goal } from '../../../shared/types/goal';

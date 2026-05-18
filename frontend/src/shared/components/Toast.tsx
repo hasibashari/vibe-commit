@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { ReactNode } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { X, CheckCircle, AlertCircle, Info } from 'lucide-react';
 import { cn } from '../utils/cn';
@@ -7,7 +7,7 @@ import { useToastStore, ToastMessage, ToastType } from '../../store/toastStore';
 
 export type { ToastMessage, ToastType };
 
-export function ToastProvider({ children }: { children: React.ReactNode }) {
+export function ToastProvider({ children }: { children: ReactNode }) {
   const toasts = useToastStore((state) => state.toasts);
   const removeToast = useToastStore((state) => state.removeToast);
 
