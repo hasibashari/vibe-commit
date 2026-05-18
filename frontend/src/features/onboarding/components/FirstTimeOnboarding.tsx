@@ -17,25 +17,25 @@ export function FirstTimeOnboarding({ onComplete, onLogin, showLoginStep = false
     {
       title: "SYSTEM AWAKENING",
       text: "Selamat datang di Nexus. Ini bukan sekadar to-do list biasa, ini adalah sistem pelacak progres hidupmu yang dirancang layaknya RPG.",
-      icon: <Zap className="w-12 h-12 text-accent-400 mb-4 drop-shadow-[0_0_15px_rgba(var(--theme-400-rgb),0.6)]" />,
+      icon: <Zap className="w-12 h-12 text-accent-400 mb-4 drop-shadow-lg" />,
       highlight: "RPG"
     },
     {
       title: "BRAIN DUMP & AI QUESTS",
       text: "Pikiranmu sedang kacau? Gunakan fitur Brain Dump. AI akan menganalisis tulisanmu, mengukur tingkat stres, dan menyusunnya menjadi Quest yang bisa dikerjakan.",
-      icon: <BrainCircuit className="w-12 h-12 text-emerald-400 mb-4 drop-shadow-[0_0_15px_rgba(52,211,153,0.6)]" />,
+      icon: <BrainCircuit className="w-12 h-12 text-emerald-400 mb-4 drop-shadow-lg" />,
       highlight: "Brain Dump"
     },
     {
       title: "STATUS & BURN OUT",
       text: "Selesaikan Quest untuk mendapatkan EXP dan naik level. Tapi hati-hati, memaksakan diri tanpa istirahat akan mengurangi HP (Stamina) dan memicu Burnout.",
-      icon: <Shield className="w-12 h-12 text-rose-400 mb-4 drop-shadow-[0_0_15px_rgba(244,63,94,0.6)]" />,
+      icon: <Shield className="w-12 h-12 text-rose-400 mb-4 drop-shadow-lg" />,
       highlight: "Burnout"
     },
     {
       title: "YOUR JOURNEY BEGINS",
       text: "Status awalmu telah dikalibrasi. Buka Hub, tambahkan Quest pertamamu, dan mulai tingkatkan rank-mu hari ini.",
-      icon: <Target className="w-12 h-12 text-indigo-400 mb-4 drop-shadow-[0_0_15px_rgba(129,140,248,0.6)]" />,
+      icon: <Target className="w-12 h-12 text-indigo-400 mb-4 drop-shadow-lg" />,
       highlight: "Journey"
     }
   ];
@@ -46,7 +46,7 @@ export function FirstTimeOnboarding({ onComplete, onLogin, showLoginStep = false
         {
           title: "IDENTIFICATION",
           text: "Otentikasi dibutuhkan untuk mengakses Nexus Dashboard dan menyinkronkan progres ke neural cloud.",
-          icon: <Fingerprint className="w-12 h-12 text-blue-400 mb-4 drop-shadow-[0_0_15px_rgba(96,165,250,0.6)]" />,
+          icon: <Fingerprint className="w-12 h-12 text-blue-400 mb-4 drop-shadow-lg" />,
           highlight: "Otentikasi",
           isLogin: true
         }
@@ -80,7 +80,7 @@ export function FirstTimeOnboarding({ onComplete, onLogin, showLoginStep = false
   return (
     <div className="flex h-[100dvh] w-full items-center justify-center bg-[#0A0C10] text-accent-400 p-6 flex-col overflow-hidden font-sans relative">
       {/* Background visual effects */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden flex items-center justify-center">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden flex items-center justify-center z-0">
         <div className="w-[800px] h-[800px] bg-gradient-to-tr from-accent-900/10 via-transparent to-rose-900/10 rounded-full blur-3xl opacity-50 animate-pulse"></div>
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03]"></div>
       </div>
@@ -89,9 +89,9 @@ export function FirstTimeOnboarding({ onComplete, onLogin, showLoginStep = false
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="w-full max-w-sm sm:max-w-md md:max-w-lg relative z-10 flex flex-col items-center"
+        className="w-full max-w-sm sm:max-w-md md:max-w-lg relative z-20 flex flex-col items-center"
       >
-        <div className="text-4xl sm:text-5xl font-black mb-10 text-center text-white">Vibe<span className="text-accent-500">Commit</span></div>
+        <div className="text-4xl sm:text-5xl font-black mb-10 text-center text-white relative z-30 drop-shadow-md">Vibe<span className="text-accent-500">Commit</span></div>
 
         <div className="w-full relative overflow-hidden flex flex-col items-center min-h-[350px] sm:min-h-[300px]">
         
