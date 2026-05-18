@@ -68,18 +68,9 @@ export const useAuthStore = create<AuthStore>((set) => ({
         throw new Error(resData.error || 'Gagal mendaftarkan akun');
       }
 
-      const { user } = resData;
-      const mapped = {
-        uid: user.id,
-        displayName: user.username,
-        email: `${user.username.toLowerCase()}@local`
-      };
-      
-      localStorage.setItem('vibe_commit_user', JSON.stringify(user));
-      set({ user: mapped });
       useToastStore.getState().toast({ 
         title: 'Operative Created!', 
-        description: `Stats calibrated. Welcome to the Nexus, ${user.username}!`, 
+        description: `Akun berhasil dibuat. Silakan login untuk melanjutkan.`, 
         type: 'success' 
       });
     } catch (error: any) {

@@ -86,10 +86,12 @@ export function FirstTimeOnboarding({ onComplete }: FirstTimeOnboardingProps) {
     try {
       if (isRegistering) {
         await register(username, password);
+        setIsRegistering(false);
+        setPassword('');
       } else {
         await login(username, password);
+        onComplete();
       }
-      onComplete();
     } catch (err: any) {
       setAuthError(err.message || 'Authentication failed');
     } finally {

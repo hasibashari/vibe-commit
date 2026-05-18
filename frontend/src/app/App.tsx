@@ -335,7 +335,9 @@ export default function App() {
           }
         />
       </MainLayout>
-      <DevSandboxPanel overrides={devOverrides} setOverrides={setDevOverrides} user={effectiveUser} sandboxAction={updateSandbox} />
+      {import.meta.env.DEV && (
+        <DevSandboxPanel overrides={devOverrides} setOverrides={setDevOverrides} user={effectiveUser} sandboxAction={updateSandbox} />
+      )}
     </>
   );
 }
