@@ -33,9 +33,42 @@ export const useAuthStore = create<AuthStore>((set) => ({
     try {
       await loginWithGoogle();
       useToastStore.getState().toast({ title: 'Login Berhasil!', type: 'success' });
-    } catch (error) {
-      console.error(error);
-      useToastStore.getState().toast({ title: 'Gagal Login', description: 'Pastikan koneksi internet lancar.', type: 'error' });
+    } catch (error: any) {
+      console.error('Login error:', error);
+      const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
+      
+      // Handle specific Firebase errors
+      if (error.code === 'auth/popup-closed-by-user') {
+        useToastStore.getState().toast({ 
+          title: 'Popup Ditutup', 
+          description: 'Mohon jangan tutup popup login. Coba lagi.', 
+          type: 'error' 
+        });
+      } else if (error.code === 'auth/popup-blocked') {
+        useToastStore.getState().toast({ 
+          title: 'Popup Diblokir', 
+          description: 'Browser memblokir popup. Aktifkan popup di pengaturan.', 
+          type: 'error' 
+        });
+      } else if (error.code === 'auth/unauthorized-domain') {
+        useToastStore.getState().toast({ 
+          title: 'Domain Tidak Diizinkan', 
+          description: `Tambahkan domain ini ke Firebase Auth > Settings > Authorized domains: ${currentOrigin || 'origin saat ini'}.`, 
+          type: 'error' 
+        });
+      } else if (error.code === 'auth/network-request-failed') {
+        useToastStore.getState().toast({ 
+          title: 'Koneksi Gagal', 
+          description: 'Firebase Emulator tidak berjalan. Jalankan: firebase emulators:start', 
+          type: 'error' 
+        });
+      } else {
+        useToastStore.getState().toast({ 
+          title: 'Gagal Login', 
+          description: `Error: ${error.message || 'Unknown error'}`, 
+          type: 'error' 
+        });
+      }
     }
   },
   

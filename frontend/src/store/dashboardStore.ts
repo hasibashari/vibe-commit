@@ -51,7 +51,7 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
       set({ isLoading: true });
       const { goalsWithCounts, dumpsData, userData } = await fetchDashboardData();
       
-      const allLogs = goalsWithCounts.flatMap(g => (g.logs || []).map((l: Partial<Log>) => ({ ...l, goal_id: g.id })));
+      const allLogs = goalsWithCounts.flatMap(g => (g.logs || []).map((l: Log) => ({ ...l, goal_id: g.id })));
       const calculatedUser = calculateRPGStats(allLogs, userData, goalsWithCounts);
       
       set({
@@ -78,8 +78,8 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
     const { goals: currentGoals, user: currentUser } = get();
     const updatedGoals = newGoals || currentGoals;
     
-    const allLogs = updatedGoals.flatMap(g => (g.logs || []).map((l: Partial<Log>) => ({ ...l, goal_id: g.id })));
-    const calculatedUser = calculateRPGStats(allLogs, newUser || currentUser, updatedGoals);
+    const allLogs = updatedGoals.flatMap(g => (g.logs || []).map((l: Log) => ({ ...l, goal_id: g.id })));
+    const calculatedUser = calculateRPGStats(allLogs, { ...currentUser, ...newUser }, updatedGoals);
     
     set({
       goals: updatedGoals,
@@ -97,7 +97,7 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
       const updatedUser = await updateProfileData(undefined, data);
       
       const { goals, user } = get();
-      const allLogs = goals.flatMap(g => (g.logs || []).map((l: Partial<Log>) => ({ ...l, goal_id: g.id })));
+      const allLogs = goals.flatMap(g => (g.logs || []).map((l: Log) => ({ ...l, goal_id: g.id })));
       const newStats = calculateRPGStats(allLogs, { ...user, ...updatedUser }, goals);
       
       set({ user: newStats });
@@ -168,7 +168,7 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
       const { user, goals } = get();
       const updatedUser = await buyItemAPI(user.id, itemId);
       
-      const allLogs = goals.flatMap(g => (g.logs || []).map((l: Partial<Log>) => ({ ...l, goal_id: g.id })));
+      const allLogs = goals.flatMap(g => (g.logs || []).map((l: Log) => ({ ...l, goal_id: g.id })));
       set({ user: calculateRPGStats(allLogs, { ...user, ...updatedUser }, goals) });
       
       toast({ title: "Pembelian Berhasil", type: 'success' });

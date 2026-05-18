@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Shield, BrainCircuit, Target, ArrowRight, ArrowLeft, Zap, Stars, Fingerprint } from 'lucide-react';
+import { Button } from '../../../shared/components/Button';
 
 interface FirstTimeOnboardingProps {
   onComplete?: () => void;
@@ -9,11 +10,19 @@ interface FirstTimeOnboardingProps {
   initialStep?: number;
 }
 
+interface OnboardingStep {
+  title: string;
+  text: string;
+  icon: React.ReactNode;
+  highlight: string;
+  isLogin?: boolean;
+}
+
 export function FirstTimeOnboarding({ onComplete, onLogin, showLoginStep = false, initialStep = 0 }: FirstTimeOnboardingProps) {
   const [step, setStep] = useState(initialStep);
   const [isTyping, setIsTyping] = useState(true);
 
-  const baseSteps = [
+  const baseSteps: OnboardingStep[] = [
     {
       title: "SYSTEM AWAKENING",
       text: "Selamat datang di Nexus. Ini bukan sekadar to-do list biasa, ini adalah sistem pelacak progres hidupmu yang dirancang layaknya RPG.",
@@ -40,7 +49,7 @@ export function FirstTimeOnboarding({ onComplete, onLogin, showLoginStep = false
     }
   ];
 
-  const steps = showLoginStep 
+  const steps: OnboardingStep[] = showLoginStep 
     ? [
         ...baseSteps,
         {
@@ -144,37 +153,63 @@ export function FirstTimeOnboarding({ onComplete, onLogin, showLoginStep = false
           </div>
 
             <div className="w-full flex flex-col gap-3">
-              <Button 
-                variant="primary"
-                onClick={handleNext}
-                disabled={isTyping}
-                className="w-full py-4 relative group overflow-hidden"
-              >
-                <div className="absolute inset-0 bg-linear-to-r from-cyan-600/20 to-emerald-600/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <div className="absolute top-0 left-0 w-full h-[2px] bg-white opacity-20 -translate-y-4 group-hover:animate-scanline"></div>
+              <div className="flex w-full gap-3 justify-center items-center">
+                {step > 0 && (
+                  <Button 
+                    variant="secondary"
+                    onClick={handleBack}
+                    className="px-4 py-4 shrink-0 flex items-center justify-center"
+                    aria-label="Kembali"
+                  >
+                    <ArrowLeft className="w-4 h-4 text-slate-300" />
+                  </Button>
+                )}
+                {isCurrentLogin ? (
+                  <Button 
+                    variant="primary"
+                    onClick={onLogin}
+                    className="flex-1 py-4 relative group overflow-hidden"
+                  >
+                    <div className="absolute inset-0 bg-linear-to-r from-cyan-600/20 to-emerald-600/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div className="absolute top-0 left-0 w-full h-[2px] bg-white opacity-20 -translate-y-4 group-hover:animate-scanline"></div>
 
-                <span className="relative flex items-center gap-2">
-                  {step === steps.length - 1 ? (
-                    <><Stars className="w-4 h-4 text-amber-400" /> Mulai Petualangan</>
-                  ) : (
-                    <>Selanjutnya <ArrowRight className="w-4 h-4 text-accent-400" /></>
-                  )}
-                </span>
-              </Button>
+                    <span className="relative flex items-center gap-2 justify-center">
+                      <Fingerprint className="w-4 h-4 text-black" /> Sign In with Google
+                    </span>
+                  </Button>
+                ) : (
+                  <Button 
+                    variant="primary"
+                    onClick={handleNext}
+                    disabled={isTyping}
+                    className="flex-1 py-4 relative group overflow-hidden"
+                  >
+                    <div className="absolute inset-0 bg-linear-to-r from-cyan-600/20 to-emerald-600/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div className="absolute top-0 left-0 w-full h-[2px] bg-white opacity-20 -translate-y-4 group-hover:animate-scanline"></div>
+
+                    <span className="relative flex items-center gap-2 justify-center">
+                      {step === steps.length - 1 ? (
+                        <><Stars className="w-4 h-4 text-amber-400" /> Mulai Petualangan</>
+                      ) : (
+                        <>Selanjutnya <ArrowRight className="w-4 h-4 text-black" /></>
+                      )}
+                    </span>
+                  </Button>
+                )}
+              </div>
 
               {/* Skip Option */}
-              {step < steps.length - 1 && (
+              {step < steps.length - 1 && !isCurrentLogin && (
                 <Button 
                   variant="ghost"
                   onClick={onComplete}
-                  className="text-slate-500 hover:text-slate-300 text-sm"
+                  className="text-slate-500 hover:text-slate-300 text-sm w-full py-2"
                 >
                   Skip Tutorial
                 </Button>
               )}
             </div>
           </div>
-        </div>
 
       </motion.div>
     </div>

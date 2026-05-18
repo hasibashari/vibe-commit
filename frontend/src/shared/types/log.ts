@@ -3,5 +3,6 @@ export interface Log {
   goal_id: string;
   timestamp: string;
   vibeScore?: number;
+  vibe_score?: number;
   notes?: string;
 }

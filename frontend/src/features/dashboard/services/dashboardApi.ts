@@ -19,19 +19,19 @@ export const fetchDashboardData = async () => {
 
   try {
     const goalsSnap = await getDocs(query(collection(db, 'goals'), where('user_id', '==', userId)));
-    const goalsData = goalsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const goalsData = goalsSnap.docs.map(d => ({ id: d.id, ...d.data() }) as unknown as Goal);
 
     const logsSnap = await getDocs(query(collection(db, 'quest_logs'), where('user_id', '==', userId)));
-    const allLogsData = logsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const allLogsData = logsSnap.docs.map(d => ({ id: d.id, ...d.data() }) as unknown as Log);
 
     const dumpsSnap = await getDocs(query(collection(db, 'brain_dumps'), where('user_id', '==', userId)));
     const dumpsData = dumpsSnap.docs.map(d => ({ id: d.id, ...d.data() }) as { id: string, created_at: string }).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
     const userSnap = await getDoc(doc(db, 'users', userId));
-    const userData = userSnap.exists() ? userSnap.data() : null;
+    const userData = userSnap.exists() ? userSnap.data() as UserStats : null;
 
-    const goalsWithCounts = goalsData.map((g: Partial<Goal> & { id: string }) => {
-      const logs = allLogsData.filter((log: Partial<Log> & { goal_id: string }) => log.goal_id === g.id);
+    const goalsWithCounts = goalsData.map((g: Goal) => {
+      const logs = allLogsData.filter((log: Log) => log.goal_id === g.id);
       return { ...g, repetition_count: logs.length, logs };
     });
 

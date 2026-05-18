@@ -24,6 +24,7 @@ import { calculateStats } from '../shared/utils/vibeMath';
 import { getWeatherState } from '../shared/utils/weatherUtils';
 import { importDataAPI } from '../features/dashboard/services/dashboardApi';
 import type { Goal } from '../shared/types/goal';
+import type { UserStats } from '../shared/types/user';
 import { useUIStore } from '../store/uiStore';
 import { useDashboardStore } from '../store/dashboardStore';
 import { useQuestStore } from '../store/questStore';
@@ -60,6 +61,8 @@ export default function App() {
   const setIsSettingsOpen = useUIStore((state) => state.setIsSettingsOpen);
   const isQuestEditorOpen = useUIStore((state) => state.isQuestEditorOpen);
   const setIsQuestEditorOpen = useUIStore((state) => state.setIsQuestEditorOpen);
+  const isBrainDumpOpen = useUIStore((state) => state.isBrainDumpOpen);
+  const setIsBrainDumpOpen = useUIStore((state) => state.setIsBrainDumpOpen);
 
   // Dashboard Store access
   const {
@@ -83,7 +86,7 @@ export default function App() {
 
   // Brain Dump Store access
   const {
-    isBrainDumpOpen, setIsBrainDumpOpen, draftContent, setDraftContent,
+    draftContent, setDraftContent,
     isAnalyzing, handleBrainDump, analysisResult
   } = useBrainDumpStore();
 
