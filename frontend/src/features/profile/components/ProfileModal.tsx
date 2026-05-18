@@ -49,12 +49,12 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   };
 
   const getIcon = (iconName: string) => {
-    switch (iconName) {
-      case 'Sword': return <Sword className="w-5 h-5" />;
-      case 'Shield': return <Shield className="w-5 h-5" />;
-      case 'Swords': return <Swords className="w-5 h-5" />;
-      case 'Star': return <Star className="w-5 h-5" />;
-      case 'Crown': return <Crown className="w-5 h-5" />;
+    switch (iconName?.toLowerCase()) {
+      case 'sword': return <Sword className="w-5 h-5" />;
+      case 'shield': return <Shield className="w-5 h-5" />;
+      case 'swords': return <Swords className="w-5 h-5" />;
+      case 'star': return <Star className="w-5 h-5" />;
+      case 'crown': return <Crown className="w-5 h-5" />;
       default: return <Trophy className="w-5 h-5" />;
     }
   };
@@ -215,17 +215,21 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                           {ach.isUnlocked && (
                             <button
                               onClick={() => {
-                                setAvatarIcon(ach.icon);
-                                setActiveTab('profile'); // Send them back to profile to see it, and save it.
+                                if (avatarIcon?.toLowerCase() === ach.icon?.toLowerCase()) {
+                                  setAvatarIcon('Shield');
+                                } else {
+                                  setAvatarIcon(ach.icon);
+                                  setActiveTab('profile'); // Send them back to profile to see it, and save it.
+                                }
                               }}
                               className={cn(
-                                "text-[10px] px-2 py-1 rounded-sm uppercase tracking-wider font-bold transition-colors border",
-                                avatarIcon === ach.icon 
-                                  ? "bg-indigo-500/20 text-indigo-300 border-indigo-500/30" 
+                                "text-[10px] px-2 py-1 rounded-sm uppercase tracking-wider font-bold transition-all border cursor-pointer",
+                                avatarIcon?.toLowerCase() === ach.icon?.toLowerCase() 
+                                  ? "bg-rose-500/20 text-rose-300 border-rose-500/30 hover:bg-rose-500 hover:text-white" 
                                   : "bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700 hover:text-white"
                               )}
                             >
-                              {avatarIcon === ach.icon ? 'Equipped' : 'Equip'}
+                              {avatarIcon?.toLowerCase() === ach.icon?.toLowerCase() ? 'Unequip' : 'Equip'}
                             </button>
                           )}
                         </div>

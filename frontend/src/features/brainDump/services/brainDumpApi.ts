@@ -1,4 +1,4 @@
-import { auth } from '../../../shared/services/firebase';
+import { getCurrentUser } from '../../../shared/services/session';
 
 interface BrainDumpAnalysisResult {
   anxietyLevel: string;
@@ -21,7 +21,7 @@ function handleFirestoreError(error: unknown) {
 }
 
 export const saveBrainDumpApi = async (draftContent: string, analysisResult: BrainDumpAnalysisResult) => {
-  const user = auth.currentUser;
+  const user = getCurrentUser();
   if (!user) throw new Error("Not authenticated");
   try {
     const id = crypto.randomUUID();
@@ -46,7 +46,7 @@ export const saveBrainDumpApi = async (draftContent: string, analysisResult: Bra
 };
 
 export const saveQuestsFromBrainDumpApi = async (quests: BrainDumpQuest[]) => {
-  const user = auth.currentUser;
+  const user = getCurrentUser();
   if (!user) throw new Error("Not authenticated");
   try {
     await Promise.all(quests.map(res => 

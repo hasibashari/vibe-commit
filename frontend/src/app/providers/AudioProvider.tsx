@@ -102,7 +102,8 @@ export function AudioProvider({ children }: { children: ReactNode }) {
 
   const currentTheme = useMemo(() => {
      if (!user) return 'nature';
-     if (user.bgm_theme && user.bgm_theme !== 'dynamic') return user.bgm_theme;
+     const theme = user.bgm_theme || 'nature';
+     if (theme !== 'dynamic') return theme;
      const anxiety = latestDump?.anxietyScore || 5;
      if (anxiety > 7) return 'cyber';
      if (anxiety > 4) return 'coffee';

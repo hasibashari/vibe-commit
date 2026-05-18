@@ -1,4 +1,4 @@
-import { auth } from '../../../shared/services/firebase';
+import { getCurrentUser } from '../../../shared/services/session';
 import type { UserStats } from '../../../shared/types/user';
 
 function handleFirestoreError(error: unknown) {
@@ -7,7 +7,7 @@ function handleFirestoreError(error: unknown) {
 }
 
 export const fetchDashboardData = async () => {
-  const user = auth.currentUser;
+  const user = getCurrentUser();
   if (!user) {
     return { goalsWithCounts: [], rawGoalsData: [], dumpsData: [], userData: null };
   }
@@ -63,7 +63,7 @@ export const updateProfileData = async (
   userIdStr?: string,
   data?: Partial<UserStats>
 ) => {
-  const user = auth.currentUser;
+  const user = getCurrentUser();
   if (!user) throw new Error("Not authenticated");
   const userId = user.uid;
 
@@ -82,7 +82,7 @@ export const updateProfileData = async (
 };
 
 export const resetProfileData = async () => {
-  const user = auth.currentUser;
+  const user = getCurrentUser();
   if (!user) throw new Error("Not authenticated");
   const userId = user.uid;
 
@@ -101,7 +101,7 @@ export const updateSandboxData = async (
   userIdStr?: string,
   payload?: { hp?: number | null; mana?: number | null; level?: number | null; coins_delta?: number | null }
 ) => {
-  const user = auth.currentUser;
+  const user = getCurrentUser();
   if (!user || !payload) throw new Error("Not authenticated");
   const userId = user.uid;
 
@@ -123,7 +123,7 @@ export const buyItemAPI = async (
   userIdStr: string,
   itemId: string
 ) => {
-  const user = auth.currentUser;
+  const user = getCurrentUser();
   if (!user) throw new Error("Not authenticated");
   const userId = user.uid;
 

@@ -35,12 +35,12 @@ export const TopBar: React.FC<TopBarProps> = ({ hp, mana, level, exp, coins, use
   const colorClasses = avatarColorMap[cColor] || avatarColorMap.indigo;
 
   const getIcon = (iconName: string, className: string) => {
-    switch (iconName) {
-      case 'Sword': return <Sword className={className} />;
-      case 'Shield': return <Shield className={className} />;
-      case 'Swords': return <Swords className={className} />;
-      case 'Star': return <Star className={className} />;
-      case 'Crown': return <Crown className={className} />;
+    switch (iconName?.toLowerCase()) {
+      case 'sword': return <Sword className={className} />;
+      case 'shield': return <Shield className={className} />;
+      case 'swords': return <Swords className={className} />;
+      case 'star': return <Star className={className} />;
+      case 'crown': return <Crown className={className} />;
       default: return <Trophy className={className} />;
     }
   };

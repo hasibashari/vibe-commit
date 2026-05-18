@@ -1,4 +1,4 @@
-import { auth } from '../../../shared/services/firebase';
+import { getCurrentUser } from '../../../shared/services/session';
 import type { Goal } from '../../../shared/types/goal';
 
 function handleFirestoreError(error: unknown) {
@@ -7,7 +7,7 @@ function handleFirestoreError(error: unknown) {
 }
 
 export const logQuestActionApi = async (goalId: string, logId: string) => {
-  const user = auth.currentUser;
+  const user = getCurrentUser();
   if (!user) throw new Error("Not authenticated");
   try {
     const res = await fetch('/api/logs', {
@@ -28,7 +28,7 @@ export const logQuestActionApi = async (goalId: string, logId: string) => {
 };
 
 export const updateQuestDifficultyApi = async (goalId: string, newDifficulty: number) => {
-  const user = auth.currentUser;
+  const user = getCurrentUser();
   if (!user) throw new Error("Not authenticated");
   try {
     const res = await fetch(`/api/goals/${goalId}`, {
@@ -45,7 +45,7 @@ export const updateQuestDifficultyApi = async (goalId: string, newDifficulty: nu
 };
 
 export const updateQuestApi = async (questId: string, questData: Partial<Goal>) => {
-  const user = auth.currentUser;
+  const user = getCurrentUser();
   if (!user) throw new Error("Not authenticated");
   try {
     const res = await fetch(`/api/goals/${questId}`, {
@@ -66,7 +66,7 @@ export const updateQuestApi = async (questId: string, questData: Partial<Goal>) 
 };
 
 export const createQuestApi = async (questData: Partial<Goal>, id: string) => {
-  const user = auth.currentUser;
+  const user = getCurrentUser();
   if (!user) throw new Error("Not authenticated");
   try {
     const res = await fetch('/api/goals', {
@@ -89,7 +89,7 @@ export const createQuestApi = async (questData: Partial<Goal>, id: string) => {
 };
 
 export const deleteQuestApi = async (questId: string) => {
-  const user = auth.currentUser;
+  const user = getCurrentUser();
   if (!user) throw new Error("Not authenticated");
   try {
     const res = await fetch(`/api/goals/${questId}`, {

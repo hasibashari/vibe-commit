@@ -182,12 +182,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, u
               <span className="text-xs text-slate-500">Adaptive ambient sounds</span>
             </div>
             <select
-              value={user.bgm_theme || 'dynamic'}
+              value={user.bgm_theme || 'nature'}
               onChange={(e) => onUpdateUser({ bgm_theme: e.target.value })}
               className="bg-slate-800 border border-slate-700 text-sm rounded-lg px-3 py-2 text-slate-200 outline-none focus:border-accent-500 w-full sm:w-auto"
             >
+              <option value="nature">Nature / Acoustic (Default)</option>
               <option value="dynamic">Adaptive (Based on Anxiety)</option>
-              <option value="nature">Nature / Acoustic</option>
               <option value="cyber">Cyber-Zen (Synth)</option>
               <option value="coffee">Coffee Shop / Lo-Fi</option>
             </select>
