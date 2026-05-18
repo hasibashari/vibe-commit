@@ -170,7 +170,7 @@ export const updateSandboxData = async (
   }
 };
 
-export const importDataAPI = async (data: { user?: Partial<UserStats> & { id?: string }, goals?: Array<Partial<Goal> & { createdAt?: string, logs?: Array<Partial<Log> & { completedAt?: string }> }> }) => {
+export const importDataAPI = async (data: { user?: Partial<UserStats> & { id?: string }, goals?: Array<any> }) => {
   const currentUser = auth.currentUser;
   if (!currentUser) throw new Error("Not authenticated");
   const userId = currentUser.uid;
@@ -215,7 +215,7 @@ export const importDataAPI = async (data: { user?: Partial<UserStats> & { id?: s
               goal_id: goalRef.id,
               user_id: userId,
               timestamp: log.timestamp || log.completedAt || new Date().toISOString(),
-              vibe_score: log.vibe_score ?? 8,
+              vibeScore: log.vibeScore ?? log.vibe_score ?? 8,
               notes: log.notes ?? 'Imported log'
             });
           }

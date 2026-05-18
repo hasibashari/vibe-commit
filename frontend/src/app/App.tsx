@@ -33,6 +33,7 @@ import { useAudio } from './providers/AudioProvider';
 import { useAuthStore } from '../store/authStore';
 
 import type { Tab } from '../shared/types/navigation';
+import type { UserStats } from '../shared/types/user';
 
 export default function App() {
   const { tab } = useParams<{ tab: Tab }>();

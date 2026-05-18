@@ -55,7 +55,7 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
       const calculatedUser = calculateRPGStats(allLogs, userData, goalsWithCounts);
       
       set({
-        goals: goalsWithCounts,
+        goals: goalsWithCounts as Goal[],
         recentlyCompletedIds: getCompletedIdsToday(goalsWithCounts),
         nudge: calculateStochasticNudges(allLogs) || null,
         burnoutMonitor: analyzeBurnoutRisk(allLogs, goalsWithCounts),
@@ -82,7 +82,7 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
     const calculatedUser = calculateRPGStats(allLogs, { ...currentUser, ...newUser }, updatedGoals);
     
     set({
-      goals: updatedGoals,
+      goals: updatedGoals as Goal[],
       recentlyCompletedIds: getCompletedIdsToday(updatedGoals),
       nudge: calculateStochasticNudges(allLogs) || null,
       burnoutMonitor: analyzeBurnoutRisk(allLogs, updatedGoals),
