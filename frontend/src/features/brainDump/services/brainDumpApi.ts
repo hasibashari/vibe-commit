@@ -30,13 +30,13 @@ export const saveBrainDumpApi = async (draftContent: string, analysisResult: Bra
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         id,
-        user_id: user.uid,
-        raw_content: draftContent,
-        analysis: JSON.stringify({
+        userId: user.uid,
+        rawContent: draftContent,
+        analysis: {
           anxietyLevel: analysisResult.anxietyLevel,
           anxietyScore: analysisResult.anxietyScore,
           summary: analysisResult.analysisSummary
-        })
+        }
       })
     });
     if (!res.ok) throw new Error("Gagal menyimpan brain dump");
@@ -55,11 +55,11 @@ export const saveQuestsFromBrainDumpApi = async (quests: BrainDumpQuest[]) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id: crypto.randomUUID(),
-          user_id: user.uid,
+          userId: user.uid,
           title: res.title,
           description: res.description,
           difficulty: res.difficulty,
-          reward_alpha: String(res.rewardAlpha),
+          rewardAlpha: res.rewardAlpha,
           category: res.category
         })
       })

@@ -105,7 +105,7 @@ export const QuestEditorModal: React.FC<QuestEditorModalProps> = ({ isOpen, onCl
         </div>
       </div>
 
-      <div className="border-t border-white/5 p-4 bg-[#0A0C10] flex justify-end gap-3 flex-wrap">
+      <div className="border-t border-white/5 p-4 bg-surface flex justify-end gap-3 flex-wrap">
         <Button variant="ghost" onClick={onClose}>
           Batal
         </Button>

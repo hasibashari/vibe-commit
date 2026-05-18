@@ -35,7 +35,7 @@ export const DevSandboxPanel: React.FC<DevSandboxPanelProps> = ({ overrides, set
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-20 right-4 z-[999] w-12 h-12 rounded-full bg-slate-900/80 backdrop-blur-md border border-fuchsia-500/30 text-fuchsia-400 flex items-center justify-center hover:bg-slate-800 hover:scale-110 transition-all shadow-[0_0_15px_rgba(217,70,239,0.2)]"
+        className="fixed bottom-20 right-4 z-999 w-12 h-12 rounded-full bg-slate-900/80 backdrop-blur-md border border-fuchsia-500/30 text-fuchsia-400 flex items-center justify-center hover:bg-slate-800 hover:scale-110 transition-all shadow-[0_0_15px_rgba(217,70,239,0.2)]"
         title="Developer Sandbox"
       >
         <Settings className="w-6 h-6 animate-[spin_4s_linear_infinite]" />
@@ -47,7 +47,7 @@ export const DevSandboxPanel: React.FC<DevSandboxPanelProps> = ({ overrides, set
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="fixed bottom-24 right-4 z-[1000] w-[340px] max-w-[calc(100vw-32px)] bg-slate-900/95 backdrop-blur-xl border border-fuchsia-500/20 rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+            className="fixed bottom-24 right-4 z-1000 w-[340px] max-w-[calc(100vw-32px)] bg-slate-900/95 backdrop-blur-xl border border-fuchsia-500/20 rounded-2xl shadow-2xl overflow-hidden flex flex-col"
           >
             <div className="flex items-center justify-between p-3 border-b border-fuchsia-500/20 bg-fuchsia-500/5">
               <h3 className="text-xs font-bold text-fuchsia-400 flex items-center gap-2">
@@ -67,7 +67,7 @@ export const DevSandboxPanel: React.FC<DevSandboxPanelProps> = ({ overrides, set
               <div className="space-y-4">
                 <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex justify-between">
                   <span>Game State (Real DB)</span>
-                  <span className="text-fuchsia-500/70 lowercase normal-case">persists</span>
+                  <span className="text-fuchsia-500/70 normal-case">persists</span>
                 </h4>
                 
                 <div className="space-y-2">

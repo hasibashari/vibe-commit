@@ -174,7 +174,7 @@
 
 @layer base {
   body {
-    @apply bg-[#0A0C10] text-slate-300 antialiased;
+    @apply bg-surface text-slate-300 antialiased;
   }
 }
 

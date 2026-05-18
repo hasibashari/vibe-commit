@@ -68,17 +68,17 @@ const SunsetLight = () => {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none mix-blend-screen opacity-60 z-10">
       <motion.div 
-        className="absolute top-0 -right-[10%] w-[50%] h-[120%] bg-gradient-to-l from-orange-400/30 to-transparent blur-[100px] origin-right"
+        className="absolute top-0 right-[-10%] w-[50%] h-[120%] bg-linear-to-l from-orange-400/30 to-transparent blur-[100px] origin-right"
         animate={{ opacity: [0.3, 0.6, 0.3], scale: [1, 1.05, 1] }}
         transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
       />
       <motion.div 
-        className="absolute top-[10%] right-0 w-[40%] h-[80%] bg-gradient-to-l from-amber-300/20 to-transparent blur-[80px]"
+        className="absolute top-[10%] right-0 w-[40%] h-[80%] bg-linear-to-l from-amber-300/20 to-transparent blur-[80px]"
         animate={{ opacity: [0.2, 0.5, 0.2] }}
         transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 2 }}
       />
       <motion.div 
-        className="absolute bottom-0 -left-[10%] w-[40%] h-[80%] bg-gradient-to-r from-rose-400/20 to-transparent blur-[120px]"
+        className="absolute bottom-0 left-[-10%] w-[40%] h-[80%] bg-linear-to-r from-rose-400/20 to-transparent blur-[120px]"
         animate={{ opacity: [0.2, 0.4, 0.2] }}
         transition={{ duration: 15, repeat: Infinity, ease: "easeInOut", delay: 1 }}
       />
@@ -90,17 +90,17 @@ const OvercastClouds = () => {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-10 opacity-70">
       <motion.div 
-        className="absolute -top-[10%] -left-[10%] w-[70%] h-[50%] bg-slate-400/20 blur-[80px] rounded-full mix-blend-overlay"
+        className="absolute top-[-10%] left-[-10%] w-[70%] h-[50%] bg-slate-400/20 blur-[80px] rounded-full mix-blend-overlay"
         animate={{ x: [0, 50, 0], opacity: [0.3, 0.5, 0.3] }}
         transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
       />
       <motion.div 
-        className="absolute top-[20%] -right-[10%] w-[60%] h-[60%] bg-slate-500/20 blur-[100px] rounded-full mix-blend-overlay"
+        className="absolute top-[20%] right-[-10%] w-[60%] h-[60%] bg-slate-500/20 blur-[100px] rounded-full mix-blend-overlay"
         animate={{ x: [0, -60, 0], opacity: [0.3, 0.6, 0.3] }}
         transition={{ duration: 30, repeat: Infinity, ease: "easeInOut", delay: 3 }}
       />
       <motion.div 
-        className="absolute -bottom-[20%] left-[20%] w-[80%] h-[50%] bg-slate-600/15 blur-[120px] rounded-full mix-blend-overlay"
+        className="absolute bottom-[-20%] left-[20%] w-[80%] h-[50%] bg-slate-600/15 blur-[120px] rounded-full mix-blend-overlay"
         animate={{ x: [-30, 40, -30], opacity: [0.2, 0.4, 0.2] }}
         transition={{ duration: 35, repeat: Infinity, ease: "easeInOut", delay: 5 }}
       />
@@ -151,10 +151,10 @@ export const VibeEnvironment: React.FC<VibeEnvironmentProps> = ({
   };
 
   return (
-    <div className={`fixed inset-0 z-[-1] pointer-events-none overflow-hidden transition-colors duration-[2000ms] ${theme.bg}`}>
+    <div className={`fixed inset-0 z-[-1] pointer-events-none overflow-hidden transition-colors duration-2000 ${theme.bg}`}>
       
       <motion.div 
-        className={`absolute -inset-[30px] bg-cover bg-[center_top] bg-no-repeat transition-all duration-[3000ms] ease-in-out ${getBgStyleClasses()}`}
+        className={`absolute inset-[-30px] bg-cover bg-position-[center_top] bg-no-repeat transition-all duration-3000 ease-in-out ${getBgStyleClasses()}`}
         style={{
           backgroundImage: `url('${customMainBg || theme.baseImage}')`,
           filter: customMainBg ? 'none' : (weather === 'rainy' ? theme.hueDark : theme.hueBase),
@@ -164,12 +164,12 @@ export const VibeEnvironment: React.FC<VibeEnvironmentProps> = ({
         }}
       />
 
-      <div className={`absolute inset-0 bg-gradient-to-b transition-all duration-[2000ms] ease-in-out ${
+      <div className={`absolute inset-0 bg-linear-to-b transition-all duration-2000 ease-in-out ${
          weather === 'rainy' ? theme.overlayDark : theme.overlayBase
       }`} />
       
       {theme.glow && (
-        <div className={`absolute top-[-10%] left-1/2 -translate-x-1/2 w-[80vw] h-[50vh] blur-[120px] rounded-[100%] pointer-events-none mix-blend-screen transition-opacity duration-[3000ms] ${theme.glow} ${
+        <div className={`absolute top-[-10%] left-1/2 -translate-x-1/2 w-[80vw] h-[50vh] blur-[120px] rounded-[100%] pointer-events-none mix-blend-screen transition-opacity duration-3000 ${theme.glow} ${
           weather === 'rainy' ? 'opacity-20' : (weather === 'overcast' ? 'opacity-30' : 'opacity-100')
         }`} />
       )}

@@ -117,7 +117,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
               <div className="flex flex-col gap-4">
                 <div className="flex items-center gap-4 bg-slate-800/30 p-4 rounded-xl border border-white/5 mb-2">
                   <div className={`relative w-16 h-16 rounded-2xl flex flex-col items-center justify-center shadow-inner overflow-hidden ring-2 ${colors.find(c => c.id === avatarColor)?.ring || 'ring-indigo-400'}`}>
-                    <div className={cn("absolute inset-0 bg-gradient-to-tr to-purple-500/20", colors.find(c => c.id === avatarColor)?.from)}></div>
+                    <div className={cn("absolute inset-0 bg-linear-to-tr to-purple-500/20", colors.find(c => c.id === avatarColor)?.from)}></div>
                     <div className={cn("z-10", colors.find(c => c.id === avatarColor)?.text)}>
                       {getIcon(avatarIcon)}
                     </div>
