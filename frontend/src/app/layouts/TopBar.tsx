@@ -17,6 +17,10 @@ interface TopBarProps {
   onOpenSettings?: () => void;
 }
 
+function getExpNeededForLevel(level: number): number {
+  return Math.floor(100 * Math.pow(1.2, level - 1));
+}
+
 export const TopBar: React.FC<TopBarProps> = ({ hp, mana, level, exp, coins, user, onOpenProfile, onOpenSettings }) => {
   const { isMuted, toggleMute } = useAudio();
   const avatarColorMap: Record<string, { from: string; text: string }> = {
@@ -81,15 +85,21 @@ export const TopBar: React.FC<TopBarProps> = ({ hp, mana, level, exp, coins, use
       <div className="flex items-center justify-between lg:justify-end gap-4 lg:gap-6 w-full lg:w-auto">
         
         {/* EXP Bar (Moved here for better grid) */}
-        <div className="flex flex-col gap-1 min-w-[80px] flex-1 lg:flex-none lg:w-32">
-          <div className="flex justify-between items-center text-xs font-bold tracking-widest uppercase">
-            <span className="text-amber-400">Lv {level ?? 1}</span>
-            <span className="text-slate-400">{(exp ?? 0).toFixed(0)} <span className="text-slate-600">%</span></span>
-          </div>
-          <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden p-px">
-            <motion.div initial={{ width: 0 }} animate={{ width: `${exp}%` }} className="h-full bg-amber-400 rounded-full"></motion.div>
-          </div>
-        </div>
+        {(() => {
+          const expNeeded = getExpNeededForLevel(level ?? 1);
+          const expPercent = ((exp ?? 0) / expNeeded) * 100;
+          return (
+            <div className="flex flex-col gap-1 min-w-[80px] flex-1 lg:flex-none lg:w-32">
+              <div className="flex justify-between items-center text-xs font-bold tracking-widest uppercase">
+                <span className="text-amber-400">Lv {level ?? 1}</span>
+                <span className="text-slate-400">{expPercent.toFixed(0)} <span className="text-slate-600">%</span></span>
+              </div>
+              <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden p-px">
+                <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min(100, Math.max(0, expPercent))}%` }} className="h-full bg-amber-400 rounded-full"></motion.div>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* HP Bar */}
         <div className="flex flex-col gap-1 min-w-[80px] flex-1 lg:flex-none lg:w-32">
@@ -98,7 +108,7 @@ export const TopBar: React.FC<TopBarProps> = ({ hp, mana, level, exp, coins, use
             <span className="text-slate-200">{(hp ?? 100).toFixed(0)}</span>
           </div>
           <div className="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden border border-white/5">
-            <motion.div initial={{ width: 0 }} animate={{ width: `${hp}%` }} className="h-full bg-linear-to-r from-emerald-500 to-emerald-400"></motion.div>
+            <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min(100, Math.max(0, hp ?? 100))}%` }} className="h-full bg-linear-to-r from-emerald-500 to-emerald-400"></motion.div>
           </div>
         </div>
 
@@ -109,7 +119,7 @@ export const TopBar: React.FC<TopBarProps> = ({ hp, mana, level, exp, coins, use
             <span className="text-slate-200">{(mana ?? 100).toFixed(0)}</span>
           </div>
           <div className="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden border border-white/5">
-            <motion.div initial={{ width: 0 }} animate={{ width: `${mana}%` }} className="h-full bg-linear-to-r from-cyan-500 to-cyan-400"></motion.div>
+            <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min(100, Math.max(0, mana ?? 100))}%` }} className="h-full bg-linear-to-r from-cyan-500 to-cyan-400"></motion.div>
           </div>
         </div>
 

@@ -13,6 +13,18 @@ const ITEM_PRICES: Record<string, number> = {
   'aesthetic_title_legendary': 1500,
 };
 
+function getExpNeededForLevel(level: number): number {
+  return Math.floor(100 * Math.pow(1.2, level - 1));
+}
+
+function getCumulativeExp(level: number, exp: number): number {
+  let sum = 0;
+  for (let i = 1; i < level; i++) {
+    sum += getExpNeededForLevel(i);
+  }
+  return sum + exp;
+}
+
 export class UserService {
   static getUser(id: string) {
     const user = db.prepare('SELECT * FROM users WHERE id = ?').get(id);
@@ -45,9 +57,18 @@ export class UserService {
         let shieldedDays = 0;
         if (user.shield_until) {
           const shieldDate = new Date(user.shield_until);
-          if (shieldDate > lastDate) {
-            const shieldDiff = Math.ceil((Math.min(todayDate.getTime(), shieldDate.getTime()) - lastDate.getTime()) / (1000 * 60 * 60 * 24));
+          const shieldDateNormalized = new Date(shieldDate);
+          shieldDateNormalized.setHours(0, 0, 0, 0);
+          
+          if (shieldDateNormalized > lastDate) {
+            const shieldDiff = Math.floor((Math.min(todayDate.getTime(), shieldDateNormalized.getTime()) - lastDate.getTime()) / (1000 * 60 * 60 * 24));
             shieldedDays = shieldDiff > 0 ? shieldDiff : 0;
+          }
+
+          // Clear shield if it has expired relative to today
+          if (shieldDate <= todayDate) {
+            db.prepare('UPDATE users SET shield_until = NULL WHERE id = ?').run(user.id);
+            user.shield_until = null;
           }
         }
         
@@ -114,7 +135,7 @@ export class UserService {
       const user: any = db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
       if (!user) throw new Error('User not found');
       
-      const totalEarned = ((user.level - 1) * 100) + user.exp;
+      const totalEarned = getCumulativeExp(user.level, user.exp);
       const availableCoins = totalEarned - (user.spent_coins || 0);
 
       if (availableCoins < cost) {
@@ -131,9 +152,9 @@ export class UserService {
       }
 
       if (itemId === 'hp_elixir') {
-        newHp = user.hp + 30;
+        newHp = Math.min(100, user.hp + 30);
       } else if (itemId === 'mana_tonic') {
-        newMana = user.mana + 20;
+        newMana = Math.min(100, user.mana + 20);
       } else if (itemId === 'streak_shield') {
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
@@ -202,7 +223,7 @@ export class UserService {
       db.prepare('DELETE FROM quest_logs WHERE goal_id IN (SELECT id FROM goals WHERE user_id = ?)').run(userId);
       db.prepare('DELETE FROM goals WHERE user_id = ?').run(userId);
       db.prepare('DELETE FROM brain_dumps WHERE user_id = ?').run(userId);
-      db.prepare('UPDATE users SET hp = 100, mana = 100, level = 1, exp = 0 WHERE id = ?').run(userId);
+      db.prepare('UPDATE users SET hp = 100, mana = 100, level = 1, exp = 0, spent_coins = 0, unlocked_items = \'[]\', shield_until = NULL WHERE id = ?').run(userId);
     })();
   }
 
@@ -227,11 +248,27 @@ export class UserService {
               mana = COALESCE(?, mana),
               level = COALESCE(?, level),
               exp = COALESCE(?, exp),
+              spent_coins = COALESCE(?, spent_coins),
+              unlocked_items = COALESCE(?, unlocked_items),
+              shield_until = COALESCE(?, shield_until),
               last_penalty_date = ?
           WHERE id = ?
         `);
         // We set last_penalty_date to today so imported stats don't immediately decay.
         const todayStr = new Date().toISOString().split('T')[0];
+
+        // Clamp imported HP/Mana defensively to protect game state from corruption or cheats
+        const importedHp = data.user.hp !== undefined && data.user.hp !== null ? Math.min(100, Math.max(0, data.user.hp)) : null;
+        const importedMana = data.user.mana !== undefined && data.user.mana !== null ? Math.min(100, Math.max(0, data.user.mana)) : null;
+        
+        // Ensure unlocked_items is stringified if passed as array
+        let importedUnlockedItems = null;
+        if (data.user.unlocked_items !== undefined && data.user.unlocked_items !== null) {
+          importedUnlockedItems = typeof data.user.unlocked_items === 'string'
+            ? data.user.unlocked_items
+            : JSON.stringify(data.user.unlocked_items);
+        }
+
         stmt.run(
           data.user.name ?? null, 
           data.user.title ?? null, 
@@ -242,10 +279,13 @@ export class UserService {
           data.user.theme_vibe ?? null, 
           data.user.bgm_theme ?? null, 
           data.user.bgm_muted ?? null, 
-          data.user.hp ?? null, 
-          data.user.mana ?? null, 
+          importedHp, 
+          importedMana, 
           data.user.level ?? null, 
           data.user.exp ?? null, 
+          data.user.spent_coins ?? null,
+          importedUnlockedItems,
+          data.user.shield_until ?? null,
           todayStr,
           userId
         );

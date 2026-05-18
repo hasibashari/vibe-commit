@@ -1,6 +1,6 @@
 export function calculateProbability(repetition: number, difficulty: number, alpha: number): number {
   // P(t) = 1 - e^(-alpha * (R(t)/D))
-  return 1 - Math.exp(-alpha * (repetition / difficulty));
+  return 1 - Math.exp(-alpha * (repetition / Math.max(0.1, difficulty)));
 }
 
 /**

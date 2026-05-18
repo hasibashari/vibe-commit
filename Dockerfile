@@ -42,7 +42,7 @@ COPY --from=builder /app/package*.json ./
 RUN npm install --production
 
 # Expose the port the app runs on
-EXPOSE 8080
+EXPOSE 5173
 
 # Set production environment
 ENV NODE_ENV=production
