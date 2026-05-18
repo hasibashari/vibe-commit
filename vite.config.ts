@@ -52,7 +52,6 @@ export default defineConfig(({mode}) => {
       })
     ],
     define: {
-      'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
       'import.meta.env.VITE_FIREBASE_CONFIG': JSON.stringify(firebaseConfig),
       'import.meta.env.VITE_USE_FIREBASE_EMULATOR': JSON.stringify(env.VITE_USE_FIREBASE_EMULATOR || 'false'),
       'import.meta.env.VITE_FIREBASE_AUTH_EMULATOR_HOST': JSON.stringify(env.VITE_FIREBASE_AUTH_EMULATOR_HOST || 'localhost:9099'),

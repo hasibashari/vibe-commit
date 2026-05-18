@@ -1,12 +1,7 @@
 # Stage 1: Build stage
 FROM node:20-slim AS builder
 
-# Install build dependencies for better-sqlite3 (native modules)
-RUN apt-get update && apt-get install -y \
-    python3 \
-    make \
-    g++ \
-    && rm -rf /var/lib/apt/lists/*
+# Removed native module compilation dependencies
 
 WORKDIR /app
 
@@ -27,12 +22,7 @@ FROM node:20-slim
 
 WORKDIR /app
 
-# Install runtime dependencies for better-sqlite3
-RUN apt-get update && apt-get install -y \
-    python3 \
-    make \
-    g++ \
-    && rm -rf /var/lib/apt/lists/*
+# Removed runtime native dependencies
 
 # Copy only necessary files from builder
 COPY --from=builder /app/dist ./dist

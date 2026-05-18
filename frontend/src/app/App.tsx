@@ -63,22 +63,20 @@ export default function App() {
   const setIsBrainDumpOpen = useUIStore(state => state.setIsBrainDumpOpen);
 
   // Dashboard Store access
-  const {
-    goals,
-    user,
-    achievements,
-    latestDump,
-    burnoutMonitor,
-    expPopups,
-    recentlyCompletedIds,
-    updateProfile,
-    resetProfile,
-    deleteAccount,
-    nudge,
-    isLoading,
-    updateSandbox,
-    fetchData,
-  } = useDashboardStore();
+  const goals = useDashboardStore(state => state.goals);
+  const user = useDashboardStore(state => state.user);
+  const achievements = useDashboardStore(state => state.achievements);
+  const latestDump = useDashboardStore(state => state.latestDump);
+  const burnoutMonitor = useDashboardStore(state => state.burnoutMonitor);
+  const expPopups = useDashboardStore(state => state.expPopups);
+  const recentlyCompletedIds = useDashboardStore(state => state.recentlyCompletedIds);
+  const updateProfile = useDashboardStore(state => state.updateProfile);
+  const resetProfile = useDashboardStore(state => state.resetProfile);
+  const deleteAccount = useDashboardStore(state => state.deleteAccount);
+  const nudge = useDashboardStore(state => state.nudge);
+  const isLoading = useDashboardStore(state => state.isLoading);
+  const updateSandbox = useDashboardStore(state => state.updateSandbox);
+  const fetchData = useDashboardStore(state => state.fetchData);
 
   useEffect(() => {
     if (authUser) {
@@ -87,22 +85,23 @@ export default function App() {
   }, [authUser, fetchData]);
 
   // Quest Store access
-  const {
-    selectedGoal,
-    setSelectedGoal,
-    questToDelete,
-    setQuestToDelete,
-    questToEdit,
-    setQuestToEdit,
-    handleLogAction,
-    handleSaveQuest,
-    confirmDeleteQuest,
-    executeDeleteQuest,
-  } = useQuestStore();
+  const selectedGoal = useQuestStore(state => state.selectedGoal);
+  const setSelectedGoal = useQuestStore(state => state.setSelectedGoal);
+  const questToDelete = useQuestStore(state => state.questToDelete);
+  const setQuestToDelete = useQuestStore(state => state.setQuestToDelete);
+  const questToEdit = useQuestStore(state => state.questToEdit);
+  const setQuestToEdit = useQuestStore(state => state.setQuestToEdit);
+  const handleLogAction = useQuestStore(state => state.handleLogAction);
+  const handleSaveQuest = useQuestStore(state => state.handleSaveQuest);
+  const confirmDeleteQuest = useQuestStore(state => state.confirmDeleteQuest);
+  const executeDeleteQuest = useQuestStore(state => state.executeDeleteQuest);
 
   // Brain Dump Store access
-  const { draftContent, setDraftContent, isAnalyzing, handleBrainDump, analysisResult } =
-    useBrainDumpStore();
+  const draftContent = useBrainDumpStore(state => state.draftContent);
+  const setDraftContent = useBrainDumpStore(state => state.setDraftContent);
+  const isAnalyzing = useBrainDumpStore(state => state.isAnalyzing);
+  const handleBrainDump = useBrainDumpStore(state => state.handleBrainDump);
+  const analysisResult = useBrainDumpStore(state => state.analysisResult);
 
   const prevCompletedCountRef = useRef(recentlyCompletedIds.length);
   useEffect(() => {

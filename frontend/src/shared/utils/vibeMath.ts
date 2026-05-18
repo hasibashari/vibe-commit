@@ -1,6 +1,7 @@
 export function calculateProbability(repetition: number, difficulty: number, alpha: number): number {
-  // P(t) = 1 - e^(-alpha * (R(t)/D))
-  return 1 - Math.exp(-alpha * (repetition / difficulty));
+  // Cap the repetition to act as a rolling window, otherwise P(t) quickly hits 1.0 forever
+  const boundedRepetition = Math.min(repetition, 10);
+  return 1 - Math.exp(-alpha * (boundedRepetition / difficulty));
 }
 
 /**
@@ -9,16 +10,19 @@ export function calculateProbability(repetition: number, difficulty: number, alp
  * Prevents "Binary Failure Guilt" by lowering D if success is stagnant.
  */
 export function adjustDifficultyBayesian(currentProb: number, currentD: number, repetition: number): number {
-  const HIGH_THRESHOLD = 0.95; // Mastery imminent, increase challenge
-  const LOW_THRESHOLD = 0.20;  // Stagnation risk, decrease friction
-  const MIN_REPETITION = 5;    // Don't decrease difficulty before minimum attempts
+  const HIGH_THRESHOLD = 0.90; // Mastery imminent
+  const LOW_THRESHOLD = 0.30;  // Stagnation risk
+  const MIN_REPETITION = 5;
   
+  let newDiff = currentD;
   if (currentProb > HIGH_THRESHOLD) {
-    return currentD * 1.15; // Increase difficulty by 15%
+    newDiff = currentD * 1.05; // 5% increase instead of 15% to slow down growth
   } else if (currentProb < LOW_THRESHOLD && repetition >= MIN_REPETITION) {
-    return currentD * 0.85; // Decrease difficulty by 15%
+    newDiff = currentD * 0.95; // 5% decrease
   }
-  return currentD;
+  
+  // Bound the difficulty between 0.5 and 5.0 to prevent infinite scaling exploits
+  return Math.max(0.5, Math.min(newDiff, 5.0));
 }
 
 export function calculateStats(logs: { timestamp: string }[]) {
