@@ -1,23 +1,24 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { TopBar } from './layouts/TopBar';
 import { StatusScene } from '../features/character/components/StatusScene';
 import { VibeEnvironment } from '../shared/components/VibeEnvironment';
-import { QuestEditorModal } from '../features/quests/components/QuestEditorModal';
-import { FirstTimeOnboarding } from '../features/onboarding/components/FirstTimeOnboarding';
-import { ProfileModal } from '../features/profile/components/ProfileModal';
-import { SettingsModal } from '../features/profile/components/SettingsModal';
 
 import { ExpPopupRenderer } from '../shared/components/ExpPopupRenderer';
-import { BrainDumpModal } from '../features/brainDump/components/BrainDumpModal';
-import { DeleteQuestModal } from '../features/quests/components/DeleteQuestModal';
 import { BottomBar } from './layouts/BottomBar';
 import { QuestPanel } from '../features/quests/components/QuestPanel';
-import { HubMonitoring } from '../features/dashboard/components/HubMonitoring';
 import { BurnoutWarning } from '../features/character/components/BurnoutWarning';
 import { MainLayout } from './layouts/MainLayout';
 import { DashboardLayout } from './layouts/DashboardLayout';
-import { DevSandboxPanel } from '../shared/components/DevSandboxPanel';
+
+const HubMonitoring = React.lazy(() => import('../features/dashboard/components/HubMonitoring').then(m => ({ default: m.HubMonitoring })));
+const QuestEditorModal = React.lazy(() => import('../features/quests/components/QuestEditorModal').then(m => ({ default: m.QuestEditorModal })));
+const BrainDumpModal = React.lazy(() => import('../features/brainDump/components/BrainDumpModal').then(m => ({ default: m.BrainDumpModal })));
+const FirstTimeOnboarding = React.lazy(() => import('../features/onboarding/components/FirstTimeOnboarding').then(m => ({ default: m.FirstTimeOnboarding })));
+const ProfileModal = React.lazy(() => import('../features/profile/components/ProfileModal').then(m => ({ default: m.ProfileModal })));
+const SettingsModal = React.lazy(() => import('../features/profile/components/SettingsModal').then(m => ({ default: m.SettingsModal })));
+const DeleteQuestModal = React.lazy(() => import('../features/quests/components/DeleteQuestModal').then(m => ({ default: m.DeleteQuestModal })));
+const DevSandboxPanel = React.lazy(() => import('../shared/components/DevSandboxPanel').then(m => ({ default: m.DevSandboxPanel })));
 import { calculateStats } from '../shared/utils/vibeMath';
 import { getWeatherState } from '../shared/utils/weatherUtils';
 import type { Goal } from '../shared/types/goal';
@@ -184,8 +185,8 @@ export default function App() {
     localStorage.setItem('hasCompletedOnboarding', 'true');
   };
 
-  const allLogs = goals.flatMap(g => g.logs || []);
-  const stats = calculateStats(allLogs as any);
+  const allLogs = useMemo(() => goals.flatMap(g => g.logs || []), [goals]);
+  const stats = useMemo(() => calculateStats(allLogs as any), [allLogs]);
 
   const uLevel = user?.level ?? 1;
   const uExp = user?.exp ?? 0;
@@ -342,7 +343,7 @@ export default function App() {
           />
         }
         modals={
-          <>
+          <React.Suspense fallback={null}>
             <ExpPopupRenderer popups={expPopups} />
             <ProfileModal
               isOpen={isProfileOpen}
@@ -392,7 +393,7 @@ export default function App() {
               onSubmit={handleBrainDump}
               analysisResult={analysisResult}
             />
-          </>
+          </React.Suspense>
         }
       >
         <DashboardLayout
@@ -413,7 +414,16 @@ export default function App() {
               <BurnoutWarning burnoutMonitor={burnoutMonitor} />
             </>
           }
-          mainContent={<HubMonitoring goals={goals} />}
+          mainContent={
+            <React.Suspense fallback={
+              <div className="h-full flex flex-col items-center justify-center text-slate-500 gap-2">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-400" />
+                <span className="text-xs font-mono text-slate-400">Loading Command Hub...</span>
+              </div>
+            }>
+              <HubMonitoring goals={goals} />
+            </React.Suspense>
+          }
           leftSidebar={
             <QuestPanel
               goals={goals}
@@ -439,12 +449,14 @@ export default function App() {
         />
       </MainLayout>
       {import.meta.env.DEV && (
-        <DevSandboxPanel
-          overrides={devOverrides}
-          setOverrides={setDevOverrides}
-          user={effectiveUser}
-          sandboxAction={updateSandbox}
-        />
+        <React.Suspense fallback={null}>
+          <DevSandboxPanel
+            overrides={devOverrides}
+            setOverrides={setDevOverrides}
+            user={effectiveUser}
+            sandboxAction={updateSandbox}
+          />
+        </React.Suspense>
       )}
     </>
   );

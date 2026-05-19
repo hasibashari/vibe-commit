@@ -44,8 +44,38 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
 
   fetchData: async () => {
     const { toast } = useToastStore.getState();
-    try {
+    
+    let cachedDataLoaded = false;
+    const cachedDataStr = localStorage.getItem('vibe_commit_dashboard_cache');
+    
+    if (cachedDataStr) {
+      try {
+        const { goalsWithCounts, dumpsData, userData } = JSON.parse(cachedDataStr);
+        const allLogs = goalsWithCounts.flatMap((g: any) => (g.logs || []).map((l: any) => ({ ...l, goal_id: g.id })));
+        const calculatedUser = calculateRPGStats(allLogs, userData);
+        
+        set({
+          goals: goalsWithCounts,
+          recentlyCompletedIds: getCompletedIdsToday(goalsWithCounts),
+          nudge: calculateStochasticNudges(allLogs) || null,
+          burnoutMonitor: analyzeBurnoutRisk(allLogs, goalsWithCounts),
+          latestDump: dumpsData && dumpsData.length > 0 ? JSON.parse(dumpsData[0].analysis) : null,
+          user: calculatedUser,
+          achievements: calculateAchievements(allLogs, calculatedUser.level),
+          isLoading: false // Instantly clear the loading spinner
+        });
+        cachedDataLoaded = true;
+      } catch (cacheErr) {
+        console.error('Error parsing dashboard cache', cacheErr);
+      }
+    }
+    
+    // Only show the blocking loading spinner if we don't have any cached data to display
+    if (!cachedDataLoaded) {
       set({ isLoading: true });
+    }
+    
+    try {
       const { goalsWithCounts, dumpsData, userData } = await fetchDashboardData();
       
       try {
@@ -59,7 +89,6 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
       }
       
       const allLogs = goalsWithCounts.flatMap(g => (g.logs || []).map((l: any) => ({ ...l, goal_id: g.id })));
-      
       const calculatedUser = calculateRPGStats(allLogs, userData);
       
       set({
@@ -69,42 +98,17 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
         burnoutMonitor: analyzeBurnoutRisk(allLogs, goalsWithCounts),
         latestDump: dumpsData && dumpsData.length > 0 ? JSON.parse(dumpsData[0].analysis) : null,
         user: calculatedUser,
-        achievements: calculateAchievements(allLogs, calculatedUser.level)
+        achievements: calculateAchievements(allLogs, calculatedUser.level),
+        isLoading: false
       });
     } catch (e: unknown) {
-      const cachedDataStr = localStorage.getItem('vibe_commit_dashboard_cache');
-      if (cachedDataStr) {
-        try {
-          const { goalsWithCounts, dumpsData, userData } = JSON.parse(cachedDataStr);
-          const allLogs = goalsWithCounts.flatMap((g: any) => (g.logs || []).map((l: any) => ({ ...l, goal_id: g.id })));
-          const calculatedUser = calculateRPGStats(allLogs, userData);
-          
-          set({
-            goals: goalsWithCounts,
-            recentlyCompletedIds: getCompletedIdsToday(goalsWithCounts),
-            nudge: calculateStochasticNudges(allLogs) || null,
-            burnoutMonitor: analyzeBurnoutRisk(allLogs, goalsWithCounts),
-            latestDump: dumpsData && dumpsData.length > 0 ? JSON.parse(dumpsData[0].analysis) : null,
-            user: calculatedUser,
-            achievements: calculateAchievements(allLogs, calculatedUser.level)
-          });
-          
-          toast({
-            title: "Mode Offline Aktif",
-            description: "Memuat data dari cache lokal terakhir.",
-            type: 'info'
-          });
-          return;
-        } catch (cacheErr) {
-          console.error('Error parsing dashboard cache', cacheErr);
-        }
+      if (!cachedDataLoaded) {
+        toast({
+          title: "Koneksi Terputus",
+          description: "Gagal memuat data dari server.",
+          type: 'error'
+        });
       }
-
-      toast({
-        title: "Koneksi Terputus",
-        description: "Gagal memuat data dari server.",
-        type: 'error'
-      });
     } finally {
       set({ isLoading: false });
     }
@@ -193,12 +197,6 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
     }
 
     if (pendingActions.length === 0) return;
-
-    toast({
-      title: "Sinkronisasi...",
-      description: `Menyinkronkan ${pendingActions.length} data offline ke server.`,
-      type: 'info'
-    });
 
     const { logQuestActionApi, createQuestApi, updateQuestApi, deleteQuestApi, updateQuestDifficultyApi, ApiError } = 
       await import('../features/quests/services/questApi');

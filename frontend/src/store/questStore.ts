@@ -144,12 +144,6 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
         const newStats = handleOptimisticRPGStats(user.level, user.exp, expEarned);
         setUser({ ...user, ...newStats });
         setGoals(updatedGoals);
-        
-        toast({
-          title: "Quest Selesai (Offline)",
-          description: "Perubahan disimpan secara lokal dan akan disinkronkan saat online.",
-          type: 'success'
-        });
       }
       return;
     }
@@ -163,11 +157,6 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
         
         if (newD !== goal.difficulty) {
           await updateQuestDifficultyApi(goalId, newD);
-          toast({
-            title: "Kalibrasi",
-            description: `Tingkat kesulitan '${goal.title}' disesuaikan.`,
-            type: 'info'
-          });
         }
       }
 
@@ -200,12 +189,6 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
         const newStats = handleOptimisticRPGStats(user.level, user.exp, expEarned);
         setUser({ ...user, ...newStats });
         setGoals(updatedGoals);
-
-        toast({
-          title: "Koneksi Bermasalah",
-          description: "Quest disimpan di perangkat secara lokal.",
-          type: 'info'
-        });
       } else {
         let desc = "Pastikan koneksi lancar.";
         if (e instanceof Error) desc = e.message;
@@ -364,7 +347,6 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
         localStorage.setItem('vibe_commit_pending_actions', JSON.stringify(pending));
       } catch (e) {}
 
-      toast({ title: "Quest Dihapus (Offline)", type: 'info' });
       return;
     }
 
@@ -377,7 +359,6 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
       setGoals(goals.filter((g: any) => g.id !== questToDelete));
       set({ questToDelete: null });
       await fetchData();
-      toast({ title: "Quest Dihapus", type: 'info' });
     } catch (e: unknown) {
       if (selectedGoal?.id === questToDelete) {
         set({ selectedGoal: null });
@@ -391,8 +372,6 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
         pending.push({ type: 'DELETE_QUEST', questId: questToDelete });
         localStorage.setItem('vibe_commit_pending_actions', JSON.stringify(pending));
       } catch (err) {}
-
-      toast({ title: "Quest Dihapus Lokal (Offline)", type: 'info' });
     }
   }
 }));

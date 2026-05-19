@@ -10,7 +10,9 @@ import '../assets/index.css';
 import { registerSW } from 'virtual:pwa-register';
 
 if ('serviceWorker' in navigator) {
-  registerSW({ immediate: true });
+  window.addEventListener('load', () => {
+    registerSW({ immediate: false });
+  });
 }
 
 createRoot(document.getElementById('root')!).render(
