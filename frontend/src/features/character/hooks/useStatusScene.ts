@@ -23,7 +23,7 @@ export const getDynamicQuotes = (
   
   if (!goals || goals.length === 0) {
     quotes.push(`Selamat ${greeting}${namePrefix}! Sistem berada pada kondisi awal. Mari kita mulai mendaftarkan Quest-mu!`);
-    quotes.push("Belum ada target yang ditentukan. Coba gunakan fitur Brain Dump di bawah kalau merasa overwhelmed.");
+    quotes.push("Belum ada target yang ditentukan. Coba gunakan fitur Brain Dump di bawah kalau merasa kewalahan.");
     quotes.push("Siap untuk memulai petualangan baru hari ini? Tambahkan quest di panel sebelah.");
     return quotes;
   }
