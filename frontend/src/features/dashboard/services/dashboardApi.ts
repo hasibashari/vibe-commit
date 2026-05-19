@@ -14,13 +14,17 @@ export const fetchDashboardData = async () => {
   const userId = user.uid;
 
   try {
-    // 1. Fetch Goals
-    const goalsRes = await fetch(`/api/goals/${userId}`, { headers: getAuthHeaders() });
+    // Fetch all 4 independent resources in parallel to eliminate network waterfall
+    const [goalsRes, logsRes, dumpsRes, userRes] = await Promise.all([
+      fetch(`/api/goals/${userId}`, { headers: getAuthHeaders() }),
+      fetch(`/api/logs/user/${userId}`, { headers: getAuthHeaders() }),
+      fetch(`/api/brain-dump/${userId}`, { headers: getAuthHeaders() }),
+      fetch(`/api/user/${userId}`, { headers: getAuthHeaders() })
+    ]);
+
     if (!goalsRes.ok) throw new Error("Gagal memuat data Quest");
     const rawGoalsData = await goalsRes.json();
 
-    // 2. Fetch Quest Logs
-    const logsRes = await fetch(`/api/logs/user/${userId}`, { headers: getAuthHeaders() });
     if (!logsRes.ok) throw new Error("Gagal memuat data Quest Log");
     const allLogsDataRaw = await logsRes.json();
     
@@ -30,12 +34,7 @@ export const fetchDashboardData = async () => {
       vibeScore: log.vibe_score
     }));
 
-    // 3. Fetch Brain Dumps
-    const dumpsRes = await fetch(`/api/brain-dump/${userId}`, { headers: getAuthHeaders() });
     const dumpsData = dumpsRes.ok ? await dumpsRes.json() : [];
-
-    // 4. Fetch User Stats
-    const userRes = await fetch(`/api/user/${userId}`, { headers: getAuthHeaders() });
     const userData = userRes.ok ? await userRes.json() : null;
 
     const goalsWithCounts = rawGoalsData.map((g: any) => {

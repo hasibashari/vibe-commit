@@ -83,6 +83,10 @@ async function startServer() {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath, {
       setHeaders: (res, filePath) => {
+        // Caching compiled assets in /assets/ indefinitely since they are hashed and immutable
+        if (filePath.includes('/assets/') || filePath.includes('\\assets\\')) {
+          res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        }
         // Avoid browser caching Service Worker and Manifest files so PWA updates correctly
         if (filePath.endsWith('sw.js') || filePath.endsWith('.webmanifest')) {
           res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');

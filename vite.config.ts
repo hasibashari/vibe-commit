@@ -65,6 +65,7 @@ export default defineConfig(({mode}) => {
         },
         workbox: {
           globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+          globIgnores: ['**/screenshots/**'],
           maximumFileSizeToCacheInBytes: 2 * 1024 * 1024,
           runtimeCaching: [
             {
@@ -102,9 +103,6 @@ export default defineConfig(({mode}) => {
         output: {
           manualChunks(id) {
             if (id.includes('node_modules')) {
-              if (id.includes('react') || id.includes('scheduler')) {
-                return 'vendor-react';
-              }
               if (id.includes('recharts') || id.includes('d3')) {
                 return 'vendor-recharts';
               }
@@ -114,7 +112,9 @@ export default defineConfig(({mode}) => {
               if (id.includes('lucide')) {
                 return 'vendor-lucide';
               }
-              return 'vendor-others';
+              // Group React, Zustand, React-Router-DOM, scheduler, and others to vendor-core
+              // This resolves the circular dependency loop completely!
+              return 'vendor-core';
             }
           }
         }
