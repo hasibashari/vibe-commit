@@ -31,7 +31,12 @@ export const useAuthStore = create<AuthStore>((set) => ({
         body: JSON.stringify({ username, password })
       });
       
-      const resData = await res.json();
+      let resData: any = {};
+      try {
+        resData = await res.json();
+      } catch (e) {
+        if (!res.ok) throw new Error('Gagal menghubungi server (Respons non-JSON)');
+      }
       if (!res.ok) {
         throw new Error(resData.error || 'Kredensial tidak valid');
       }
@@ -68,7 +73,12 @@ export const useAuthStore = create<AuthStore>((set) => ({
         body: JSON.stringify({ username, password })
       });
       
-      const resData = await res.json();
+      let resData: any = {};
+      try {
+        resData = await res.json();
+      } catch (e) {
+        if (!res.ok) throw new Error('Gagal menghubungi server (Respons non-JSON)');
+      }
       if (!res.ok) {
         throw new Error(resData.error || 'Gagal mendaftarkan akun');
       }
@@ -95,7 +105,12 @@ export const useAuthStore = create<AuthStore>((set) => ({
         method: 'POST'
       });
       
-      const resData = await res.json();
+      let resData: any = {};
+      try {
+        resData = await res.json();
+      } catch (e) {
+        if (!res.ok) throw new Error('Gagal menghubungi server (Respons non-JSON)');
+      }
       if (!res.ok) {
         throw new Error(resData.error || 'Gagal membuat sesi guest');
       }
@@ -146,17 +161,44 @@ export const useAuthStore = create<AuthStore>((set) => ({
       const token = localStorage.getItem('vibe_commit_token');
       if (localUserStr) {
         const user = JSON.parse(localUserStr);
+        const userId = user.id || user.uid;
+        if (!userId) {
+          throw new Error("ID Pengguna tidak ditemukan di penyimpanan lokal.");
+        }
+
         const headers: Record<string, string> = {};
         if (token) {
           headers['Authorization'] = `Bearer ${token}`;
         }
-        const res = await fetch(`/api/user/${user.id}`, {
+        const res = await fetch(`/api/user/${userId}`, {
           method: 'DELETE',
           headers
         });
         if (!res.ok) {
-          const resData = await res.json();
-          throw new Error(resData.error || 'Gagal menghapus akun di server');
+          let errorMsg = 'Gagal menghapus akun di server';
+          try {
+            const resData = await res.json();
+            errorMsg = resData.error || errorMsg;
+          } catch (jsonErr) {
+            try {
+              const resText = await res.text();
+              if (resText) {
+                errorMsg = resText;
+              }
+            } catch (txtErr) {}
+          }
+          
+          // Jika unauthorized atau forbidden (sesi tidak valid), bersihkan data lokal saja agar user tidak stuck
+          if (res.status === 401 || res.status === 403) {
+            console.warn(`Server authentication error (${res.status}): ${errorMsg}. Clearing local storage anyway.`);
+            useToastStore.getState().toast({
+              title: 'Sesi Kedaluwarsa',
+              description: 'Sesi server tidak valid. Penyimpanan lokal dibersihkan agar Anda dapat masuk kembali.',
+              type: 'info'
+            });
+          } else {
+            throw new Error(`${errorMsg} (HTTP ${res.status})`);
+          }
         }
       }
       

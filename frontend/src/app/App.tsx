@@ -30,7 +30,6 @@ import { useAuthStore } from '../store/authStore';
 import { useDashboardStore } from '../store/dashboardStore';
 import { getAuthHeaders } from '../shared/services/session';
 
-
 function getExpNeededForLevel(level: number): number {
   return Math.floor(100 * Math.pow(1.2, level - 1));
 }
@@ -55,24 +54,31 @@ export default function App() {
     isLoading: isAuthLoading,
     logout,
     deleteAccount,
-    initAuth
+    initAuth,
   } = useAuthStore();
-
 
   useEffect(() => {
     const unsubscribe = initAuth();
     return () => unsubscribe();
   }, [initAuth]);
 
-  const {
-    isProfileOpen, setIsProfileOpen,
-    isSettingsOpen, setIsSettingsOpen
-  } = useAppContext();
+  const { isProfileOpen, setIsProfileOpen, isSettingsOpen, setIsSettingsOpen } = useAppContext();
 
   const {
-    goals, setGoals, user, achievements, latestDump, burnoutMonitor,
-    expPopups, recentlyCompletedIds, updateProfile, resetProfile, nudge,
-    isLoading, updateSandbox, fetchData
+    goals,
+    setGoals,
+    user,
+    achievements,
+    latestDump,
+    burnoutMonitor,
+    expPopups,
+    recentlyCompletedIds,
+    updateProfile,
+    resetProfile,
+    nudge,
+    isLoading,
+    updateSandbox,
+    fetchData,
   } = useDashboardContext();
 
   useEffect(() => {
@@ -82,14 +88,28 @@ export default function App() {
   }, [authUser, fetchData]);
 
   const {
-    selectedGoal, setSelectedGoal, isQuestEditorOpen, setIsQuestEditorOpen,
-    questToDelete, setQuestToDelete, questToEdit, setQuestToEdit,
-    handleLogAction, handleSaveQuest, confirmDeleteQuest, executeDeleteQuest
+    selectedGoal,
+    setSelectedGoal,
+    isQuestEditorOpen,
+    setIsQuestEditorOpen,
+    questToDelete,
+    setQuestToDelete,
+    questToEdit,
+    setQuestToEdit,
+    handleLogAction,
+    handleSaveQuest,
+    confirmDeleteQuest,
+    executeDeleteQuest,
   } = useQuestContext();
 
   const {
-    isBrainDumpOpen, setIsBrainDumpOpen, draftContent, setDraftContent,
-    isAnalyzing, handleBrainDump, analysisResult
+    isBrainDumpOpen,
+    setIsBrainDumpOpen,
+    draftContent,
+    setDraftContent,
+    isAnalyzing,
+    handleBrainDump,
+    analysisResult,
   } = useBrainDumpContext();
 
   const prevCompletedCountRef = useRef(recentlyCompletedIds.length);
@@ -145,17 +165,17 @@ export default function App() {
       const res = await fetch(`/api/user/${user?.id || 'import'}/import`, {
         method: 'POST',
         headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
       });
-      
+
       if (!res.ok) throw new Error('Failed to import on server');
-      
+
       window.location.reload();
     } catch (e) {
       console.error('Import failed', e);
       alert('Error importing data: ' + (e instanceof Error ? e.message : 'Unknown error'));
     }
-    
+
     event.target.value = '';
   };
 
@@ -173,7 +193,9 @@ export default function App() {
   const baseCoins = user ? getCumulativeExp(uLevel, uExp) - uSpentCoins : 0;
 
   // --- DEV SANDBOX INJECTION ---
-  const [devOverrides, setDevOverrides] = useState<import('../shared/components/DevSandboxPanel').DevOverrides>({
+  const [devOverrides, setDevOverrides] = useState<
+    import('../shared/components/DevSandboxPanel').DevOverrides
+  >({
     anxietyScore: null,
     sigmaVariance: null,
     themeVibe: null,
@@ -186,18 +208,25 @@ export default function App() {
     if (devOverrides.themeVibe !== null) effectiveUser.theme_vibe = devOverrides.themeVibe;
     if (devOverrides.unlockAllShop) {
       effectiveUser.unlocked_items = JSON.stringify([
-        'aesthetic_color_cyan', 'aesthetic_color_rose', 'aesthetic_theme_matrix', 'aesthetic_theme_neon', 'aesthetic_title_vanguard', 'aesthetic_title_legendary'
+        'aesthetic_color_cyan',
+        'aesthetic_color_rose',
+        'aesthetic_theme_matrix',
+        'aesthetic_theme_neon',
+        'aesthetic_title_vanguard',
+        'aesthetic_title_legendary',
       ]);
     }
   }
 
   const effectiveCoins = baseCoins;
-  const effectiveAnxietyScore = devOverrides.anxietyScore !== null ? devOverrides.anxietyScore : (latestDump?.anxietyScore || 5);
-  const effectiveSigmaVariance = devOverrides.sigmaVariance !== null ? devOverrides.sigmaVariance : stats.sigma;
-  
+  const effectiveAnxietyScore =
+    devOverrides.anxietyScore !== null ? devOverrides.anxietyScore : latestDump?.anxietyScore || 5;
+  const effectiveSigmaVariance =
+    devOverrides.sigmaVariance !== null ? devOverrides.sigmaVariance : stats.sigma;
+
   const effectiveWeather = getWeatherState(effectiveAnxietyScore, effectiveSigmaVariance);
 
-  const effectiveAchievements = devOverrides.unlockAllBadges 
+  const effectiveAchievements = devOverrides.unlockAllBadges
     ? achievements.map(a => ({ ...a, isUnlocked: true, progress: 100 }))
     : achievements;
   // -----------------------------
@@ -227,35 +256,51 @@ export default function App() {
 
   if (isAuthLoading) {
     return (
-      <div className="flex h-dvh w-full items-center justify-center bg-surface text-accent-400">
-        <div className="flex flex-col items-center gap-4">
-          <svg className="h-10 w-10 animate-spin opacity-75" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+      <div className='flex h-dvh w-full items-center justify-center bg-surface text-accent-400'>
+        <div className='flex flex-col items-center gap-4'>
+          <svg className='h-10 w-10 animate-spin opacity-75' viewBox='0 0 24 24'>
+            <circle
+              className='opacity-25'
+              cx='12'
+              cy='12'
+              r='10'
+              stroke='currentColor'
+              strokeWidth='4'
+              fill='none'
+            />
+            <path className='opacity-75' fill='currentColor' d='M4 12a8 8 0 018-8v8H4z' />
           </svg>
-          <div className="text-xs font-mono uppercase tracking-widest text-accent-500/70 animate-pulse">Authenticating...</div>
+          <div className='text-xs font-mono uppercase tracking-widest text-accent-500/70 animate-pulse'>
+            Authenticating...
+          </div>
         </div>
       </div>
     );
   }
 
   if (!authUser) {
-    return (
-      <FirstTimeOnboarding 
-        onComplete={handleCompleteOnboarding} 
-      />
-    );
+    return <FirstTimeOnboarding onComplete={handleCompleteOnboarding} />;
   }
 
   if (isLoading || !effectiveUser) {
     return (
-      <div className="flex h-dvh w-full items-center justify-center bg-surface text-cyan-400">
-        <div className="flex flex-col items-center gap-4">
-          <svg className="h-10 w-10 animate-spin opacity-75" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+      <div className='flex h-dvh w-full items-center justify-center bg-surface text-cyan-400'>
+        <div className='flex flex-col items-center gap-4'>
+          <svg className='h-10 w-10 animate-spin opacity-75' viewBox='0 0 24 24'>
+            <circle
+              className='opacity-25'
+              cx='12'
+              cy='12'
+              r='10'
+              stroke='currentColor'
+              strokeWidth='4'
+              fill='none'
+            />
+            <path className='opacity-75' fill='currentColor' d='M4 12a8 8 0 018-8v8H4z' />
           </svg>
-          <div className="text-xs font-mono uppercase tracking-widest text-accent-500/70 animate-pulse">Initializing System...</div>
+          <div className='text-xs font-mono uppercase tracking-widest text-accent-500/70 animate-pulse'>
+            Initializing System...
+          </div>
         </div>
       </div>
     );
@@ -265,40 +310,54 @@ export default function App() {
     <>
       <MainLayout
         environment={
-          <VibeEnvironment 
-            anxietyScore={effectiveAnxietyScore} 
-            sigmaVariance={effectiveSigmaVariance} 
+          <VibeEnvironment
+            anxietyScore={effectiveAnxietyScore}
+            sigmaVariance={effectiveSigmaVariance}
             customMainBg={effectiveUser.custom_main_bg}
             themeVibe={effectiveUser.theme_vibe}
             hp={effectiveUser.hp}
           />
         }
-        header={<TopBar hp={effectiveUser.hp} mana={effectiveUser.mana} level={effectiveUser.level} exp={effectiveUser.exp} coins={effectiveCoins} user={effectiveUser} onOpenProfile={() => setIsProfileOpen(true)} onOpenSettings={() => setIsSettingsOpen(true)} />}
+        header={
+          <TopBar
+            hp={effectiveUser.hp}
+            mana={effectiveUser.mana}
+            level={effectiveUser.level}
+            exp={effectiveUser.exp}
+            coins={effectiveCoins}
+            user={effectiveUser}
+            onOpenProfile={() => setIsProfileOpen(true)}
+            onOpenSettings={() => setIsSettingsOpen(true)}
+          />
+        }
         bottomNav={
-          <BottomBar 
+          <BottomBar
             activeTab={activeTab}
             setActiveTab={setActiveTab}
             onOpenBrainDump={() => setIsBrainDumpOpen(true)}
-            onNewQuest={() => { setQuestToEdit(null); setIsQuestEditorOpen(true); }}
+            onNewQuest={() => {
+              setQuestToEdit(null);
+              setIsQuestEditorOpen(true);
+            }}
           />
         }
         modals={
           <>
             <ExpPopupRenderer popups={expPopups} />
-            <ProfileModal 
-              isOpen={isProfileOpen} 
-              onClose={() => setIsProfileOpen(false)} 
-              user={effectiveUser} 
+            <ProfileModal
+              isOpen={isProfileOpen}
+              onClose={() => setIsProfileOpen(false)}
+              user={effectiveUser}
               achievements={effectiveAchievements}
-              onSaveProfile={updateProfile} 
+              onSaveProfile={updateProfile}
               coins={effectiveCoins}
             />
-            <SettingsModal 
-              isOpen={isSettingsOpen} 
-              onClose={() => setIsSettingsOpen(false)} 
+            <SettingsModal
+              isOpen={isSettingsOpen}
+              onClose={() => setIsSettingsOpen(false)}
               user={effectiveUser}
               onUpdateUser={updateProfile}
-              onExport={handleExportData} 
+              onExport={handleExportData}
               onImport={handleImportData}
               onResetProgress={resetProfile}
               onLogout={async () => {
@@ -310,9 +369,12 @@ export default function App() {
                 setIsSettingsOpen(false);
               }}
             />
-            <QuestEditorModal 
-              isOpen={isQuestEditorOpen} 
-              onClose={() => { setIsQuestEditorOpen(false); setQuestToEdit(null); }}
+            <QuestEditorModal
+              isOpen={isQuestEditorOpen}
+              onClose={() => {
+                setIsQuestEditorOpen(false);
+                setQuestToEdit(null);
+              }}
               onSave={handleSaveQuest}
               initialData={questToEdit}
             />
@@ -321,7 +383,7 @@ export default function App() {
               onClose={() => setQuestToDelete(null)}
               onConfirm={() => executeDeleteQuest()}
             />
-            <BrainDumpModal 
+            <BrainDumpModal
               isOpen={isBrainDumpOpen}
               onClose={() => setIsBrainDumpOpen(false)}
               isAnalyzing={isAnalyzing}
@@ -333,37 +395,56 @@ export default function App() {
           </>
         }
       >
-        <DashboardLayout 
+        <DashboardLayout
           activeTab={activeTab}
           rightSidebar={
             <>
-              <StatusScene hp={effectiveUser.hp} mana={effectiveUser.mana} level={effectiveUser.level} goals={goals} nudge={nudge} userName={effectiveUser.name} customCharBg={effectiveUser.custom_char_bg} customCharacter={effectiveUser.custom_character} weather={effectiveWeather} />
+              <StatusScene
+                hp={effectiveUser.hp}
+                mana={effectiveUser.mana}
+                level={effectiveUser.level}
+                goals={goals}
+                nudge={nudge}
+                userName={effectiveUser.name}
+                customCharBg={effectiveUser.custom_char_bg}
+                customCharacter={effectiveUser.custom_character}
+                weather={effectiveWeather}
+              />
               <BurnoutWarning burnoutMonitor={burnoutMonitor} />
             </>
           }
-          mainContent={
-            <HubMonitoring goals={goals} />
-          }
+          mainContent={<HubMonitoring goals={goals} />}
           leftSidebar={
-            <QuestPanel 
+            <QuestPanel
               goals={goals}
               selectedGoal={selectedGoal}
               latestDump={latestDump}
-              onSelectGoal={(goal) => {
+              onSelectGoal={goal => {
                 setSelectedGoal(selectedGoal?.id === goal.id ? null : goal);
               }}
               onLogAction={handleLogAction}
-              onEdit={(goal) => { setQuestToEdit(goal); setIsQuestEditorOpen(true); }}
+              onEdit={goal => {
+                setQuestToEdit(goal);
+                setIsQuestEditorOpen(true);
+              }}
               onDrop={confirmDeleteQuest}
               onOpenBrainDump={() => setIsBrainDumpOpen(true)}
-              onNewQuest={() => { setQuestToEdit(null); setIsQuestEditorOpen(true); }}
+              onNewQuest={() => {
+                setQuestToEdit(null);
+                setIsQuestEditorOpen(true);
+              }}
               recentlyCompletedIds={recentlyCompletedIds}
             />
           }
         />
       </MainLayout>
       {import.meta.env.DEV && (
-        <DevSandboxPanel overrides={devOverrides} setOverrides={setDevOverrides} user={effectiveUser} sandboxAction={updateSandbox} />
+        <DevSandboxPanel
+          overrides={devOverrides}
+          setOverrides={setDevOverrides}
+          user={effectiveUser}
+          sandboxAction={updateSandbox}
+        />
       )}
     </>
   );

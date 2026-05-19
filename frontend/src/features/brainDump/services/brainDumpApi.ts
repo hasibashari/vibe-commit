@@ -15,7 +15,7 @@ interface BrainDumpQuest {
   category: string;
 }
 
-function handleFirestoreError(error: unknown) {
+function handleApiError(error: unknown) {
   console.error('API Error:', error);
   throw error;
 }
@@ -41,7 +41,7 @@ export const saveBrainDumpApi = async (draftContent: string, analysisResult: Bra
     });
     if (!res.ok) throw new Error("Gagal menyimpan brain dump");
   } catch (err) {
-    handleFirestoreError(err);
+    handleApiError(err);
   }
 };
 
@@ -65,7 +65,7 @@ export const saveQuestsFromBrainDumpApi = async (quests: BrainDumpQuest[]) => {
       })
     ));
   } catch (err) {
-    handleFirestoreError(err);
+    handleApiError(err);
   }
 };
 

@@ -1,5 +1,4 @@
 // Local Session Utility to manage offline/local authenticated users.
-// This replaces the old Firebase authentication structures.
 
 export interface CurrentSessionUser {
   uid: string;

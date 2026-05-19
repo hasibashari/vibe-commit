@@ -58,6 +58,10 @@ async function startServer() {
   app.use('/api/brain-dump', brainDumpRoutes);
   app.use('/api/ai', aiRoutes);
 
+  app.get('/api/health', (req: Request, res: Response) => {
+    res.status(200).json({ status: 'ok' });
+  });
+
   // Global Error Handler
   app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     if (err instanceof ZodError) {

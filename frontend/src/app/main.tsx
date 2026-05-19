@@ -1,5 +1,5 @@
-import {StrictMode} from 'react';
-import {createRoot} from 'react-dom/client';
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import App from './App.tsx';
 import { AppProvider } from './providers/AppProvider.tsx';
@@ -21,8 +21,8 @@ createRoot(document.getElementById('root')!).render(
           <AudioProvider>
             <BrowserRouter>
               <Routes>
-                <Route path="/:tab" element={<App />} />
-                <Route path="*" element={<Navigate to="/quests" replace />} />
+                <Route path='/:tab' element={<App />} />
+                <Route path='*' element={<Navigate to='/quests' replace />} />
               </Routes>
             </BrowserRouter>
           </AudioProvider>
@@ -31,4 +31,3 @@ createRoot(document.getElementById('root')!).render(
     </ErrorBoundary>
   </StrictMode>,
 );
-

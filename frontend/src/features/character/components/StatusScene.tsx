@@ -22,12 +22,22 @@ interface StatsProps {
   weather?: 'sunny' | 'overcast' | 'rainy' | 'default';
 }
 
-export const StatusScene: React.FC<StatsProps> = ({ hp, mana, level, goals, nudge, userName, customCharBg, customCharacter, weather = 'sunny' }) => {
+export const StatusScene: React.FC<StatsProps> = ({
+  hp,
+  mana,
+  level,
+  goals,
+  nudge,
+  userName,
+  customCharBg,
+  customCharacter,
+  weather = 'sunny',
+}) => {
   const [isChatOpen, setIsChatOpen] = useState(false);
 
   const { dynamicQuotes, quoteIndex } = useDynamicQuotes(hp, mana, goals, nudge, userName);
   const { overrideQuote, tapCount, handleCharacterTap } = useEasterEgg();
-  
+
   const currentQuote = overrideQuote || dynamicQuotes[quoteIndex];
   const { displayedText, isTyping } = useTypingEffect(currentQuote);
 
@@ -36,15 +46,15 @@ export const StatusScene: React.FC<StatsProps> = ({ hp, mana, level, goals, nudg
   };
 
   return (
-      <div className="relative -mx-4 sm:mx-0 w-[calc(100%+2rem)] sm:w-full flex-1 min-h-[50dvh] sm:min-h-0 sm:h-[400px] md:h-[450px] lg:h-[480px] bg-slate-950 border-y sm:border border-slate-800/60 sm:rounded-2xl overflow-hidden shadow-2xl flex flex-col items-center justify-center group isolate">
+    <div className='relative -mx-4 sm:mx-0 w-[calc(100%+2rem)] sm:w-full flex-1 min-h-[50dvh] sm:min-h-0 sm:h-[400px] md:h-[450px] lg:h-[480px] bg-slate-950 border-y sm:border border-slate-800/60 sm:rounded-2xl overflow-hidden shadow-2xl flex flex-col items-center justify-center group isolate'>
       <BackgroundLayer imageUrl={customCharBg} />
       <GroundLayer />
 
-      <div className="absolute top-6 left-0 w-full px-6 flex justify-between items-start z-20">
-        <div className="flex flex-col">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-3.5 h-3.5 text-accent-400" />
-            <p className="text-xs text-accent-400 font-mono tracking-widest uppercase mt-1 drop-shadow-md">
+      <div className='absolute top-6 left-0 w-full px-6 flex justify-between items-start z-20'>
+        <div className='flex flex-col'>
+          <div className='flex items-center gap-2'>
+            <Sparkles className='w-3.5 h-3.5 text-accent-400' />
+            <p className='text-xs text-accent-400 font-mono tracking-widest uppercase mt-1 drop-shadow-md'>
               AI Companion
             </p>
           </div>
@@ -52,58 +62,61 @@ export const StatusScene: React.FC<StatsProps> = ({ hp, mana, level, goals, nudg
       </div>
 
       {weather === 'rainy' && (
-        <div className="absolute inset-0 pointer-events-none z-15 overflow-hidden rounded-2xl">
+        <div className='absolute inset-0 pointer-events-none z-15 overflow-hidden rounded-2xl'>
           <NaturalRain />
         </div>
       )}
 
       {/* Main Character Scene */}
-      <div className="absolute bottom-[calc(10%+8px)] left-1/2 -translate-x-1/2 z-10 flex flex-col items-center scale-90 md:scale-95 lg:scale-[0.85] origin-bottom">
+      <div className='absolute bottom-[calc(10%+8px)] left-1/2 -translate-x-1/2 z-10 flex flex-col items-center scale-90 md:scale-95 lg:scale-[0.85] origin-bottom'>
         {/* Dynamic UI Chat Bubble */}
-        <AnimatePresence mode="wait">
-          <motion.div 
+        <AnimatePresence mode='wait'>
+          <motion.div
             key={quoteIndex}
             initial={{ opacity: 0, y: 10, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.9 }}
-            className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 w-[85vw] max-w-[260px] lg:max-w-[250px] z-20 group/chat"
+            className='absolute bottom-full mb-3 left-1/2 -translate-x-1/2 w-[85vw] max-w-[260px] lg:max-w-[250px] z-20 group/chat'
           >
-            <div className="bg-slate-900/80 hover:bg-slate-800/90 backdrop-blur-md border border-accent-500/30 group-hover/chat:border-accent-400/50 rounded-2xl p-3 shadow-[0_0_20px_rgba(var(--theme-400-rgb),0.1)] group-hover/chat:shadow-[0_0_25px_rgba(var(--theme-400-rgb),0.2)] relative transition-all duration-300">
-
-              
-              <button 
-                onClick={(e) => { e.stopPropagation(); handleOpenChat(); }}
-                className="absolute -top-3 -right-1 sm:-right-2 bg-indigo-500 hover:bg-indigo-400 hover:scale-110 transition-all rounded-full p-2 shadow-lg shadow-indigo-500/20 border border-indigo-400/30 animate-pulse z-30 outline-none focus:ring-2 focus:ring-indigo-300"
-                title="Chat dengan AI"
+            <div className='bg-slate-900/80 hover:bg-slate-800/90 backdrop-blur-md border border-accent-500/30 group-hover/chat:border-accent-400/50 rounded-2xl p-3 shadow-[0_0_20px_rgba(var(--theme-400-rgb),0.1)] group-hover/chat:shadow-[0_0_25px_rgba(var(--theme-400-rgb),0.2)] relative transition-all duration-300'>
+              <button
+                onClick={e => {
+                  e.stopPropagation();
+                  handleOpenChat();
+                }}
+                className='absolute -top-3 -right-1 sm:-right-2 bg-indigo-500 hover:bg-indigo-400 hover:scale-110 transition-all rounded-full p-2 shadow-lg shadow-indigo-500/20 border border-indigo-400/30 animate-pulse z-30 outline-none focus:ring-2 focus:ring-indigo-300'
+                title='Chat dengan AI'
               >
-                <MessageCircle className="w-4 h-4 text-white" />
+                <MessageCircle className='w-4 h-4 text-white' />
               </button>
 
-              <p className="text-sm text-slate-200 font-sans text-center leading-relaxed font-medium min-h-[40px] wrap-break-word cursor-default mt-0.5">
+              <p className='text-sm text-slate-200 font-sans text-center leading-relaxed font-medium min-h-[40px] wrap-break-word cursor-default mt-0.5'>
                 "{displayedText}
-                {isTyping && <span className="inline-block w-1 h-3.5 ml-0.5 bg-accent-400 animate-pulse align-middle"></span>}
+                {isTyping && (
+                  <span className='inline-block w-1 h-3.5 ml-0.5 bg-accent-400 animate-pulse align-middle'></span>
+                )}
                 "
               </p>
               {/* Bubble Tail */}
-              <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-slate-900/80 border-b border-r border-cyan-500/30 group-hover/chat:border-cyan-400/50 transform rotate-45 -translate-y-px backdrop-blur-md transition-all duration-300"></div>
+              <div className='absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-slate-900/80 border-b border-r border-cyan-500/30 group-hover/chat:border-cyan-400/50 transform rotate-45 -translate-y-px backdrop-blur-md transition-all duration-300'></div>
             </div>
           </motion.div>
         </AnimatePresence>
 
-        <motion.div 
+        <motion.div
           onClick={handleCharacterTap}
           whileTap={{ scale: 0.95 }}
           animate={tapCount > 20 ? { x: [-5, 5, -5, 5, 0], transition: { duration: 0.2 } } : {}}
-          className="cursor-pointer group-hover:scale-105 transition-transform duration-300 relative"
-          title="Tap aku!"
+          className='cursor-pointer group-hover:scale-105 transition-transform duration-300 relative'
+          title='Tap aku!'
         >
           <CharacterSprite imageUrl={customCharacter} />
         </motion.div>
       </div>
 
-      <AIChatModal 
-        isOpen={isChatOpen} 
-        onClose={() => setIsChatOpen(false)} 
+      <AIChatModal
+        isOpen={isChatOpen}
+        onClose={() => setIsChatOpen(false)}
         user={{ name: userName, hp, mana, level, exp: 0 }}
         goals={goals}
       />

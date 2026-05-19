@@ -1,7 +1,7 @@
 import { getCurrentUser, getAuthHeaders } from '../../../shared/services/session';
 import type { UserStats } from '../../../shared/types/user';
 
-function handleFirestoreError(error: unknown) {
+function handleApiError(error: unknown) {
   console.error('API Error:', error);
   throw error;
 }
@@ -54,7 +54,7 @@ export const fetchDashboardData = async () => {
       userData 
     };
   } catch (error) {
-    handleFirestoreError(error);
+    handleApiError(error);
     return { goalsWithCounts: [], rawGoalsData: [], dumpsData: [], userData: null };
   }
 };
@@ -62,7 +62,7 @@ export const fetchDashboardData = async () => {
 export const updateProfileData = async (
   userIdStr?: string,
   data?: Partial<UserStats>
-) => {
+ ) => {
   const user = getCurrentUser();
   if (!user) throw new Error("Not authenticated");
   const userId = user.uid;
@@ -76,7 +76,7 @@ export const updateProfileData = async (
     if (!res.ok) throw new Error("Gagal memperbarui profil di server");
     return await res.json();
   } catch (error) {
-    handleFirestoreError(error);
+    handleApiError(error);
     throw error;
   }
 };
@@ -93,7 +93,7 @@ export const resetProfileData = async () => {
     });
     if (!res.ok) throw new Error("Gagal mereset profil di server");
   } catch (error) {
-    handleFirestoreError(error);
+    handleApiError(error);
     throw error;
   }
 };
@@ -115,7 +115,7 @@ export const updateSandboxData = async (
     if (!res.ok) throw new Error("Gagal memperbarui sandbox");
     return await res.json();
   } catch (error) {
-    handleFirestoreError(error);
+    handleApiError(error);
     throw error;
   }
 };
