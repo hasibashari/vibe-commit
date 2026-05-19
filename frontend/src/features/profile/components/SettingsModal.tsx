@@ -13,16 +13,19 @@ interface SettingsModalProps {
   onImport: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onResetProgress: () => Promise<void>;
   onLogout: () => Promise<void>;
+  onDeleteAccount: () => Promise<void>;
 }
 
-export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, user, onUpdateUser, onExport, onImport, onResetProgress, onLogout }) => {
+export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, user, onUpdateUser, onExport, onImport, onResetProgress, onLogout, onDeleteAccount }) => {
   const [settings, setSettings] = useState({
     language: 'id',
     animations: true,
     nudgeIntensity: 'normal'
   });
   const [isResetConfirm, setIsResetConfirm] = useState(false);
+  const [isDeleteConfirm, setIsDeleteConfirm] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+
 
   useEffect(() => {
     if (isOpen) {
@@ -45,6 +48,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, u
     onClose();
     window.location.reload();
   };
+
+  const handleDeleteAccount = async () => {
+    try {
+      await onDeleteAccount();
+      setIsDeleteConfirm(false);
+      onClose();
+      window.location.reload();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, key: 'custom_main_bg' | 'custom_char_bg' | 'custom_character') => {
     const file = event.target.files?.[0];
@@ -316,7 +331,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, u
           {!isResetConfirm ? (
             <Button 
               variant="danger"
-              onClick={() => setIsResetConfirm(true)}
+              onClick={() => { setIsResetConfirm(true); setIsDeleteConfirm(false); }}
               className="w-full gap-2"
             >
               <RefreshCw className="w-4 h-4" />
@@ -342,6 +357,40 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, u
                   className="flex-1"
                 >
                   Confirm Reset
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {!isDeleteConfirm ? (
+            <Button 
+              variant="danger"
+              onClick={() => { setIsDeleteConfirm(true); setIsResetConfirm(false); }}
+              className="w-full gap-2 border-rose-600/50 hover:bg-rose-950/20"
+            >
+              <TriangleAlert className="w-4 h-4" />
+              Delete Account Permanently
+            </Button>
+          ) : (
+            <div className="bg-rose-500/10 border border-rose-500/30 rounded-xl p-4 flex flex-col gap-4">
+              <div className="flex items-start gap-3 text-rose-400 text-sm">
+                <TriangleAlert className="w-5 h-5 shrink-0 mt-0.5" />
+                <p>WARNING: This will permanently delete your account, authentication credentials, active quests, completion logs, and cached statistics both locally and on the server. THIS ACTION IS IRREVERSIBLE.</p>
+              </div>
+              <div className="flex gap-3">
+                <Button 
+                  variant="secondary"
+                  onClick={() => setIsDeleteConfirm(false)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  variant="danger"
+                  onClick={handleDeleteAccount}
+                  className="flex-1 bg-red-600 hover:bg-red-700"
+                >
+                  Delete Account
                 </Button>
               </div>
             </div>

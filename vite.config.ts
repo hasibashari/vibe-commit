@@ -14,23 +14,39 @@ export default defineConfig(({mode}) => {
       tailwindcss(),
       VitePWA({
         registerType: 'autoUpdate',
+        devOptions: {
+          enabled: true,
+          type: 'module'
+        },
         manifest: {
+          id: '/',
+          start_url: '/',
+          scope: '/',
           name: 'Vibe Commit',
           short_name: 'Vibe Commit',
           description: 'A gamified habit tracker and RPG to-do list.',
           theme_color: '#0f172a',
           background_color: '#0f172a',
           display: 'standalone',
+          orientation: 'portrait',
           icons: [
             {
-              src: 'icon-192.png',
+              src: '/icon-192.png',
               sizes: '192x192',
-              type: 'image/png'
+              type: 'image/png',
+              purpose: 'any'
             },
             {
-              src: 'icon-512.png',
+              src: '/icon-192.png',
+              sizes: '192x192',
+              type: 'image/png',
+              purpose: 'maskable'
+            },
+            {
+              src: '/icon-512.png',
               sizes: '512x512',
-              type: 'image/png'
+              type: 'image/png',
+              purpose: 'any'
             }
           ]
         },

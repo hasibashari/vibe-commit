@@ -4,6 +4,10 @@ import { UserService } from './user.service.js';
 
 export class UserController {
   static getUser(req: Request, res: Response, next: NextFunction) {
+    if (req.params.id !== (req as any).user?.id) {
+      res.status(403).json({ error: 'Forbidden: Access denied to other user data' });
+      return;
+    }
     try {
       res.json(UserService.getUser(req.params.id));
     } catch (err) {
@@ -12,6 +16,10 @@ export class UserController {
   }
 
   static updateUser(req: Request, res: Response, next: NextFunction) {
+    if (req.params.id !== (req as any).user?.id) {
+      res.status(403).json({ error: 'Forbidden: Access denied to other user data' });
+      return;
+    }
     try {
       const schema = z.object({
         name: z.string().optional(),
@@ -33,6 +41,10 @@ export class UserController {
   }
 
   static buyItem(req: Request, res: Response, next: NextFunction) {
+    if (req.params.id !== (req as any).user?.id) {
+      res.status(403).json({ error: 'Forbidden: Access denied to other user data' });
+      return;
+    }
     try {
       const schema = z.object({ itemId: z.string() });
       const { itemId } = schema.parse(req.body);
@@ -43,8 +55,13 @@ export class UserController {
   }
 
   static sandboxUpdate(req: Request, res: Response, next: NextFunction) {
+    if (req.params.id !== (req as any).user?.id) {
+      res.status(403).json({ error: 'Forbidden: Access denied to other user data' });
+      return;
+    }
     if (process.env.NODE_ENV === 'production') {
-      return res.status(403).json({ error: 'Sandbox mode is disabled in production' });
+      res.status(403).json({ error: 'Sandbox mode is disabled in production' });
+      return;
     }
 
     try {
@@ -56,6 +73,10 @@ export class UserController {
   }
 
   static resetUser(req: Request, res: Response, next: NextFunction) {
+    if (req.params.id !== (req as any).user?.id) {
+      res.status(403).json({ error: 'Forbidden: Access denied to other user data' });
+      return;
+    }
     try {
       UserService.resetUser(req.params.id);
       res.json({ success: true });
@@ -64,7 +85,24 @@ export class UserController {
     }
   }
 
+  static deleteAccount(req: Request, res: Response, next: NextFunction) {
+    if (req.params.id !== (req as any).user?.id) {
+      res.status(403).json({ error: 'Forbidden: Access denied to other user data' });
+      return;
+    }
+    try {
+      UserService.deleteAccount(req.params.id);
+      res.json({ success: true });
+    } catch (err) {
+      next(err);
+    }
+  }
+
   static importData(req: Request, res: Response, next: NextFunction) {
+    if (req.params.id !== (req as any).user?.id) {
+      res.status(403).json({ error: 'Forbidden: Access denied to other user data' });
+      return;
+    }
     try {
       const importSchema = z.object({
         user: z.object({

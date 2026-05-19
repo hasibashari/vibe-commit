@@ -27,6 +27,9 @@ import { useQuestContext } from './providers/QuestProvider';
 import { useBrainDumpContext } from './providers/BrainDumpProvider';
 import { useAudio } from './providers/AudioProvider';
 import { useAuthStore } from '../store/authStore';
+import { useDashboardStore } from '../store/dashboardStore';
+import { getAuthHeaders } from '../shared/services/session';
+
 
 function getExpNeededForLevel(level: number): number {
   return Math.floor(100 * Math.pow(1.2, level - 1));
@@ -51,8 +54,10 @@ export default function App() {
     user: authUser,
     isLoading: isAuthLoading,
     logout,
+    deleteAccount,
     initAuth
   } = useAuthStore();
+
 
   useEffect(() => {
     const unsubscribe = initAuth();
@@ -139,7 +144,7 @@ export default function App() {
 
       const res = await fetch(`/api/user/${user?.id || 'import'}/import`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify(data)
       });
       
@@ -201,6 +206,24 @@ export default function App() {
     const currentTheme = effectiveUser?.theme_vibe || 'midnight';
     document.documentElement.setAttribute('data-theme', currentTheme);
   }, [effectiveUser?.theme_vibe]);
+
+  useEffect(() => {
+    if (!authUser) return;
+
+    const handleOnline = () => {
+      useDashboardStore.getState().syncOfflineData();
+    };
+
+    window.addEventListener('online', handleOnline);
+
+    if (navigator.onLine) {
+      useDashboardStore.getState().syncOfflineData();
+    }
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+    };
+  }, [authUser]);
 
   if (isAuthLoading) {
     return (
@@ -280,6 +303,10 @@ export default function App() {
               onResetProgress={resetProfile}
               onLogout={async () => {
                 await logout();
+                setIsSettingsOpen(false);
+              }}
+              onDeleteAccount={async () => {
+                await deleteAccount();
                 setIsSettingsOpen(false);
               }}
             />

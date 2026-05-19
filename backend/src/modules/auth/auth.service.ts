@@ -1,6 +1,7 @@
 import db from '../../db/database.js';
 import crypto from 'node:crypto';
 import { UserService } from '../user/user.service.js';
+import { JwtUtil } from './jwt.util.js';
 
 export class AuthService {
   // Hash password using PBKDF2 with SHA-512 for secure, native, zero-dependency hashing
@@ -65,7 +66,8 @@ export class AuthService {
       throw new Error('Username atau Password salah');
     }
 
-    return { id: account.id, username: account.username };
+    const token = JwtUtil.sign({ id: account.id, username: account.username });
+    return { id: account.id, username: account.username, token };
   }
 
   static loginAsGuest() {
@@ -92,6 +94,7 @@ export class AuthService {
       );
     })();
 
-    return { id, username: guestUsername };
+    const token = JwtUtil.sign({ id, username: guestUsername });
+    return { id, username: guestUsername, token };
   }
 }

@@ -207,3 +207,8 @@
   background: rgba(255, 255, 255, 0.2);
 }
 
+/* Premium Mobile PWA Reset - Disable browser tap highlight flash */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+

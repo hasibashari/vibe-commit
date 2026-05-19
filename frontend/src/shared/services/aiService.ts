@@ -1,3 +1,5 @@
+import { getAuthHeaders } from './session';
+
 export interface AnalyzedQuest {
   title: string;
   description: string;
@@ -16,7 +18,7 @@ export interface BrainDumpAnalysis {
 export async function analyzeBrainDump(content: string): Promise<BrainDumpAnalysis> {
   const res = await fetch('/api/ai/analyze-brain-dump', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ content })
   });
   
@@ -40,7 +42,7 @@ export async function chatWithAI(history: { role: 'user' | 'model', content: str
   try {
     const res = await fetch('/api/ai/chat', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ history, context })
     });
     
@@ -55,3 +57,4 @@ export async function chatWithAI(history: { role: 'user' | 'model', content: str
     return "Maaf, aku lagi nge-lag nih. Boleh ulangi?";
   }
 }
+

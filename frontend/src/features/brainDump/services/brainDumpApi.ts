@@ -1,4 +1,4 @@
-import { getCurrentUser } from '../../../shared/services/session';
+import { getCurrentUser, getAuthHeaders } from '../../../shared/services/session';
 
 interface BrainDumpAnalysisResult {
   anxietyLevel: string;
@@ -27,7 +27,7 @@ export const saveBrainDumpApi = async (draftContent: string, analysisResult: Bra
     const id = crypto.randomUUID();
     const res = await fetch('/api/brain-dump', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({
         id,
         userId: user.uid,
@@ -52,7 +52,7 @@ export const saveQuestsFromBrainDumpApi = async (quests: BrainDumpQuest[]) => {
     await Promise.all(quests.map(res => 
       fetch('/api/goals', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({
           id: crypto.randomUUID(),
           userId: user.uid,
@@ -68,3 +68,4 @@ export const saveQuestsFromBrainDumpApi = async (quests: BrainDumpQuest[]) => {
     handleFirestoreError(err);
   }
 };
+

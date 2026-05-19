@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Heart, Zap, Star, Shield, Sword, Swords, Crown, Trophy, Settings, Volume2, VolumeX } from 'lucide-react';
+import { Heart, Zap, Star, Shield, Sword, Swords, Crown, Trophy, Settings, Volume2, VolumeX, Wifi, WifiOff } from 'lucide-react';
 import { useAudio } from '../providers/AudioProvider';
 import { Button } from '../../shared/components/Button';
 
@@ -23,6 +23,23 @@ function getExpNeededForLevel(level: number): number {
 
 export const TopBar: React.FC<TopBarProps> = ({ hp, mana, level, exp, coins, user, onOpenProfile, onOpenSettings }) => {
   const { isMuted, toggleMute } = useAudio();
+  const [isOnline, setIsOnline] = React.useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
+
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
   const avatarColorMap: Record<string, { from: string; text: string }> = {
     indigo: { from: 'from-indigo-500/20', text: 'text-indigo-400' },
     rose: { from: 'from-rose-500/20', text: 'text-rose-400' },
@@ -68,6 +85,16 @@ export const TopBar: React.FC<TopBarProps> = ({ hp, mana, level, exp, coins, use
 
         {/* Mobile Settings/Coins row - hidden on desktop */}
         <div className="flex lg:hidden items-center gap-2">
+          {/* Connection status badge - Mobile */}
+          <div className={`flex items-center gap-1 px-2 py-1.5 rounded-md border text-[10px] font-bold tracking-wider uppercase transition-all shrink-0 ${
+            isOnline 
+              ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' 
+              : 'bg-rose-500/10 border-rose-500/20 text-rose-400'
+          }`}>
+            {isOnline ? <Wifi className="w-3.5 h-3.5 animate-pulse" /> : <WifiOff className="w-3.5 h-3.5" />}
+            <span>{isOnline ? 'Online' : 'Offline'}</span>
+          </div>
+
           <div className="flex items-center gap-1.5 bg-white/5 px-2.5 py-1.5 rounded-md border border-white/10">
             <Star className="w-3.5 h-3.5 text-amber-400" fill="currentColor" />
             <span className="text-xs font-mono font-bold text-amber-400">{coins || 0}</span>
@@ -84,7 +111,7 @@ export const TopBar: React.FC<TopBarProps> = ({ hp, mana, level, exp, coins, use
       {/* Right: RPG Stats */}
       <div className="flex items-center justify-between lg:justify-end gap-4 lg:gap-6 w-full lg:w-auto">
         
-        {/* EXP Bar (Moved here for better grid) */}
+        {/* EXP Bar */}
         {(() => {
           const expNeeded = getExpNeededForLevel(level ?? 1);
           const expPercent = ((exp ?? 0) / expNeeded) * 100;
@@ -130,6 +157,16 @@ export const TopBar: React.FC<TopBarProps> = ({ hp, mana, level, exp, coins, use
         </div>
 
         <div className="hidden lg:flex items-center gap-2 shrink-0">
+          {/* Connection status badge - Desktop */}
+          <div className={`flex items-center gap-1 px-2.5 py-1.5 rounded-md border text-xs font-bold tracking-wider uppercase transition-all ${
+            isOnline 
+              ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' 
+              : 'bg-rose-500/10 border-rose-500/20 text-rose-400'
+          }`}>
+            {isOnline ? <Wifi className="w-3.5 h-3.5 animate-pulse" /> : <WifiOff className="w-3.5 h-3.5" />}
+            <span>{isOnline ? 'Online' : 'Offline'}</span>
+          </div>
+
           <Button variant="secondary" size="icon" onClick={toggleMute} className="w-8 h-8 rounded-lg p-0!">
             {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-cyan-400" />}
           </Button>

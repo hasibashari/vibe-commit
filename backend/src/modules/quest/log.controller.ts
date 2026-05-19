@@ -4,6 +4,10 @@ import db from '../../db/database.js';
 
 export class LogController {
   static getLogsForUser(req: Request, res: Response, next: NextFunction) {
+    if (req.params.userId !== (req as any).user?.id) {
+      res.status(403).json({ error: 'Forbidden: Access denied to other user logs' });
+      return;
+    }
     try {
       const logs = db.prepare(`
         SELECT quest_logs.* 
@@ -20,6 +24,16 @@ export class LogController {
 
   static getLogsForGoal(req: Request, res: Response, next: NextFunction) {
     try {
+      const goal = db.prepare('SELECT user_id FROM goals WHERE id = ?').get(req.params.goalId) as { user_id: string } | undefined;
+      if (!goal) {
+        res.status(404).json({ error: 'Quest not found' });
+        return;
+      }
+      if (goal.user_id !== (req as any).user?.id) {
+        res.status(403).json({ error: 'Forbidden: Access denied to other user quest logs' });
+        return;
+      }
+
       const logs = db.prepare('SELECT * FROM quest_logs WHERE goal_id = ? ORDER BY timestamp DESC').all(req.params.goalId);
       res.json(logs);
     } catch (err) {
@@ -37,6 +51,16 @@ export class LogController {
       });
       const { id, goalId, vibeScore, notes } = schema.parse(req.body);
       
+      const goal = db.prepare('SELECT user_id FROM goals WHERE id = ?').get(goalId) as { user_id: string } | undefined;
+      if (!goal) {
+        res.status(404).json({ error: 'Quest not found for this log' });
+        return;
+      }
+      if (goal.user_id !== (req as any).user?.id) {
+        res.status(403).json({ error: 'Forbidden: Access denied to create log for other user quest' });
+        return;
+      }
+
       db.transaction(() => {
         db.prepare('INSERT INTO quest_logs (id, goal_id, vibe_score, notes) VALUES (?, ?, ?, ?)').run(
           id, 
@@ -46,11 +70,11 @@ export class LogController {
         );
 
         // Fetch user associated with this goal
-        const goal: any = db.prepare('SELECT user_id, difficulty, reward_alpha FROM goals WHERE id = ?').get(goalId);
-        if (goal) {
-          const user: any = db.prepare('SELECT id, hp, mana, level, exp, last_penalty_date FROM users WHERE id = ?').get(goal.user_id);
+        const goalData: any = db.prepare('SELECT user_id, difficulty, reward_alpha FROM goals WHERE id = ?').get(goalId);
+        if (goalData) {
+          const user: any = db.prepare('SELECT id, hp, mana, level, exp, last_penalty_date FROM users WHERE id = ?').get(goalData.user_id);
           if (user) {
-            const expGain = Math.floor(10 * (goal.difficulty || 1.0) * (goal.reward_alpha || 0.5));
+            const expGain = Math.floor(10 * (goalData.difficulty || 1.0) * (goalData.reward_alpha || 0.5));
             let newExp = user.exp + expGain;
             let newLevel = user.level;
             

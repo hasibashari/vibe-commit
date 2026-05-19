@@ -6,6 +6,49 @@ import { useToastStore } from './toastStore';
 import { useDashboardStore } from './dashboardStore';
 import { useUIStore } from './uiStore';
 
+const playVictoryOscillator = () => {
+  try {
+    if (typeof window === 'undefined') return;
+    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioContextClass) return;
+    const audioCtx = new AudioContextClass();
+    const osc = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    
+    osc.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    osc.type = 'square';
+    
+    const now = audioCtx.currentTime;
+    osc.frequency.setValueAtTime(261.63, now); // C4
+    osc.frequency.setValueAtTime(329.63, now + 0.1); // E4
+    osc.frequency.setValueAtTime(392.00, now + 0.2); // G4
+    osc.frequency.setValueAtTime(523.25, now + 0.3); // C5
+    
+    gainNode.gain.setValueAtTime(0.05, now);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+    
+    osc.start(now);
+    osc.stop(now + 0.6);
+  } catch (e) {}
+};
+
+const getExpNeededForLevel = (level: number): number => {
+  return Math.floor(100 * Math.pow(1.2, level - 1));
+};
+
+const handleOptimisticRPGStats = (currentLevel: number, currentExp: number, expEarned: number) => {
+  let level = currentLevel;
+  let exp = currentExp + expEarned;
+  
+  while (exp >= getExpNeededForLevel(level)) {
+    exp -= getExpNeededForLevel(level);
+    level += 1;
+  }
+  
+  return { level, exp };
+};
+
 interface QuestStore {
   selectedGoal: Goal | null;
   setSelectedGoal: (goal: Goal | null) => void;
@@ -29,12 +72,13 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
   setQuestToEdit: (goal) => set({ questToEdit: goal }),
 
   handleLogAction: async (goalId: string) => {
-    const { goals, setExpPopups, fetchData } = useDashboardStore.getState();
+    const { goals, setGoals, setExpPopups, user, setUser, fetchData } = useDashboardStore.getState();
     const { toast } = useToastStore.getState();
     const goal = goals.find(g => g.id === goalId);
     
+    let expEarned = 0;
     if (goal) {
-      const expEarned = Math.floor(goal.difficulty * 10 * goal.reward_alpha);
+      expEarned = Math.floor(goal.difficulty * 10 * goal.reward_alpha);
       const popupId = crypto.randomUUID();
       const currentPopups = useDashboardStore.getState().expPopups;
       setExpPopups([...currentPopups, { id: popupId, exp: expEarned }]);
@@ -42,10 +86,75 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
         const remainingPopups = useDashboardStore.getState().expPopups;
         setExpPopups(remainingPopups.filter((p: any) => p.id !== popupId));
       }, 2500);
+
+      // Play 8-bit sound directly via Web Audio
+      playVictoryOscillator();
+    }
+
+    const logId = crypto.randomUUID();
+
+    // Check online status
+    if (!navigator.onLine) {
+      if (goal) {
+        // Queue action
+        const pendingStr = localStorage.getItem('vibe_commit_pending_actions') || '[]';
+        try {
+          const pending = JSON.parse(pendingStr);
+          pending.push({ type: 'LOG_QUEST', goalId, logId });
+          localStorage.setItem('vibe_commit_pending_actions', JSON.stringify(pending));
+        } catch (e) {
+          console.error(e);
+        }
+
+        // Perform local optimistic update
+        const updatedGoals = goals.map(g => {
+          if (g.id === goalId) {
+            const newLogs = [...(g.logs || []), {
+              id: logId,
+              goal_id: goalId,
+              timestamp: new Date().toISOString()
+            }];
+            return {
+              ...g,
+              repetition_count: g.repetition_count + 1,
+              logs: newLogs
+            };
+          }
+          return g;
+        });
+
+        // Bayesian calibration locally
+        const updatedGoal = updatedGoals.find(g => g.id === goalId);
+        if (updatedGoal) {
+          const prob = calculateProbability(updatedGoal.repetition_count, updatedGoal.difficulty, updatedGoal.reward_alpha);
+          const newD = adjustDifficultyBayesian(prob, updatedGoal.difficulty);
+          if (newD !== updatedGoal.difficulty) {
+            updatedGoal.difficulty = newD;
+            // Also queue the difficulty update
+            const pendingStr2 = localStorage.getItem('vibe_commit_pending_actions') || '[]';
+            try {
+              const pending2 = JSON.parse(pendingStr2);
+              pending2.push({ type: 'UPDATE_DIFFICULTY', goalId, newDifficulty: newD });
+              localStorage.setItem('vibe_commit_pending_actions', JSON.stringify(pending2));
+            } catch (e) {}
+          }
+        }
+
+        // Calculate and update local RPG Stats
+        const newStats = handleOptimisticRPGStats(user.level, user.exp, expEarned);
+        setUser({ ...user, ...newStats });
+        setGoals(updatedGoals);
+        
+        toast({
+          title: "Quest Selesai (Offline)",
+          description: "Perubahan disimpan secara lokal dan akan disinkronkan saat online.",
+          type: 'success'
+        });
+      }
+      return;
     }
 
     try {
-      const logId = crypto.randomUUID();
       await logQuestActionApi(goalId, logId);
 
       if (goal) {
@@ -63,22 +172,109 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
       }
 
       await fetchData();
-    } catch(e: unknown) {
-      let desc = "Pastikan koneksi lancar.";
-      if (e instanceof Error) desc = e.message;
-      toast({
-        title: "Gagal Melog Quest",
-        description: desc,
-        type: 'error'
-      });
+    } catch (e: unknown) {
+      if (goal) {
+        const pendingStr = localStorage.getItem('vibe_commit_pending_actions') || '[]';
+        try {
+          const pending = JSON.parse(pendingStr);
+          pending.push({ type: 'LOG_QUEST', goalId, logId });
+          localStorage.setItem('vibe_commit_pending_actions', JSON.stringify(pending));
+        } catch (err) {}
+
+        const updatedGoals = goals.map(g => {
+          if (g.id === goalId) {
+            const newLogs = [...(g.logs || []), {
+              id: logId,
+              goal_id: goalId,
+              timestamp: new Date().toISOString()
+            }];
+            return {
+              ...g,
+              repetition_count: g.repetition_count + 1,
+              logs: newLogs
+            };
+          }
+          return g;
+        });
+
+        const newStats = handleOptimisticRPGStats(user.level, user.exp, expEarned);
+        setUser({ ...user, ...newStats });
+        setGoals(updatedGoals);
+
+        toast({
+          title: "Koneksi Bermasalah",
+          description: "Quest disimpan di perangkat secara lokal.",
+          type: 'info'
+        });
+      } else {
+        let desc = "Pastikan koneksi lancar.";
+        if (e instanceof Error) desc = e.message;
+        toast({
+          title: "Gagal Melog Quest",
+          description: desc,
+          type: 'error'
+        });
+      }
     }
   },
 
   handleSaveQuest: async (questData: Partial<Goal>) => {
     const { questToEdit, selectedGoal } = get();
-    const { fetchData } = useDashboardStore.getState();
+    const { goals, setGoals, fetchData } = useDashboardStore.getState();
     const { toast } = useToastStore.getState();
     const { setIsQuestEditorOpen } = useUIStore.getState();
+
+    const questId = questToEdit ? questToEdit.id : crypto.randomUUID();
+
+    if (!navigator.onLine) {
+      if (questToEdit) {
+        const updatedGoals = goals.map(g => {
+          if (g.id === questToEdit.id) {
+            return { ...g, ...questData } as Goal;
+          }
+          return g;
+        });
+        setGoals(updatedGoals);
+        if (selectedGoal?.id === questToEdit.id) {
+          set({ selectedGoal: { ...selectedGoal, ...questData } as Goal });
+        }
+
+        const pendingStr = localStorage.getItem('vibe_commit_pending_actions') || '[]';
+        try {
+          const pending = JSON.parse(pendingStr);
+          pending.push({ type: 'UPDATE_QUEST', questId: questToEdit.id, questData });
+          localStorage.setItem('vibe_commit_pending_actions', JSON.stringify(pending));
+        } catch (e) {}
+
+        toast({ title: "Quest Diperbarui (Offline)", type: 'success' });
+      } else {
+        const newGoal: Goal = {
+          id: questId,
+          title: questData.title || 'Untitled Quest',
+          description: questData.description || '',
+          category: questData.category || 'productivity',
+          difficulty: questData.difficulty ?? 0.5,
+          reward_alpha: questData.reward_alpha ?? 1,
+          repetition_count: 0,
+          logs: [],
+          status: 'active'
+        };
+        setGoals([...goals, newGoal]);
+
+        const pendingStr = localStorage.getItem('vibe_commit_pending_actions') || '[]';
+        try {
+          const pending = JSON.parse(pendingStr);
+          pending.push({ type: 'CREATE_QUEST', id: questId, questData });
+          localStorage.setItem('vibe_commit_pending_actions', JSON.stringify(pending));
+        } catch (e) {}
+
+        toast({ title: "Quest Baru Dibuat (Offline)", type: 'success' });
+      }
+
+      setIsQuestEditorOpen(false);
+      set({ questToEdit: null });
+      return;
+    }
 
     try {
       if (questToEdit) {
@@ -88,16 +284,58 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
         }
         toast({ title: "Quest Diperbarui", type: 'success' });
       } else {
-        await createQuestApi(questData, crypto.randomUUID());
+        await createQuestApi(questData, questId);
         toast({ title: "Quest Baru Dibuat", type: 'success' });
       }
       setIsQuestEditorOpen(false);
       set({ questToEdit: null });
       await fetchData();
     } catch (e: unknown) {
-      let desc = "Terjadi kesalahan";
-      if (e instanceof Error) desc = e.message;
-      toast({ title: "Gagal Menyimpan Quest", description: desc, type: 'error' });
+      if (questToEdit) {
+        const updatedGoals = goals.map(g => {
+          if (g.id === questToEdit.id) {
+            return { ...g, ...questData } as Goal;
+          }
+          return g;
+        });
+        setGoals(updatedGoals);
+        if (selectedGoal?.id === questToEdit.id) {
+          set({ selectedGoal: { ...selectedGoal, ...questData } as Goal });
+        }
+
+        const pendingStr = localStorage.getItem('vibe_commit_pending_actions') || '[]';
+        try {
+          const pending = JSON.parse(pendingStr);
+          pending.push({ type: 'UPDATE_QUEST', questId: questToEdit.id, questData });
+          localStorage.setItem('vibe_commit_pending_actions', JSON.stringify(pending));
+        } catch (err) {}
+
+        toast({ title: "Koneksi Bermasalah - Disimpan Lokal", type: 'info' });
+      } else {
+        const newGoal: Goal = {
+          id: questId,
+          title: questData.title || 'Untitled Quest',
+          description: questData.description || '',
+          category: questData.category || 'productivity',
+          difficulty: questData.difficulty ?? 0.5,
+          reward_alpha: questData.reward_alpha ?? 1,
+          repetition_count: 0,
+          logs: [],
+          status: 'active'
+        };
+        setGoals([...goals, newGoal]);
+
+        const pendingStr = localStorage.getItem('vibe_commit_pending_actions') || '[]';
+        try {
+          const pending = JSON.parse(pendingStr);
+          pending.push({ type: 'CREATE_QUEST', id: questId, questData });
+          localStorage.setItem('vibe_commit_pending_actions', JSON.stringify(pending));
+        } catch (err) {}
+
+        toast({ title: "Koneksi Bermasalah - Dibuat Lokal", type: 'info' });
+      }
+      setIsQuestEditorOpen(false);
+      set({ questToEdit: null });
     }
   },
 
@@ -111,6 +349,25 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
     const { toast } = useToastStore.getState();
 
     if (!questToDelete) return;
+
+    if (!navigator.onLine) {
+      if (selectedGoal?.id === questToDelete) {
+        set({ selectedGoal: null });
+      }
+      setGoals(goals.filter((g: any) => g.id !== questToDelete));
+      set({ questToDelete: null });
+
+      const pendingStr = localStorage.getItem('vibe_commit_pending_actions') || '[]';
+      try {
+        const pending = JSON.parse(pendingStr);
+        pending.push({ type: 'DELETE_QUEST', questId: questToDelete });
+        localStorage.setItem('vibe_commit_pending_actions', JSON.stringify(pending));
+      } catch (e) {}
+
+      toast({ title: "Quest Dihapus (Offline)", type: 'info' });
+      return;
+    }
+
     try {
       await deleteQuestApi(questToDelete);
       
@@ -122,11 +379,20 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
       await fetchData();
       toast({ title: "Quest Dihapus", type: 'info' });
     } catch (e: unknown) {
-      console.error(e);
+      if (selectedGoal?.id === questToDelete) {
+        set({ selectedGoal: null });
+      }
+      setGoals(goals.filter((g: any) => g.id !== questToDelete));
       set({ questToDelete: null });
-      let desc = "Terjadi kesalahan";
-      if (e instanceof Error) desc = e.message;
-      toast({ title: "Gagal Menghapus Quest", description: desc, type: 'error' });
+
+      const pendingStr = localStorage.getItem('vibe_commit_pending_actions') || '[]';
+      try {
+        const pending = JSON.parse(pendingStr);
+        pending.push({ type: 'DELETE_QUEST', questId: questToDelete });
+        localStorage.setItem('vibe_commit_pending_actions', JSON.stringify(pending));
+      } catch (err) {}
+
+      toast({ title: "Quest Dihapus Lokal (Offline)", type: 'info' });
     }
   }
 }));

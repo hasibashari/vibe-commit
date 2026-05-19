@@ -25,6 +25,7 @@ interface DashboardStore {
   resetProfile: () => Promise<void>;
   updateSandbox: (payload: { hp?: number | null; mana?: number | null; level?: number | null; coins_delta?: number | null }) => Promise<void>;
   buyItem: (itemId: string, cost?: number, overrideCoins?: number | null) => Promise<boolean>;
+  syncOfflineData: () => Promise<void>;
 }
 
 export const useDashboardStore = create<DashboardStore>((set, get) => ({
@@ -47,6 +48,16 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
       set({ isLoading: true });
       const { goalsWithCounts, dumpsData, userData } = await fetchDashboardData();
       
+      try {
+        localStorage.setItem('vibe_commit_dashboard_cache', JSON.stringify({
+          goalsWithCounts,
+          dumpsData,
+          userData
+        }));
+      } catch (err) {
+        console.error('Failed to write local dashboard cache', err);
+      }
+      
       const allLogs = goalsWithCounts.flatMap(g => (g.logs || []).map((l: any) => ({ ...l, goal_id: g.id })));
       
       const calculatedUser = calculateRPGStats(allLogs, userData);
@@ -61,6 +72,34 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
         achievements: calculateAchievements(allLogs, calculatedUser.level)
       });
     } catch (e: unknown) {
+      const cachedDataStr = localStorage.getItem('vibe_commit_dashboard_cache');
+      if (cachedDataStr) {
+        try {
+          const { goalsWithCounts, dumpsData, userData } = JSON.parse(cachedDataStr);
+          const allLogs = goalsWithCounts.flatMap((g: any) => (g.logs || []).map((l: any) => ({ ...l, goal_id: g.id })));
+          const calculatedUser = calculateRPGStats(allLogs, userData);
+          
+          set({
+            goals: goalsWithCounts,
+            recentlyCompletedIds: getCompletedIdsToday(goalsWithCounts),
+            nudge: calculateStochasticNudges(allLogs) || null,
+            burnoutMonitor: analyzeBurnoutRisk(allLogs, goalsWithCounts),
+            latestDump: dumpsData && dumpsData.length > 0 ? JSON.parse(dumpsData[0].analysis) : null,
+            user: calculatedUser,
+            achievements: calculateAchievements(allLogs, calculatedUser.level)
+          });
+          
+          toast({
+            title: "Mode Offline Aktif",
+            description: "Memuat data dari cache lokal terakhir.",
+            type: 'info'
+          });
+          return;
+        } catch (cacheErr) {
+          console.error('Error parsing dashboard cache', cacheErr);
+        }
+      }
+
       toast({
         title: "Koneksi Terputus",
         description: "Gagal memuat data dari server.",
@@ -137,5 +176,70 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
       toast({ title: e.message || "Gagal membeli item", type: 'error' });
       return false;
     }
+  },
+
+  syncOfflineData: async () => {
+    const { toast } = useToastStore.getState();
+    const pendingActionsStr = localStorage.getItem('vibe_commit_pending_actions');
+    if (!pendingActionsStr) return;
+
+    let pendingActions: any[] = [];
+    try {
+      pendingActions = JSON.parse(pendingActionsStr);
+    } catch (e) {
+      console.error("Failed to parse pending sync actions", e);
+      localStorage.removeItem('vibe_commit_pending_actions');
+      return;
+    }
+
+    if (pendingActions.length === 0) return;
+
+    toast({
+      title: "Sinkronisasi...",
+      description: `Menyinkronkan ${pendingActions.length} data offline ke server.`,
+      type: 'info'
+    });
+
+    const { logQuestActionApi, createQuestApi, updateQuestApi, deleteQuestApi, updateQuestDifficultyApi } = 
+      await import('../features/quests/services/questApi');
+
+    const failedActions: any[] = [];
+
+    for (const action of pendingActions) {
+      try {
+        if (action.type === 'LOG_QUEST') {
+          await logQuestActionApi(action.goalId, action.logId);
+        } else if (action.type === 'CREATE_QUEST') {
+          await createQuestApi(action.questData, action.id);
+        } else if (action.type === 'UPDATE_QUEST') {
+          await updateQuestApi(action.questId, action.questData);
+        } else if (action.type === 'DELETE_QUEST') {
+          await deleteQuestApi(action.questId);
+        } else if (action.type === 'UPDATE_DIFFICULTY') {
+          await updateQuestDifficultyApi(action.goalId, action.newDifficulty);
+        }
+      } catch (err) {
+        console.error("Failed to sync action", action, err);
+        failedActions.push(action);
+      }
+    }
+
+    if (failedActions.length > 0) {
+      localStorage.setItem('vibe_commit_pending_actions', JSON.stringify(failedActions));
+      toast({
+        title: "Sinkronisasi Tertunda",
+        description: `Gagal mengirim ${failedActions.length} aksi. Akan dicoba lagi nanti.`,
+        type: 'info'
+      });
+    } else {
+      localStorage.removeItem('vibe_commit_pending_actions');
+      toast({
+        title: "Sinkronisasi Selesai!",
+        description: "Semua aksi offline berhasil disinkronkan ke server.",
+        type: 'success'
+      });
+    }
+
+    await get().fetchData();
   }
 }));

@@ -227,6 +227,17 @@ export class UserService {
     })();
   }
 
+  static deleteAccount(userId: string) {
+    db.transaction(() => {
+      db.prepare('DELETE FROM quest_logs WHERE goal_id IN (SELECT id FROM goals WHERE user_id = ?)').run(userId);
+      db.prepare('DELETE FROM goals WHERE user_id = ?').run(userId);
+      db.prepare('DELETE FROM brain_dumps WHERE user_id = ?').run(userId);
+      db.prepare('DELETE FROM users WHERE id = ?').run(userId);
+      db.prepare('DELETE FROM accounts WHERE id = ?').run(userId);
+    })();
+  }
+
+
   static importData(userId: string, data: { user?: any, goals?: any[] }) {
     db.transaction(() => {
       db.prepare('DELETE FROM quest_logs WHERE goal_id IN (SELECT id FROM goals WHERE user_id = ?)').run(userId);

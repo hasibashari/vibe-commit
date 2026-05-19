@@ -14,8 +14,10 @@ interface AuthStore {
   register: (username: string, password: string) => Promise<void>;
   loginAsGuest: () => Promise<void>;
   logout: () => Promise<void>;
+  deleteAccount: () => Promise<void>;
   initAuth: () => () => void;
 }
+
 
 export const useAuthStore = create<AuthStore>((set) => ({
   user: null,
@@ -42,6 +44,9 @@ export const useAuthStore = create<AuthStore>((set) => ({
       };
       
       localStorage.setItem('vibe_commit_user', JSON.stringify(user));
+      if (user.token) {
+        localStorage.setItem('vibe_commit_token', user.token);
+      }
       set({ user: mapped });
       useToastStore.getState().toast({ title: 'System Activated!', description: `Welcome back, Operative ${user.username}.`, type: 'success' });
     } catch (error: any) {
@@ -103,6 +108,9 @@ export const useAuthStore = create<AuthStore>((set) => ({
       };
       
       localStorage.setItem('vibe_commit_user', JSON.stringify(user));
+      if (user.token) {
+        localStorage.setItem('vibe_commit_token', user.token);
+      }
       set({ user: mapped });
       useToastStore.getState().toast({ 
         title: 'Guest Session Initiated', 
@@ -123,6 +131,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
   logout: async () => {
     try {
       localStorage.removeItem('vibe_commit_user');
+      localStorage.removeItem('vibe_commit_token');
       set({ user: null });
       useToastStore.getState().toast({ title: 'System Deactivated', description: 'Operative logged out.', type: 'info' });
     } catch (error) {
@@ -130,6 +139,58 @@ export const useAuthStore = create<AuthStore>((set) => ({
       useToastStore.getState().toast({ title: 'Gagal Logout', type: 'error' });
     }
   },
+
+  deleteAccount: async () => {
+    try {
+      const localUserStr = localStorage.getItem('vibe_commit_user');
+      const token = localStorage.getItem('vibe_commit_token');
+      if (localUserStr) {
+        const user = JSON.parse(localUserStr);
+        const headers: Record<string, string> = {};
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+        const res = await fetch(`/api/user/${user.id}`, {
+          method: 'DELETE',
+          headers
+        });
+        if (!res.ok) {
+          const resData = await res.json();
+          throw new Error(resData.error || 'Gagal menghapus akun di server');
+        }
+      }
+      
+      // Bersihkan total storage klien
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      // Hapus cache PWA service worker
+      if ('caches' in window) {
+        try {
+          const keys = await caches.keys();
+          await Promise.all(keys.map(key => caches.delete(key)));
+        } catch (e) {
+          console.error('Failed to clear caches:', e);
+        }
+      }
+      
+      set({ user: null });
+      useToastStore.getState().toast({ 
+        title: 'Account Permanently Deleted', 
+        description: 'Seluruh data Anda telah dihapus secara permanen dari server dan perangkat lokal.', 
+        type: 'success' 
+      });
+    } catch (error: any) {
+      console.error(error);
+      useToastStore.getState().toast({ 
+        title: 'Delete Account Failed', 
+        description: error.message || 'Gagal menghapus akun. Silakan coba kembali.', 
+        type: 'error' 
+      });
+      throw error;
+    }
+  },
+
   
   initAuth: () => {
     const localUserStr = localStorage.getItem('vibe_commit_user');
@@ -144,6 +205,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
         set({ user: mapped, isLoading: false });
       } catch (e) {
         localStorage.removeItem('vibe_commit_user');
+        localStorage.removeItem('vibe_commit_token');
         set({ user: null, isLoading: false });
       }
     } else {
@@ -152,3 +214,4 @@ export const useAuthStore = create<AuthStore>((set) => ({
     return () => {};
   }
 }));
+

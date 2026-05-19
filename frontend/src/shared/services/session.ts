@@ -21,3 +21,19 @@ export const getCurrentUser = (): CurrentSessionUser | null => {
     return null;
   }
 };
+
+export const getCurrentToken = (): string | null => {
+  return localStorage.getItem('vibe_commit_token');
+};
+
+export const getAuthHeaders = (headers: Record<string, string> = {}): Record<string, string> => {
+  const token = getCurrentToken();
+  if (token) {
+    return {
+      ...headers,
+      'Authorization': `Bearer ${token}`
+    };
+  }
+  return headers;
+};
+

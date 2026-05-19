@@ -1,4 +1,4 @@
-import { getCurrentUser } from '../../../shared/services/session';
+import { getCurrentUser, getAuthHeaders } from '../../../shared/services/session';
 import type { Goal } from '../../../shared/types/goal';
 
 function handleFirestoreError(error: unknown) {
@@ -12,7 +12,7 @@ export const logQuestActionApi = async (goalId: string, logId: string) => {
   try {
     const res = await fetch('/api/logs', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({
         id: logId,
         goalId: goalId,
@@ -33,7 +33,7 @@ export const updateQuestDifficultyApi = async (goalId: string, newDifficulty: nu
   try {
     const res = await fetch(`/api/goals/${goalId}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({
         difficulty: newDifficulty
       })
@@ -50,7 +50,7 @@ export const updateQuestApi = async (questId: string, questData: Partial<Goal>) 
   try {
     const res = await fetch(`/api/goals/${questId}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({
         title: questData.title,
         description: questData.description,
@@ -71,7 +71,7 @@ export const createQuestApi = async (questData: Partial<Goal>, id: string) => {
   try {
     const res = await fetch('/api/goals', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({
         id,
         userId: user.uid,
@@ -93,10 +93,12 @@ export const deleteQuestApi = async (questId: string) => {
   if (!user) throw new Error("Not authenticated");
   try {
     const res = await fetch(`/api/goals/${questId}`, {
-      method: 'DELETE'
+      method: 'DELETE',
+      headers: getAuthHeaders()
     });
     if (!res.ok) throw new Error("Gagal menghapus quest");
   } catch (err) {
     handleFirestoreError(err);
   }
 };
+

@@ -1,9 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { QuestService } from './quest.service.js';
+import db from '../../db/database.js';
 
 export class QuestController {
   static getGoalsForUser(req: Request, res: Response, next: NextFunction) {
+    if (req.params.userId !== (req as any).user?.id) {
+      res.status(403).json({ error: 'Forbidden: Access denied to other user quests' });
+      return;
+    }
     try {
       res.json(QuestService.getGoalsForUser(req.params.userId));
     } catch (err) {
@@ -23,6 +28,12 @@ export class QuestController {
         category: z.string().nullable().optional()
       });
       const parsed = schema.parse(req.body);
+      
+      if (parsed.userId !== (req as any).user?.id) {
+        res.status(403).json({ error: 'Forbidden: Access denied to create quest for other user' });
+        return;
+      }
+      
       res.json(QuestService.createGoal(parsed));
     } catch (err) {
       next(err);
@@ -31,6 +42,16 @@ export class QuestController {
 
   static updateGoal(req: Request, res: Response, next: NextFunction) {
     try {
+      const goal = db.prepare('SELECT user_id FROM goals WHERE id = ?').get(req.params.id) as { user_id: string } | undefined;
+      if (!goal) {
+        res.status(404).json({ error: 'Quest not found' });
+        return;
+      }
+      if (goal.user_id !== (req as any).user?.id) {
+        res.status(403).json({ error: 'Forbidden: Access denied to other user quest' });
+        return;
+      }
+
       const schema = z.object({
         title: z.string(),
         description: z.string().nullable().optional(),
@@ -47,6 +68,16 @@ export class QuestController {
 
   static deleteGoal(req: Request, res: Response, next: NextFunction) {
     try {
+      const goal = db.prepare('SELECT user_id FROM goals WHERE id = ?').get(req.params.id) as { user_id: string } | undefined;
+      if (!goal) {
+        res.status(404).json({ error: 'Quest not found' });
+        return;
+      }
+      if (goal.user_id !== (req as any).user?.id) {
+        res.status(403).json({ error: 'Forbidden: Access denied to other user quest' });
+        return;
+      }
+
       res.json(QuestService.deleteGoal(req.params.id));
     } catch (error) {
       next(error);
@@ -55,6 +86,16 @@ export class QuestController {
 
   static updateDifficulty(req: Request, res: Response, next: NextFunction) {
     try {
+      const goal = db.prepare('SELECT user_id FROM goals WHERE id = ?').get(req.params.id) as { user_id: string } | undefined;
+      if (!goal) {
+        res.status(404).json({ error: 'Quest not found' });
+        return;
+      }
+      if (goal.user_id !== (req as any).user?.id) {
+        res.status(403).json({ error: 'Forbidden: Access denied to other user quest' });
+        return;
+      }
+
       const schema = z.object({
         difficulty: z.coerce.number()
       });

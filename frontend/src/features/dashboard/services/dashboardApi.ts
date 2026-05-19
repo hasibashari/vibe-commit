@@ -1,4 +1,4 @@
-import { getCurrentUser } from '../../../shared/services/session';
+import { getCurrentUser, getAuthHeaders } from '../../../shared/services/session';
 import type { UserStats } from '../../../shared/types/user';
 
 function handleFirestoreError(error: unknown) {
@@ -15,12 +15,12 @@ export const fetchDashboardData = async () => {
 
   try {
     // 1. Fetch Goals
-    const goalsRes = await fetch(`/api/goals/${userId}`);
+    const goalsRes = await fetch(`/api/goals/${userId}`, { headers: getAuthHeaders() });
     if (!goalsRes.ok) throw new Error("Gagal memuat data Quest");
     const rawGoalsData = await goalsRes.json();
 
     // 2. Fetch Quest Logs
-    const logsRes = await fetch(`/api/logs/user/${userId}`);
+    const logsRes = await fetch(`/api/logs/user/${userId}`, { headers: getAuthHeaders() });
     if (!logsRes.ok) throw new Error("Gagal memuat data Quest Log");
     const allLogsDataRaw = await logsRes.json();
     
@@ -31,11 +31,11 @@ export const fetchDashboardData = async () => {
     }));
 
     // 3. Fetch Brain Dumps
-    const dumpsRes = await fetch(`/api/brain-dump/${userId}`);
+    const dumpsRes = await fetch(`/api/brain-dump/${userId}`, { headers: getAuthHeaders() });
     const dumpsData = dumpsRes.ok ? await dumpsRes.json() : [];
 
     // 4. Fetch User Stats
-    const userRes = await fetch(`/api/user/${userId}`);
+    const userRes = await fetch(`/api/user/${userId}`, { headers: getAuthHeaders() });
     const userData = userRes.ok ? await userRes.json() : null;
 
     const goalsWithCounts = rawGoalsData.map((g: any) => {
@@ -70,7 +70,7 @@ export const updateProfileData = async (
   try {
     const res = await fetch(`/api/user/${userId}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(data)
     });
     if (!res.ok) throw new Error("Gagal memperbarui profil di server");
@@ -88,7 +88,8 @@ export const resetProfileData = async () => {
 
   try {
     const res = await fetch(`/api/user/${userId}/reset`, {
-      method: 'POST'
+      method: 'POST',
+      headers: getAuthHeaders()
     });
     if (!res.ok) throw new Error("Gagal mereset profil di server");
   } catch (error) {
@@ -108,7 +109,7 @@ export const updateSandboxData = async (
   try {
     const res = await fetch(`/api/user/${userId}/sandbox`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(payload)
     });
     if (!res.ok) throw new Error("Gagal memperbarui sandbox");
@@ -129,7 +130,7 @@ export const buyItemAPI = async (
 
   const res = await fetch(`/api/user/${userId}/buy-item`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ itemId }),
   });
   if (!res.ok) {
@@ -138,3 +139,4 @@ export const buyItemAPI = async (
   }
   return res.json();
 };
+
