@@ -1,6 +1,15 @@
 import { getCurrentUser, getAuthHeaders } from '../../../shared/services/session';
 import type { Goal } from '../../../shared/types/goal';
 
+export class ApiError extends Error {
+  status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.status = status;
+    this.name = 'ApiError';
+  }
+}
+
 function handleFirestoreError(error: unknown) {
   console.error('API Error:', error);
   throw error;
@@ -20,7 +29,7 @@ export const logQuestActionApi = async (goalId: string, logId: string) => {
         notes: 'Auto-logged from dashboard'
       })
     });
-    if (!res.ok) throw new Error("Gagal menyimpan log quest");
+    if (!res.ok) throw new ApiError("Gagal menyimpan log quest", res.status);
     return await res.json();
   } catch (err) {
     handleFirestoreError(err);
@@ -38,7 +47,7 @@ export const updateQuestDifficultyApi = async (goalId: string, newDifficulty: nu
         difficulty: newDifficulty
       })
     });
-    if (!res.ok) throw new Error("Gagal memperbarui tingkat kesulitan quest");
+    if (!res.ok) throw new ApiError("Gagal memperbarui tingkat kesulitan quest", res.status);
   } catch (err) {
     handleFirestoreError(err);
   }
@@ -59,7 +68,7 @@ export const updateQuestApi = async (questId: string, questData: Partial<Goal>) 
         category: questData.category
       })
     });
-    if (!res.ok) throw new Error("Gagal memperbarui quest");
+    if (!res.ok) throw new ApiError("Gagal memperbarui quest", res.status);
   } catch (err) {
     handleFirestoreError(err);
   }
@@ -82,7 +91,7 @@ export const createQuestApi = async (questData: Partial<Goal>, id: string) => {
         category: questData.category
       })
     });
-    if (!res.ok) throw new Error("Gagal membuat quest");
+    if (!res.ok) throw new ApiError("Gagal membuat quest", res.status);
   } catch (err) {
     handleFirestoreError(err);
   }
@@ -96,9 +105,8 @@ export const deleteQuestApi = async (questId: string) => {
       method: 'DELETE',
       headers: getAuthHeaders()
     });
-    if (!res.ok) throw new Error("Gagal menghapus quest");
+    if (!res.ok) throw new ApiError("Gagal menghapus quest", res.status);
   } catch (err) {
     handleFirestoreError(err);
   }
 };
-

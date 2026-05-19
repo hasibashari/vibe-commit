@@ -200,7 +200,7 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
       type: 'info'
     });
 
-    const { logQuestActionApi, createQuestApi, updateQuestApi, deleteQuestApi, updateQuestDifficultyApi } = 
+    const { logQuestActionApi, createQuestApi, updateQuestApi, deleteQuestApi, updateQuestDifficultyApi, ApiError } = 
       await import('../features/quests/services/questApi');
 
     const failedActions: any[] = [];
@@ -218,9 +218,18 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
         } else if (action.type === 'UPDATE_DIFFICULTY') {
           await updateQuestDifficultyApi(action.goalId, action.newDifficulty);
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error("Failed to sync action", action, err);
-        failedActions.push(action);
+        // Discard permanent errors (4xx Client errors: 400 Bad Request, 403 Forbidden, 404 Not Found, etc.)
+        // to prevent blockages in the queue. Keep 5xx or network errors to retry later.
+        const isApiError = err && err.name === 'ApiError';
+        const isClientError = err && typeof err.status === 'number' && err.status >= 400 && err.status < 500;
+        
+        if (isClientError || isApiError) {
+          console.warn(`[Sync Conflict] Discarding permanent conflict action of type ${action.type} due to HTTP status: ${err.status || 400}`);
+        } else {
+          failedActions.push(action);
+        }
       }
     }
 
