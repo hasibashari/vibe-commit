@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { AuthService } from './auth.service.js';
 
 export class AuthController {
-  static register(req: Request, res: Response, next: NextFunction) {
+  static register(req: Request, res: Response, _next: NextFunction) {
     try {
       const schema = z.object({
         username: z.string().min(2, 'Username minimal 2 karakter').max(30, 'Username maksimal 30 karakter'),
@@ -18,7 +18,7 @@ export class AuthController {
     }
   }
 
-  static login(req: Request, res: Response, next: NextFunction) {
+  static login(req: Request, res: Response, _next: NextFunction) {
     try {
       const schema = z.object({
         username: z.string(),
@@ -33,7 +33,7 @@ export class AuthController {
     }
   }
 
-  static guest(req: Request, res: Response, next: NextFunction) {
+  static guest(_req: Request, res: Response, _next: NextFunction) {
     try {
       const result = AuthService.loginAsGuest();
       res.json({ success: true, user: result });

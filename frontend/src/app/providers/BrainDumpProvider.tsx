@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import { ReactNode } from 'react';
 import { useBrainDumpStore } from '../../store/brainDumpStore';
 import { useUIStore } from '../../store/uiStore';
 

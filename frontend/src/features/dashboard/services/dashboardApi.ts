@@ -59,7 +59,7 @@ export const fetchDashboardData = async () => {
 };
 
 export const updateProfileData = async (
-  userIdStr?: string,
+  _userIdStr?: string,
   data?: Partial<UserStats>
  ) => {
   const user = getCurrentUser();
@@ -98,7 +98,7 @@ export const resetProfileData = async () => {
 };
 
 export const updateSandboxData = async (
-  userIdStr?: string,
+  _userIdStr?: string,
   payload?: { hp?: number | null; mana?: number | null; level?: number | null; coins_delta?: number | null }
 ) => {
   const user = getCurrentUser();
@@ -120,7 +120,7 @@ export const updateSandboxData = async (
 };
 
 export const buyItemAPI = async (
-  userIdStr: string,
+  _userIdStr: string,
   itemId: string
 ) => {
   const user = getCurrentUser();

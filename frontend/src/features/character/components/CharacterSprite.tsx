@@ -2,14 +2,12 @@ import React from 'react';
 import { motion } from 'motion/react';
 
 interface CharacterSpriteProps {
-  imageUrl?: string;
   hp?: number;
   mana?: number;
   tapCount?: number;
 }
 
 export const CharacterSprite: React.FC<CharacterSpriteProps> = ({
-  imageUrl,
   hp = 100,
   mana = 100,
   tapCount = 0,
@@ -25,24 +23,10 @@ export const CharacterSprite: React.FC<CharacterSpriteProps> = ({
 
   return (
     <motion.div
-      animate={imageUrl ? { y: [0, -4, 0] } : {}}
-      transition={{
-        repeat: Infinity,
-        duration: 3,
-        ease: 'easeInOut',
-      }}
       className='relative w-48 h-48 sm:w-40 sm:h-40 md:w-40 md:h-40 lg:w-40 lg:h-40 drop-shadow-2xl z-10 flex items-center justify-center select-none'
     >
-      {imageUrl ? (
-        <img
-          src={imageUrl}
-          alt='Custom Character'
-          className='max-w-full max-h-full object-contain drop-shadow-[0_0_15px_rgba(var(--theme-400-rgb),0.2)]'
-          referrerPolicy='no-referrer'
-        />
-      ) : (
-        <svg
-          viewBox='0 0 64 64'
+      <svg
+        viewBox='0 0 64 64'
           className='w-full h-full overflow-visible'
           shapeRendering='geometricPrecision'
           style={{ overflow: 'visible' }}
@@ -407,7 +391,6 @@ export const CharacterSprite: React.FC<CharacterSpriteProps> = ({
             )}
           </g>
         </svg>
-      )}
     </motion.div>
   );
 };

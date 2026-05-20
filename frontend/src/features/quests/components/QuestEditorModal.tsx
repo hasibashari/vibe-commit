@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Target, Save } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Save } from 'lucide-react';
 import type { Goal } from '../../../shared/types/goal';
 import { Modal } from '../../../shared/components/Modal';
 import { Input, Textarea } from '../../../shared/components/Input';

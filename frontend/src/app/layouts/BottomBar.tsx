@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Shield, Target, Plus, BrainCircuit, BarChart3 } from 'lucide-react';
 import type { Tab } from '../../shared/types/navigation';
 import { Button } from '../../shared/components/Button';

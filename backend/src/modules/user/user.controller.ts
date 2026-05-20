@@ -28,7 +28,6 @@ export class UserController {
         avatar_icon: z.string().optional(),
         custom_main_bg: z.string().nullable().optional(),
         custom_char_bg: z.string().nullable().optional(),
-        custom_character: z.string().nullable().optional(),
         theme_vibe: z.string().optional(),
         bgm_theme: z.string().optional(),
         bgm_muted: z.number().int().optional()
@@ -54,7 +53,7 @@ export class UserController {
     }
   }
 
-  static sandboxUpdate(req: Request, res: Response, next: NextFunction) {
+  static sandboxUpdate(req: Request, res: Response, _next: NextFunction) {
     if (req.params.id !== (req as any).user?.id) {
       res.status(403).json({ error: 'Forbidden: Access denied to other user data' });
       return;
@@ -111,7 +110,6 @@ export class UserController {
           avatar_color: z.string().optional().nullable(),
           custom_main_bg: z.string().optional().nullable(),
           custom_char_bg: z.string().optional().nullable(),
-          custom_character: z.string().optional().nullable(),
           theme_vibe: z.string().optional().nullable(),
           bgm_theme: z.string().optional().nullable(),
           bgm_muted: z.number().int().optional().nullable(),

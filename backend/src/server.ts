@@ -5,6 +5,7 @@ import helmet from 'helmet';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import path from 'path';
+import fs from 'fs';
 import { createServer as createViteServer } from 'vite';
 import { initDb } from './db/database.js';
 import { ZodError } from 'zod';
@@ -22,6 +23,12 @@ initDb();
 async function startServer() {
   const app = express();
   const PORT = Number(process.env.PORT) || 5173;
+
+  // Ensure uploads directory exists
+  const uploadsDir = path.join(process.cwd(), 'backend', 'public', 'uploads');
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
 
   // Trust proxy for secure headers
   app.set('trust proxy', 1);
@@ -50,6 +57,9 @@ async function startServer() {
   app.use(express.urlencoded({ extended: true, limit: '1mb' }));
   app.use('/api/', apiLimiter);
 
+  // Serve uploaded images statically
+  app.use('/uploads', express.static(path.join(process.cwd(), 'backend', 'public', 'uploads')));
+
   // Use Modules
   app.use('/api/auth', authRoutes);
   app.use('/api/user', userRoutes);
@@ -58,12 +68,12 @@ async function startServer() {
   app.use('/api/brain-dump', brainDumpRoutes);
   app.use('/api/ai', aiRoutes);
 
-  app.get('/api/health', (req: Request, res: Response) => {
+  app.get('/api/health', (_req: Request, res: Response) => {
     res.status(200).json({ status: 'ok' });
   });
 
   // Global Error Handler
-  app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     if (err instanceof ZodError) {
       res.status(400).json({ error: 'Validation Error', issues: err.issues });
       return;
@@ -97,7 +107,7 @@ async function startServer() {
         }
       }
     }));
-    app.get('*', (req, res) => {
+    app.get('*', (_req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }

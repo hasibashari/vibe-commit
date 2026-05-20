@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   Target,
-  RotateCcw,
   BrainCircuit,
   ChevronRight,
   Crown,

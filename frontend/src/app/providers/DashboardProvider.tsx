@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import { ReactNode } from 'react';
 import { useDashboardStore } from '../../store/dashboardStore';
 
 export function DashboardProvider({ children }: { children: ReactNode }) {

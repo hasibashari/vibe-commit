@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'motion/react';
 import {
   Shield,
   BrainCircuit,
-  Target,
   ArrowRight,
   ArrowLeft,
   Zap,

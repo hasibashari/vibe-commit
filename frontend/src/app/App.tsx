@@ -21,7 +21,7 @@ const DeleteQuestModal = React.lazy(() => import('../features/quests/components/
 const DevSandboxPanel = React.lazy(() => import('../shared/components/DevSandboxPanel').then(m => ({ default: m.DevSandboxPanel })));
 import { calculateStats } from '../shared/utils/vibeMath';
 import { getWeatherState } from '../shared/utils/weatherUtils';
-import type { Goal } from '../shared/types/goal';
+
 import { useAppContext } from './providers/AppProvider';
 import { useDashboardContext } from './providers/DashboardProvider';
 import { useQuestContext } from './providers/QuestProvider';
@@ -67,7 +67,6 @@ export default function App() {
 
   const {
     goals,
-    setGoals,
     user,
     achievements,
     latestDump,
@@ -132,9 +131,7 @@ export default function App() {
   const activeTab = tab || 'quests';
   const setActiveTab = (newTab: Tab) => navigate(`/${newTab}`);
 
-  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState<boolean>(() => {
-    return localStorage.getItem('hasCompletedOnboarding') === 'true';
-  });
+
 
   const handleExportData = async () => {
     try {
@@ -181,7 +178,6 @@ export default function App() {
   };
 
   const handleCompleteOnboarding = () => {
-    setHasCompletedOnboarding(true);
     localStorage.setItem('hasCompletedOnboarding', 'true');
   };
 
@@ -408,7 +404,6 @@ export default function App() {
                 nudge={nudge}
                 userName={effectiveUser.name}
                 customCharBg={effectiveUser.custom_char_bg}
-                customCharacter={effectiveUser.custom_character}
                 weather={effectiveWeather}
               />
               <BurnoutWarning burnoutMonitor={burnoutMonitor} />

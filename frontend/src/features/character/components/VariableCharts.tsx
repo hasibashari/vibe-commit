@@ -24,7 +24,7 @@ export const VariableCharts: React.FC<{ goals: { category: string }[] }> = ({ go
               cornerRadius={4}
             >
               {data.length > 0 ? (
-                data.map((entry, index) => (
+                data.map((_, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} opacity={0.9} />
                 ))
               ) : (

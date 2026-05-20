@@ -8,7 +8,7 @@ export const BackgroundLayer: React.FC<BackgroundLayerProps> = ({ imageUrl }) =>
   // Use a placeholder or provided image
   const bgImg =
     imageUrl ||
-    'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=2070&auto=format&fit=crop';
+    '/images/mountain_anime.jpg';
 
   return (
     <div className='absolute inset-0 w-full h-full overflow-hidden pointer-events-none rounded-xl'>

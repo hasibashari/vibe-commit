@@ -19,7 +19,7 @@ const THEMES: Record<string, any> = {
     vignette: 'bg-[radial-gradient(ellipse_at_top,transparent_0%,#0A0C10_100%)]',
     hueBase: 'none',
     hueDark: 'grayscale(0.35) brightness(0.8)',
-    baseImage: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=3000&auto=format&fit=crop',
+    baseImage: '/images/home_anime.jpg',
     glow: 'bg-cyan-500/20'
   },
   emerald: {

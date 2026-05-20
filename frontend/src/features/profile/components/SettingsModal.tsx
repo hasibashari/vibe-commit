@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   Settings as SettingsIcon,
   Download,
-  Sparkles,
   Globe,
   Activity,
   RefreshCw,
@@ -14,6 +13,49 @@ import {
 import { Modal } from '../../../shared/components/Modal';
 import { Button } from '../../../shared/components/Button';
 import type { UserStats } from '../../../shared/types/user';
+
+const compressImage = (file: File, maxWidth = 1200, maxHeight = 1200, quality = 0.7): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = document.createElement('img');
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          reject(new Error('Failed to get canvas context'));
+          return;
+        }
+
+        ctx.drawImage(img, 0, 0, width, height);
+        const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+        resolve(compressedBase64);
+      };
+      img.onerror = () => reject(new Error('Failed to load image'));
+      img.src = e.target?.result as string;
+    };
+    reader.onerror = () => reject(new Error('Failed to read file'));
+    reader.readAsDataURL(file);
+  });
+};
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -40,8 +82,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 }) => {
   const [settings, setSettings] = useState({
     language: 'id',
-    animations: true,
-    nudgeIntensity: 'normal',
   });
   const [isResetConfirm, setIsResetConfirm] = useState(false);
   const [isDeleteConfirm, setIsDeleteConfirm] = useState(false);
@@ -84,37 +124,31 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   const handleFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,
-    key: 'custom_main_bg' | 'custom_char_bg' | 'custom_character',
+    key: 'custom_main_bg' | 'custom_char_bg',
   ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 2 * 1024 * 1024) {
-      alert('File is too large! Maximum size is 2MB per image to prevent database strain.');
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File is too large! Maximum size is 5MB.');
       return;
     }
 
     setIsUploading(true);
     try {
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const base64String = reader.result as string;
-        await onUpdateUser({ [key]: base64String });
-        setIsUploading(false);
-      };
-      reader.onerror = () => {
-        alert('Failed to read file.');
-        setIsUploading(false);
-      };
-      reader.readAsDataURL(file);
+      const compressedBase64 = await compressImage(file);
+      await onUpdateUser({ [key]: compressedBase64 });
     } catch (err) {
+      console.error('Image compression failed:', err);
+      alert('Failed to compress and upload image.');
+    } finally {
       setIsUploading(false);
     }
     event.target.value = '';
   };
 
   const resetCustomization = async (
-    key: 'custom_main_bg' | 'custom_char_bg' | 'custom_character',
+    key: 'custom_main_bg' | 'custom_char_bg',
   ) => {
     await onUpdateUser({ [key]: '' });
   };
@@ -164,27 +198,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </div>
         </div>
 
-        {/* UI Preferences */}
-        <div className='flex flex-col gap-3'>
-          <div className='flex items-center gap-2 text-slate-400'>
-            <Sparkles className='w-4 h-4' />
-            <h4 className='text-xs font-bold uppercase tracking-widest'>Visual Effects</h4>
-          </div>
-          <div className='flex items-center justify-between bg-slate-900 border border-slate-800 p-4 rounded-xl'>
-            <div className='flex flex-col'>
-              <span className='text-sm font-bold text-slate-200'>Enable Animations</span>
-              <span className='text-xs text-slate-500'>Smooth transitions & visual popups</span>
-            </div>
-            <button
-              onClick={() => updateSetting('animations', !settings.animations)}
-              className={`relative w-12 h-6 rounded-full transition-colors ${settings.animations ? 'bg-accent-500' : 'bg-slate-700'}`}
-            >
-              <div
-                className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${settings.animations ? 'translate-x-7' : 'translate-x-1'}`}
-              />
-            </button>
-          </div>
-        </div>
+
 
         {/* Visual Customization */}
         <div className='flex flex-col gap-3 pt-6 border-t border-white/5'>
@@ -248,11 +262,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
           <div className='grid grid-cols-1 gap-3'>
             {[
-              {
-                id: 'custom_character',
-                label: 'Custom Character (Sprite/GIF)',
-                value: user.custom_character,
-              },
               { id: 'custom_main_bg', label: 'Main Background', value: user.custom_main_bg },
               { id: 'custom_char_bg', label: 'Character Background', value: user.custom_char_bg },
             ].map(item => (
@@ -271,7 +280,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     <button
                       onClick={() =>
                         resetCustomization(
-                          item.id as 'custom_character' | 'custom_main_bg' | 'custom_char_bg',
+                          item.id as 'custom_main_bg' | 'custom_char_bg',
                         )
                       }
                       className='text-xs text-rose-400 hover:text-rose-300 px-2 py-1 bg-rose-500/10 rounded'
@@ -286,7 +295,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       onChange={e =>
                         handleFileUpload(
                           e,
-                          item.id as 'custom_character' | 'custom_main_bg' | 'custom_char_bg',
+                          item.id as 'custom_main_bg' | 'custom_char_bg',
                         )
                       }
                       className='absolute inset-0 w-full h-full opacity-0 cursor-pointer'
@@ -303,43 +312,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* AI & System */}
-        <div className='flex flex-col gap-3'>
-          <div className='flex items-center gap-2 text-slate-400'>
-            <Activity className='w-4 h-4' />
-            <h4 className='text-xs font-bold uppercase tracking-widest'>System Nudge Intensity</h4>
-          </div>
-          <div className='flex flex-col gap-2'>
-            {['relaxed', 'normal', 'strict'].map(level => (
-              <button
-                key={level}
-                onClick={() => updateSetting('nudgeIntensity', level)}
-                className={`flex items-center p-3 rounded-lg border transition-all ${
-                  settings.nudgeIntensity === level
-                    ? 'bg-indigo-500/10 border-indigo-500/50'
-                    : 'bg-slate-900 border-slate-800 hover:bg-slate-800 hover:border-slate-700'
-                }`}
-              >
-                <div
-                  className={`w-3 h-3 rounded-full mr-3 ${settings.nudgeIntensity === level ? 'bg-indigo-400' : 'bg-slate-700'}`}
-                />
-                <div className='flex flex-col items-start text-left'>
-                  <span
-                    className={`text-xs font-bold uppercase tracking-wider ${settings.nudgeIntensity === level ? 'text-indigo-300' : 'text-slate-400'}`}
-                  >
-                    {level}
-                  </span>
-                  <span className='text-xs text-slate-500'>
-                    {level === 'relaxed' && 'Minimal reminders, low stress'}
-                    {level === 'normal' && 'Balanced reminders & motivation'}
-                    {level === 'strict' && 'Aggressive tracking & high discipline'}
-                  </span>
-                </div>
-              </button>
             ))}
           </div>
         </div>

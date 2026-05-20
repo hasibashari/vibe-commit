@@ -2,7 +2,7 @@ import type { Goal } from '../../../shared/types/goal';
 import type { Log } from '../../../shared/types/log';
 import type { UserStats } from '../../../shared/types/user';
 
-export const calculateRPGStats = (allLogs: Log[], userData: UserStats) => {
+export const calculateRPGStats = (_allLogs: Log[], userData: UserStats) => {
   return {
     ...userData,
   };

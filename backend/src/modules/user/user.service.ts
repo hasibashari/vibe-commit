@@ -1,5 +1,7 @@
 import db from '../../db/database.js';
 import crypto from 'node:crypto';
+import fs from 'node:fs';
+import path from 'node:path';
 
 const ITEM_PRICES: Record<string, number> = {
   'hp_elixir': 150,
@@ -94,7 +96,69 @@ export class UserService {
     return user;
   }
 
+  static saveBase64Image(userId: string, fieldName: string, base64Data: string | null | undefined): string | null {
+    if (base64Data === undefined) {
+      return null;
+    }
+    
+    const uploadsDir = path.join(process.cwd(), 'backend', 'public', 'uploads');
+    
+    // If the value is empty or null, we delete the existing file and return ""
+    if (!base64Data) {
+      const filePattern = `user_${userId}_${fieldName}`;
+      try {
+        if (fs.existsSync(uploadsDir)) {
+          const files = fs.readdirSync(uploadsDir);
+          for (const file of files) {
+            if (file.startsWith(filePattern)) {
+              fs.unlinkSync(path.join(uploadsDir, file));
+            }
+          }
+        }
+      } catch (err) {
+        console.error(`Failed to delete old image ${filePattern}:`, err);
+      }
+      return "";
+    }
+
+    // Check if it is a base64 data URI (e.g. data:image/jpeg;base64,...)
+    if (base64Data.startsWith('data:image/')) {
+      const match = base64Data.match(/^data:image\/(\w+);base64,/);
+      if (!match) {
+        throw new Error('Invalid base64 image format');
+      }
+      
+      const ext = match[1] === 'jpeg' ? 'jpg' : match[1];
+      const base64Content = base64Data.replace(/^data:image\/\w+;base64,/, '');
+      const buffer = Buffer.from(base64Content, 'base64');
+      
+      const filename = `user_${userId}_${fieldName}.${ext}`;
+      const filePath = path.join(uploadsDir, filename);
+
+      // Ensure directory exists defensively
+      if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+      }
+
+      // Write the binary file to disk
+      fs.writeFileSync(filePath, buffer);
+      
+      return `/uploads/${filename}`;
+    }
+
+    // If it's already a relative path or url, we just keep it
+    return base64Data;
+  }
+
   static updateUser(id: string, updates: any) {
+    const customMainBgValue = updates.custom_main_bg !== undefined
+      ? this.saveBase64Image(id, 'custom_main_bg', updates.custom_main_bg)
+      : undefined;
+
+    const customCharBgValue = updates.custom_char_bg !== undefined
+      ? this.saveBase64Image(id, 'custom_char_bg', updates.custom_char_bg)
+      : undefined;
+
     const stmt = db.prepare(`
       UPDATE users 
       SET name = COALESCE(?, name), 
@@ -103,7 +167,6 @@ export class UserService {
           avatar_icon = COALESCE(?, avatar_icon),
           custom_main_bg = COALESCE(?, custom_main_bg),
           custom_char_bg = COALESCE(?, custom_char_bg),
-          custom_character = COALESCE(?, custom_character),
           theme_vibe = COALESCE(?, theme_vibe),
           bgm_theme = COALESCE(?, bgm_theme),
           bgm_muted = COALESCE(?, bgm_muted)
@@ -114,9 +177,8 @@ export class UserService {
       updates.title ?? null, 
       updates.avatar_color ?? null, 
       updates.avatar_icon ?? null,
-      updates.custom_main_bg ?? null, 
-      updates.custom_char_bg ?? null, 
-      updates.custom_character ?? null, 
+      customMainBgValue !== undefined ? customMainBgValue : null, 
+      customCharBgValue !== undefined ? customCharBgValue : null, 
       updates.theme_vibe ?? null, 
       updates.bgm_theme ?? null, 
       updates.bgm_muted ?? null, 
@@ -251,7 +313,6 @@ export class UserService {
               avatar_color = COALESCE(?, avatar_color),
               custom_main_bg = COALESCE(?, custom_main_bg),
               custom_char_bg = COALESCE(?, custom_char_bg),
-              custom_character = COALESCE(?, custom_character),
               theme_vibe = COALESCE(?, theme_vibe),
               bgm_theme = COALESCE(?, bgm_theme),
               bgm_muted = COALESCE(?, bgm_muted),
@@ -286,7 +347,6 @@ export class UserService {
           data.user.avatar_color ?? null, 
           data.user.custom_main_bg ?? null, 
           data.user.custom_char_bg ?? null, 
-          data.user.custom_character ?? null, 
           data.user.theme_vibe ?? null, 
           data.user.bgm_theme ?? null, 
           data.user.bgm_muted ?? null, 

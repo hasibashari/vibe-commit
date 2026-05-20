@@ -329,7 +329,7 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
   executeDeleteQuest: async () => {
     const { questToDelete, selectedGoal } = get();
     const { fetchData, goals, setGoals } = useDashboardStore.getState();
-    const { toast } = useToastStore.getState();
+
 
     if (!questToDelete) return;
 

@@ -18,7 +18,6 @@ interface StatsProps {
   nudge?: { optimalHour: number; suggestion: string } | null;
   userName?: string;
   customCharBg?: string;
-  customCharacter?: string;
   weather?: 'sunny' | 'overcast' | 'rainy' | 'default';
 }
 
@@ -30,7 +29,6 @@ export const StatusScene: React.FC<StatsProps> = ({
   nudge,
   userName,
   customCharBg,
-  customCharacter,
   weather = 'sunny',
 }) => {
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -111,7 +109,6 @@ export const StatusScene: React.FC<StatsProps> = ({
           title='Tap aku!'
         >
           <CharacterSprite
-            imageUrl={customCharacter}
             hp={hp}
             mana={mana}
             tapCount={tapCount}

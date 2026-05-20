@@ -165,7 +165,7 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
     }
   },
 
-  buyItem: async (itemId, cost, overrideCoins) => {
+  buyItem: async (itemId, _cost, _overrideCoins) => {
     const { toast } = useToastStore.getState();
     try {
       const { user, goals } = get();
@@ -198,7 +198,7 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
 
     if (pendingActions.length === 0) return;
 
-    const { logQuestActionApi, createQuestApi, updateQuestApi, deleteQuestApi, updateQuestDifficultyApi, ApiError } = 
+    const { logQuestActionApi, createQuestApi, updateQuestApi, deleteQuestApi, updateQuestDifficultyApi } = 
       await import('../features/quests/services/questApi');
 
     const failedActions: any[] = [];
