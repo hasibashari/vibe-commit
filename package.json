@@ -16,6 +16,7 @@
     "@types/better-sqlite3": "^7.6.13",
     "@vitejs/plugin-react": "^5.0.4",
     "better-sqlite3": "^12.10.0",
+    "chrome-devtools-mcp": "^1.0.1",
     "clsx": "^2.1.1",
     "cors": "^2.8.6",
     "dotenv": "^17.2.3",
