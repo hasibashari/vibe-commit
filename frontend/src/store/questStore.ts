@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import type { Goal } from '../shared/types/goal';
-import { calculateProbability, adjustDifficultyBayesian } from '../shared/utils/vibeMath';
-import { logQuestActionApi, updateQuestDifficultyApi, updateQuestApi, createQuestApi, deleteQuestApi } from '../features/quests/services/questApi';
+import { logQuestActionApi, updateQuestApi, createQuestApi, deleteQuestApi } from '../features/quests/services/questApi';
 import { useToastStore } from './toastStore';
 import { useDashboardStore } from './dashboardStore';
 import { useUIStore } from './uiStore';
@@ -123,23 +122,6 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
           return g;
         });
 
-        // Bayesian calibration locally
-        const updatedGoal = updatedGoals.find(g => g.id === goalId);
-        if (updatedGoal) {
-          const prob = calculateProbability(updatedGoal.repetition_count, updatedGoal.difficulty, updatedGoal.reward_alpha);
-          const newD = adjustDifficultyBayesian(prob, updatedGoal.difficulty);
-          if (newD !== updatedGoal.difficulty) {
-            updatedGoal.difficulty = newD;
-            // Also queue the difficulty update
-            const pendingStr2 = localStorage.getItem('vibe_commit_pending_actions') || '[]';
-            try {
-              const pending2 = JSON.parse(pendingStr2);
-              pending2.push({ type: 'UPDATE_DIFFICULTY', goalId, newDifficulty: newD });
-              localStorage.setItem('vibe_commit_pending_actions', JSON.stringify(pending2));
-            } catch (e) {}
-          }
-        }
-
         // Calculate and update local RPG Stats
         const newStats = handleOptimisticRPGStats(user.level, user.exp, expEarned);
         setUser({ ...user, ...newStats });
@@ -150,16 +132,6 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
 
     try {
       await logQuestActionApi(goalId, logId);
-
-      if (goal) {
-        const prob = calculateProbability(goal.repetition_count + 1, goal.difficulty, goal.reward_alpha);
-        const newD = adjustDifficultyBayesian(prob, goal.difficulty);
-        
-        if (newD !== goal.difficulty) {
-          await updateQuestDifficultyApi(goalId, newD);
-        }
-      }
-
       await fetchData();
     } catch (e: unknown) {
       if (goal) {

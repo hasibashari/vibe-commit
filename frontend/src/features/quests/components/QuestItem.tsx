@@ -1,7 +1,13 @@
 import React from 'react';
-import { Check, Settings2, Trash2 } from 'lucide-react';
+import { Check, Settings2, Trash2, TrendingDown, Activity, FlaskConical } from 'lucide-react';
 import { motion } from 'motion/react';
 import type { Goal } from '../../../shared/types/goal';
+import {
+  getBetaParams,
+  calculateBayesianProbability,
+  calculateBetaVariance,
+  getDaysSinceLastLog,
+} from '../../../shared/utils/vibeMath';
 
 interface QuestItemProps {
   key?: React.Key;
@@ -23,6 +29,49 @@ export function QuestItem({
   isCompleted = false,
   onClick,
 }: QuestItemProps) {
+  // ── Bayesian Beta-Bernoulli Calculation ──────────────────────────────────
+  // θ ~ Beta(α, β) | P = α/(α+β) | σ² = αβ/((α+β)²(α+β+1))
+  const daysSinceLastLog = React.useMemo(
+    () => getDaysSinceLastLog(goal.logs || []),
+    [goal.logs]
+  );
+
+  const { alpha, beta } = React.useMemo(
+    () => getBetaParams(goal.repetition_count, goal.difficulty, daysSinceLastLog),
+    [goal.repetition_count, goal.difficulty, daysSinceLastLog]
+  );
+
+  const probability = React.useMemo(
+    () => calculateBayesianProbability(alpha, beta),
+    [alpha, beta]
+  );
+
+  const variance = React.useMemo(
+    () => calculateBetaVariance(alpha, beta),
+    [alpha, beta]
+  );
+
+  const sigma = Math.sqrt(variance);
+  const probPercent = Math.round(probability * 100);
+  const sigmaPercent = Math.round(sigma * 100);
+
+  // Decay warning: tampilkan jika inaktif ≥ 3 hari DAN sudah pernah log
+  const isDecaying = daysSinceLastLog >= 3 && goal.repetition_count > 0;
+  const decayDaysDisplay = Math.floor(daysSinceLastLog);
+
+  // Warna berdasarkan nilai probabilitas (semaphore visual)
+  const probColor =
+    probPercent >= 75 ? 'text-emerald-400' :
+    probPercent >= 45 ? 'text-amber-400'   :
+    probPercent >= 20 ? 'text-orange-400'  :
+    'text-rose-400';
+
+  const probBarColor =
+    probPercent >= 75 ? 'bg-emerald-500' :
+    probPercent >= 45 ? 'bg-amber-500'   :
+    probPercent >= 20 ? 'bg-orange-500'  :
+    'bg-rose-500';
+
   return (
     <motion.div
       layout
@@ -39,7 +88,7 @@ export function QuestItem({
     >
       <div className='flex justify-between items-start gap-4'>
         <div className='space-y-2 flex-1'>
-          <div className='flex items-center gap-2'>
+          <div className='flex items-center gap-2 flex-wrap'>
             <p className='text-xs font-mono uppercase tracking-widest text-slate-500'>
               {goal.category}
             </p>
@@ -47,6 +96,18 @@ export function QuestItem({
               <span className='text-xs bg-emerald-900/30 text-emerald-400 px-1.5 py-0.5 rounded border border-emerald-800 font-mono uppercase font-bold tracking-wider flex items-center gap-1'>
                 <Check className='w-3 h-3' /> Completed
               </span>
+            )}
+            {/* Badge decay — tampil bahkan saat card belum di-expand */}
+            {!isCompleted && isDecaying && (
+              <motion.span
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className='text-xs bg-rose-900/30 text-rose-400 px-1.5 py-0.5 rounded border border-rose-800/50 font-mono uppercase font-bold tracking-wider flex items-center gap-1'
+                title={`Tidak ada aktivitas selama ${decayDaysDisplay} hari — probabilitas sedang menurun`}
+              >
+                <TrendingDown className='w-3 h-3' />
+                {decayDaysDisplay}d idle
+              </motion.span>
             )}
           </div>
           <h3
@@ -91,66 +152,135 @@ export function QuestItem({
         <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
-          className='mt-4 pt-4 border-t border-slate-800/50 flex flex-wrap gap-4 items-center justify-between'
+          className='mt-4 pt-4 border-t border-slate-800/50 flex flex-col gap-4'
         >
-          <div className='flex flex-wrap gap-4 md:gap-6'>
-            <div className='flex flex-col'>
-              <span className='text-xs text-slate-600 font-bold uppercase tracking-[0.2em] mb-0.5'>
-                Rank
+          {/* ── Probability Bar (Bayesian Posterior Mean) ─────────────────── */}
+          <div className='flex flex-col gap-1.5'>
+            <div className='flex items-center justify-between'>
+              <span className='text-xs text-slate-600 font-bold uppercase tracking-[0.2em] flex items-center gap-1'>
+                <Activity className='w-3 h-3' />
+                Probability
               </span>
-              <div className='flex items-center gap-1 h-[14px]'>
-                <span
-                  className={`text-xs font-mono tabular-nums leading-none ${isCompleted ? 'text-slate-600' : 'text-amber-500'}`}
-                >
-                  {'★'.repeat(Math.max(1, Math.ceil(goal.difficulty / 2)))}
+              <div className='flex items-center gap-2'>
+                {isDecaying && (
+                  <span className='text-xs text-rose-400 font-mono flex items-center gap-0.5'>
+                    <TrendingDown className='w-3 h-3' />
+                    menurun
+                  </span>
+                )}
+                <span className={`text-sm font-black font-mono tabular-nums ${probColor}`}>
+                  {probPercent}%
                 </span>
               </div>
             </div>
-            <div className='flex flex-col'>
-              <span className='text-xs text-slate-600 font-bold uppercase tracking-[0.2em] mb-0.5'>
-                Reward / EXP
-              </span>
-              <span
-                className={`text-xs font-mono tabular-nums ${isCompleted ? 'text-slate-600' : 'text-accent-400'}`}
-              >
-                +{(goal.difficulty * 10).toFixed(0)}
+
+            {/* Animated progress bar */}
+            <div className='h-1.5 w-full bg-slate-800 rounded-full overflow-hidden'>
+              <motion.div
+                className={`h-full rounded-full ${probBarColor}`}
+                initial={{ width: 0 }}
+                animate={{ width: `${Math.max(probPercent, 0.3)}%` }}
+                transition={{ duration: 0.6, ease: 'easeOut' }}
+              />
+            </div>
+
+            {/* Decay message */}
+            {isDecaying && (
+              <p className='text-xs text-rose-400/70 leading-snug'>
+                ⚠ Tidak ada log selama{' '}
+                <span className='font-bold'>{decayDaysDisplay} hari</span> — selesaikan quest ini untuk mengembalikan probabilitas.
+              </p>
+            )}
+          </div>
+
+          {/* ── Bayesian Stats (α, β, σ) ──────────────────────────────────── */}
+          <div className='flex flex-col gap-1'>
+            <div className='flex items-center gap-1 mb-1'>
+              <FlaskConical className='w-3 h-3 text-slate-600' />
+              <span className='text-xs text-slate-600 font-bold uppercase tracking-[0.2em]'>
+                Model β ~ Beta(α, β)
               </span>
             </div>
-            <div className='flex flex-col'>
-              <span className='text-xs text-slate-600 font-bold uppercase tracking-[0.2em] mb-0.5'>
-                Impact
-              </span>
-              <span
-                className={`text-xs font-mono tabular-nums ${isCompleted ? 'text-slate-600' : 'text-purple-400'}`}
-              >
-                +{(goal.reward_alpha * 100).toFixed(0)}%
-              </span>
+            <div className='grid grid-cols-3 gap-2'>
+              <div className='bg-slate-800/40 rounded px-2 py-1.5 text-center'>
+                <p className='text-xs text-slate-500 font-mono uppercase mb-0.5'>α</p>
+                <p className='text-sm font-black text-indigo-400 tabular-nums font-mono'>{alpha.toFixed(0)}</p>
+                <p className='text-[10px] text-slate-600'>bukti berhasil</p>
+              </div>
+              <div className='bg-slate-800/40 rounded px-2 py-1.5 text-center'>
+                <p className='text-xs text-slate-500 font-mono uppercase mb-0.5'>β</p>
+                <p className='text-sm font-black text-rose-400 tabular-nums font-mono'>{beta.toFixed(1)}</p>
+                <p className='text-[10px] text-slate-600'>bukti gagal</p>
+              </div>
+              <div className='bg-slate-800/40 rounded px-2 py-1.5 text-center'>
+                <p className='text-xs text-slate-500 font-mono uppercase mb-0.5'>σ</p>
+                <p className='text-sm font-black text-purple-400 tabular-nums font-mono'>±{sigmaPercent}%</p>
+                <p className='text-[10px] text-slate-600'>ketidakpastian</p>
+              </div>
             </div>
           </div>
 
-          <div className='flex items-center gap-2'>
-            {!isCompleted && (
+          {/* ── Stats Row ─────────────────────────────────────────────────── */}
+          <div className='flex flex-wrap gap-4 items-center justify-between'>
+            <div className='flex flex-wrap gap-4 md:gap-6'>
+              <div className='flex flex-col'>
+                <span className='text-xs text-slate-600 font-bold uppercase tracking-[0.2em] mb-0.5'>
+                  Rank
+                </span>
+                <span className={`text-xs font-mono tabular-nums leading-none ${isCompleted ? 'text-slate-600' : 'text-amber-500'}`}>
+                  {'★'.repeat(Math.max(1, Math.ceil(goal.difficulty / 2)))}
+                </span>
+              </div>
+              <div className='flex flex-col'>
+                <span className='text-xs text-slate-600 font-bold uppercase tracking-[0.2em] mb-0.5'>
+                  Reward / EXP
+                </span>
+                <span className={`text-xs font-mono tabular-nums ${isCompleted ? 'text-slate-600' : 'text-accent-400'}`}>
+                  +{(goal.difficulty * 10 * goal.reward_alpha).toFixed(0)}
+                </span>
+              </div>
+              <div className='flex flex-col'>
+                <span className='text-xs text-slate-600 font-bold uppercase tracking-[0.2em] mb-0.5'>
+                  Impact
+                </span>
+                <span className={`text-xs font-mono tabular-nums ${isCompleted ? 'text-slate-600' : 'text-purple-400'}`}>
+                  +{(goal.reward_alpha * 100).toFixed(0)}%
+                </span>
+              </div>
+              <div className='flex flex-col'>
+                <span className='text-xs text-slate-600 font-bold uppercase tracking-[0.2em] mb-0.5'>
+                  Reps
+                </span>
+                <span className='text-xs font-mono tabular-nums text-slate-400'>
+                  ×{goal.repetition_count}
+                </span>
+              </div>
+            </div>
+
+            <div className='flex items-center gap-2'>
+              {!isCompleted && (
+                <button
+                  onClick={e => {
+                    e.stopPropagation();
+                    onEdit(goal);
+                  }}
+                  className='w-10 h-10 md:w-8 md:h-8 flex items-center justify-center text-slate-500 hover:text-accent-300 hover:bg-slate-800 rounded transition-colors active:scale-95'
+                  title='Edit Quest'
+                >
+                  <Settings2 className='w-4 h-4' />
+                </button>
+              )}
               <button
                 onClick={e => {
                   e.stopPropagation();
-                  onEdit(goal);
+                  onDrop(goal.id);
                 }}
-                className='w-10 h-10 md:w-8 md:h-8 flex items-center justify-center text-slate-500 hover:text-accent-300 hover:bg-slate-800 rounded transition-colors active:scale-95'
-                title='Edit Quest'
+                className='w-10 h-10 md:w-8 md:h-8 flex items-center justify-center text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded transition-colors active:scale-95'
+                title='Delete Quest'
               >
-                <Settings2 className='w-4 h-4' />
+                <Trash2 className='w-4 h-4' />
               </button>
-            )}
-            <button
-              onClick={e => {
-                e.stopPropagation();
-                onDrop(goal.id);
-              }}
-              className='w-10 h-10 md:w-8 md:h-8 flex items-center justify-center text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded transition-colors active:scale-95'
-              title='Delete Quest'
-            >
-              <Trash2 className='w-4 h-4' />
-            </button>
+            </div>
           </div>
         </motion.div>
       )}
