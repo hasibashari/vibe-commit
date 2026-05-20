@@ -18,7 +18,7 @@ export function BottomBar({
 }: BottomBarProps) {
   return (
     <div className='md:hidden fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-1rem)] sm:w-[calc(100%-2rem)] max-w-md z-[100] pb-[env(safe-area-inset-bottom)]'>
-      <div className='flex justify-around items-center h-14 sm:h-16 px-1 bg-slate-950/90 backdrop-blur-2xl border border-slate-700/50 shadow-[0_10px_40px_rgba(0,0,0,0.8),inset_0_1px_rgba(255,255,255,0.1)] rounded-xl sm:rounded-2xl relative'>
+      <div className='flex justify-around items-center h-14 sm:h-16 px-1 bg-slate-950/90 backdrop-blur-md border border-slate-700/50 shadow-[0_10px_40px_rgba(0,0,0,0.8),inset_0_1px_rgba(255,255,255,0.1)] rounded-xl sm:rounded-2xl relative'>
         <Button
           variant='ghost'
           onClick={() => setActiveTab('character')}

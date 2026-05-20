@@ -150,7 +150,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   const avatarIcon = user?.avatar_icon || 'Shield';
 
   return (
-    <header className='sticky top-0 z-50 transition-all duration-300 w-full bg-surface/95 backdrop-blur-xl border-b border-white/5 flex flex-col lg:flex-row lg:items-center justify-between px-4 pb-3 pt-[max(env(safe-area-inset-top,0px),0.75rem)] md:px-6 shadow-sm gap-4 lg:gap-0'>
+    <header className='sticky top-0 z-50 transition-all duration-300 w-full bg-surface/95 backdrop-blur-md border-b border-white/5 flex flex-col lg:flex-row lg:items-center justify-between px-4 pb-3 pt-[max(env(safe-area-inset-top,0px),0.75rem)] md:px-6 shadow-sm gap-4 lg:gap-0'>
       {/* Left: User / Level Info */}
       <div className='flex items-center justify-between lg:justify-start w-full lg:w-auto gap-4'>
         <div className='flex items-center gap-3'>

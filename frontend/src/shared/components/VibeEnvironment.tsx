@@ -68,17 +68,17 @@ const SunsetLight = () => {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none mix-blend-screen opacity-60 z-10">
       <motion.div 
-        className="absolute top-0 right-[-10%] w-[50%] h-[120%] bg-linear-to-l from-orange-400/30 to-transparent blur-2xl scale-[2.2] origin-right transform-gpu will-change-transform,opacity"
-        animate={{ opacity: [0.3, 0.6, 0.3], scale: [2.2, 2.3, 2.2] }}
+        className="absolute top-0 right-[-10%] w-[50%] h-[120%] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-orange-400/20 via-orange-400/5 to-transparent transform-gpu will-change-transform,opacity"
+        animate={{ opacity: [0.3, 0.6, 0.3] }}
         transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
       />
       <motion.div 
-        className="absolute top-[10%] right-0 w-[40%] h-[80%] bg-linear-to-l from-amber-300/20 to-transparent blur-[32px] scale-[2.2] transform-gpu will-change-transform,opacity"
+        className="absolute top-[10%] right-0 w-[40%] h-[80%] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-amber-300/15 via-amber-300/5 to-transparent transform-gpu will-change-transform,opacity"
         animate={{ opacity: [0.2, 0.5, 0.2] }}
         transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 2 }}
       />
       <motion.div 
-        className="absolute bottom-0 left-[-10%] w-[40%] h-[80%] bg-linear-to-r from-rose-400/20 to-transparent blur-[48px] scale-[2.2] transform-gpu will-change-transform,opacity"
+        className="absolute bottom-0 left-[-10%] w-[40%] h-[80%] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-rose-400/15 via-rose-400/5 to-transparent transform-gpu will-change-transform,opacity"
         animate={{ opacity: [0.2, 0.4, 0.2] }}
         transition={{ duration: 15, repeat: Infinity, ease: "easeInOut", delay: 1 }}
       />
@@ -90,17 +90,17 @@ const OvercastClouds = () => {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-10 opacity-70">
       <motion.div 
-        className="absolute top-[-10%] left-[-10%] w-[70%] h-[50%] bg-slate-400/20 blur-[32px] scale-[2.2] rounded-full mix-blend-overlay transform-gpu will-change-transform,opacity"
+        className="absolute top-[-10%] left-[-10%] w-[70%] h-[50%] bg-[radial-gradient(circle,_var(--tw-gradient-stops))] from-slate-400/10 to-transparent mix-blend-overlay transform-gpu will-change-transform,opacity"
         animate={{ x: [0, 50, 0], opacity: [0.3, 0.5, 0.3] }}
         transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
       />
       <motion.div 
-        className="absolute top-[20%] right-[-10%] w-[60%] h-[60%] bg-slate-500/20 blur-2xl scale-[2.2] rounded-full mix-blend-overlay transform-gpu will-change-transform,opacity"
+        className="absolute top-[20%] right-[-10%] w-[60%] h-[60%] bg-[radial-gradient(circle,_var(--tw-gradient-stops))] from-slate-500/10 to-transparent mix-blend-overlay transform-gpu will-change-transform,opacity"
         animate={{ x: [0, -60, 0], opacity: [0.3, 0.6, 0.3] }}
         transition={{ duration: 30, repeat: Infinity, ease: "easeInOut", delay: 3 }}
       />
       <motion.div 
-        className="absolute bottom-[-20%] left-[20%] w-[80%] h-[50%] bg-slate-600/15 blur-[48px] scale-[2.2] rounded-full mix-blend-overlay transform-gpu will-change-transform,opacity"
+        className="absolute bottom-[-20%] left-[20%] w-[80%] h-[50%] bg-[radial-gradient(circle,_var(--tw-gradient-stops))] from-slate-600/10 to-transparent mix-blend-overlay transform-gpu will-change-transform,opacity"
         animate={{ x: [-30, 40, -30], opacity: [0.2, 0.4, 0.2] }}
         transition={{ duration: 35, repeat: Infinity, ease: "easeInOut", delay: 5 }}
       />
@@ -140,9 +140,9 @@ export const VibeEnvironment: React.FC<VibeEnvironmentProps> = ({
   const getBgStyleClasses = () => {
     switch (weather) {
       case 'rainy':
-        return 'blur-[2px] opacity-[0.38] mix-blend-luminosity grayscale-[30%]';
+        return 'opacity-[0.38] mix-blend-luminosity grayscale-[40%] brightness-75';
       case 'overcast':
-        return 'blur-[2px] opacity-[0.35] mix-blend-luminosity grayscale-[20%]';
+        return 'opacity-[0.35] mix-blend-luminosity grayscale-[25%] brightness-90';
       case 'sunny':
       case 'default':
       default:
@@ -169,8 +169,8 @@ export const VibeEnvironment: React.FC<VibeEnvironmentProps> = ({
       }`} />
       
       {theme.glow && (
-        <div className={`absolute top-[-10%] left-1/2 -translate-x-1/2 w-[80vw] h-[50vh] blur-[48px] scale-[2.2] rounded-[100%] pointer-events-none mix-blend-screen transition-opacity duration-3000 transform-gpu will-change-transform,opacity ${theme.glow} ${
-          weather === 'rainy' ? 'opacity-20' : (weather === 'overcast' ? 'opacity-30' : 'opacity-100')
+        <div className={`absolute top-[-10%] left-1/2 -translate-x-1/2 w-[100vw] h-[80vh] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-current via-transparent to-transparent pointer-events-none mix-blend-screen transition-opacity duration-3000 transform-gpu will-change-transform,opacity ${theme.glow.replace('bg-', 'text-')} ${
+          weather === 'rainy' ? 'opacity-10' : (weather === 'overcast' ? 'opacity-20' : 'opacity-40')
         }`} />
       )}
 

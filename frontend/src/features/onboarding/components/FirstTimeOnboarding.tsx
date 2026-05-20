@@ -120,10 +120,10 @@ export function FirstTimeOnboarding({ onComplete }: FirstTimeOnboardingProps) {
   };
 
   return (
-    <div className='fixed inset-0 z-999 flex items-center justify-center p-4 sm:p-6 bg-slate-950/95 backdrop-blur-xl overflow-hidden font-sans select-none'>
+    <div className='fixed inset-0 z-999 flex items-center justify-center p-4 sm:p-6 bg-slate-950/95 backdrop-blur-md overflow-hidden font-sans select-none'>
       {/* Background visual effects */}
       <div className='absolute inset-0 pointer-events-none overflow-hidden flex items-center justify-center'>
-        <div className='w-[1000px] h-[1000px] bg-linear-to-tr from-cyan-900/10 via-transparent to-rose-900/10 rounded-full blur-3xl opacity-50 animate-pulse'></div>
+        <div className='w-[1000px] h-[1000px] bg-[radial-gradient(circle,_var(--tw-gradient-stops))] from-cyan-900/20 via-rose-900/10 to-transparent rounded-full opacity-50 animate-pulse'></div>
         <div className='absolute inset-0 bg-[linear-gradient(to_right,#1f2937_1px,transparent_1px),linear-gradient(to_bottom,#1f2937_1px,transparent_1px)] bg-size-[4rem_4rem] mask-[radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-30'></div>
       </div>
 
