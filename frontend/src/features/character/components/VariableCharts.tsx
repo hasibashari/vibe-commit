@@ -7,6 +7,26 @@ export const VariableCharts: React.FC<{ goals: { category: string }[] }> = ({ go
 
   const COLORS = ['#06b6d4', '#8b5cf6', '#10b981', '#f59e0b', '#f43f5e', '#3b82f6'];
 
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (!active || !payload || !payload.length) return null;
+
+    const entry = payload[0];
+    const color = entry.color || entry.payload?.fill || '#64748b';
+
+    return (
+      <div className='bg-slate-900/95 border border-slate-700 p-3 rounded-lg shadow-xl backdrop-blur-md'>
+        <p className='text-slate-400 text-[10px] font-mono uppercase tracking-wider mb-2'>
+          Quest Focus
+        </p>
+        <div className='flex items-center gap-2'>
+          <span className='w-2.5 h-2.5 rounded-[2px]' style={{ backgroundColor: color }}></span>
+          <span className='text-white font-bold text-xs'>{entry.name}</span>
+          <span className='text-slate-500 text-xs font-mono'>{entry.value}</span>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className='flex flex-col xl:flex-row items-center justify-center gap-6 w-full'>
       <div className='w-full max-w-[180px] aspect-square relative shrink-0'>
@@ -22,6 +42,9 @@ export const VariableCharts: React.FC<{ goals: { category: string }[] }> = ({ go
               dataKey='value'
               stroke='none'
               cornerRadius={4}
+              isAnimationActive={true}
+              animationDuration={800}
+              animationEasing='ease-out'
             >
               {data.length > 0 ? (
                 data.map((_, index) => (
@@ -31,15 +54,7 @@ export const VariableCharts: React.FC<{ goals: { category: string }[] }> = ({ go
                 <Cell fill='#1e293b' />
               )}
             </Pie>
-            <Tooltip
-              contentStyle={{
-                backgroundColor: '#0f172a',
-                border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: '4px',
-              }}
-              itemStyle={{ fontSize: '11px', fontFamily: 'monospace', color: '#fff' }}
-              cursor={false}
-            />
+            <Tooltip content={<CustomTooltip />} cursor={false} />
           </PieChart>
         </ResponsiveContainer>
         {/* Center label */}

@@ -12,8 +12,8 @@
 //
 // PARAMETER
 // ──────────────────────────────────────────────────────────────────────────
-//   α  = 1 + repetition_count
-//        (prior 1 = "satu kepercayaan awal" + jumlah penyelesaian berhasil)
+//   α  = 0.1 + repetition_count
+//        (prior 0.1 = "prior informatif rendah / sparse prior" + jumlah penyelesaian berhasil)
 //
 //   β  = D + t × decayRate
 //        Prior D = "resistansi awal" berdasarkan kesulitan.
@@ -43,10 +43,16 @@
 
 /**
  * Menghitung jumlah hari sejak log terakhir.
- * Mengembalikan 0 jika belum ada log (quest baru — tidak ada decay).
+ * Jika belum ada log, menghitung hari sejak quest dibuat (createdAt) agar ada decay asimtotik awal.
+ * Mengembalikan 0 jika tidak ada log dan tidak ada tanggal dibuat.
  */
-export function getDaysSinceLastLog(logs: { timestamp: string }[]): number {
-  if (!logs || logs.length === 0) return 0;
+export function getDaysSinceLastLog(logs: { timestamp: string }[], createdAt?: string): number {
+  if (!logs || logs.length === 0) {
+    if (createdAt) {
+      return Math.max(0, (Date.now() - new Date(createdAt).getTime()) / (1000 * 60 * 60 * 24));
+    }
+    return 0;
+  }
 
   const latestMs = logs.reduce((max, log) => {
     const t = new Date(log.timestamp).getTime();
@@ -59,7 +65,7 @@ export function getDaysSinceLastLog(logs: { timestamp: string }[]): number {
 /**
  * Menghitung parameter distribusi Beta (α, β) untuk sebuah quest.
  *
- * α = 1 + n           [prior Jeffreys + jumlah penyelesaian]
+ * α = 0.1 + n         [prior informatif rendah + jumlah penyelesaian]
  * β = D + t × (D/√(n+1))   [resistansi awal + penalti inaktivitas]
  *
  * Laju decay D/√(n+1) memastikan:
@@ -76,7 +82,8 @@ export function getBetaParams(
   difficulty: number,
   daysSinceLastLog: number
 ): { alpha: number; beta: number } {
-  const alpha = 1 + repetitionCount;
+  const alpha0 = 0.1;
+  const alpha = alpha0 + repetitionCount;
 
   // Prior β₀ = D: habit sulit membutuhkan lebih banyak bukti untuk terbentuk
   const beta0 = difficulty;
@@ -139,4 +146,179 @@ export function calculateStats(logs: { timestamp: string }[]) {
   const sigma = Math.sqrt(variance);
 
   return { mu, sigma };
+}
+
+/**
+ * Menghasilkan data time-series probabilitas (Bayesian) dari waktu ke waktu.
+ * Digunakan oleh komponen grafik untuk memplot P(t) dan ketidakpastian.
+ */
+export function generateTimeSeriesData(
+  logs: { timestamp: string }[],
+  difficulty: number,
+  startDateStr?: string,
+  endDateStr?: string
+) {
+  // 1. Tentukan rentang waktu
+  const end = endDateStr ? new Date(endDateStr) : new Date();
+  end.setHours(23, 59, 59, 999);
+
+  // Jika tidak ada startDate, default ke 30 hari lalu, atau dari log pertama
+  let start = new Date();
+  start.setDate(end.getDate() - 30);
+  start.setHours(0, 0, 0, 0);
+
+  if (startDateStr) {
+    start = new Date(startDateStr);
+    start.setHours(0, 0, 0, 0);
+  } else if (logs.length > 0) {
+    const firstLogDate = new Date(
+      Math.min(...logs.map(l => new Date(l.timestamp).getTime()))
+    );
+    firstLogDate.setHours(0, 0, 0, 0);
+    // Jika log pertama lebih tua dari 30 hari, kita pakai log pertama sebagai start
+    if (firstLogDate < start) {
+      start = firstLogDate;
+    }
+  }
+
+  // Sort log berdasarkan waktu
+  const sortedLogs = [...logs].sort(
+    (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+  );
+
+  const data = [];
+  let currentDate = new Date(start);
+
+  // Simulasi dari hari ke hari
+  while (currentDate <= end) {
+    const currentMs = currentDate.getTime();
+
+    // 2. Filter log yang terjadi HINGGA (dan termasuk) currentDate
+    const pastLogs = sortedLogs.filter(
+      l => new Date(l.timestamp).getTime() <= currentMs
+    );
+
+    const repetitionCount = pastLogs.length;
+
+    // 3. Hitung decay (hari sejak log terakhir yang valid di masa lalu)
+    let daysSinceLast = 0;
+    if (repetitionCount > 0) {
+      const lastLogMs = new Date(pastLogs[pastLogs.length - 1].timestamp).getTime();
+      daysSinceLast = (currentMs - lastLogMs) / (1000 * 60 * 60 * 24);
+    }
+
+    // 4. Hitung model
+    const { alpha, beta } = getBetaParams(repetitionCount, difficulty, daysSinceLast);
+    const p = calculateBayesianProbability(alpha, beta);
+    const variance = calculateBetaVariance(alpha, beta);
+    const sigma = Math.sqrt(variance);
+
+    data.push({
+      date: currentDate.toISOString().split('T')[0], // YYYY-MM-DD
+      prob: Math.round(p * 100),
+      // Confidence band [P - σ, P + σ]
+      lower: Math.max(0, Math.round((p - sigma) * 100)),
+      upper: Math.min(100, Math.round((p + sigma) * 100)),
+      alpha: Math.round(alpha),
+      beta: Math.round(beta * 10) / 10,
+      reps: repetitionCount,
+    });
+
+    // Maju 1 hari
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  return data;
+}
+
+/**
+ * Menghasilkan data time-series probabilitas global (Bayesian) untuk Command Hub.
+ * Menghitung rata-rata Posterior Mean (P) dari semua quest yang aktif (sudah dibuat).
+ */
+export function generateGlobalTimeSeriesData(
+  goals: { logs: { timestamp: string }[]; difficulty: number; createdAt?: string }[],
+  startDateStr?: string,
+  endDateStr?: string
+) {
+  const end = endDateStr ? new Date(endDateStr) : new Date();
+  end.setHours(23, 59, 59, 999);
+
+  let start = new Date();
+  start.setDate(end.getDate() - 30);
+  start.setHours(0, 0, 0, 0);
+
+  if (startDateStr) {
+    start = new Date(startDateStr);
+    start.setHours(0, 0, 0, 0);
+  }
+
+  const data = [];
+  let currentDate = new Date(start);
+
+  while (currentDate <= end) {
+    const currentMs = currentDate.getTime();
+    let totalP = 0;
+    let totalVar = 0;
+    let activeGoalsCount = 0;
+    let totalRepsGlobal = 0;
+
+    for (const goal of goals) {
+      const createdMs = goal.createdAt ? new Date(goal.createdAt).getTime() : 0;
+      
+      // Jika currentDate sebelum quest dibuat, jangan dihitung sama sekali!
+      if (createdMs && currentMs < createdMs) {
+        continue;
+      }
+
+      // Filter log yang terjadi sebelum currentDate
+      const pastLogs = (goal.logs || [])
+        .filter(l => new Date(l.timestamp).getTime() <= currentMs)
+        .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+
+      const repetitionCount = pastLogs.length;
+      totalRepsGlobal += repetitionCount;
+      
+      let daysSinceLast = 0;
+      if (repetitionCount > 0) {
+        const lastLogMs = new Date(pastLogs[pastLogs.length - 1].timestamp).getTime();
+        daysSinceLast = (currentMs - lastLogMs) / (1000 * 60 * 60 * 24);
+      } else if (createdMs) {
+        // Jika belum pernah di-log, hitung inaktivitas dari tanggal pembuatan quest
+        daysSinceLast = (currentMs - createdMs) / (1000 * 60 * 60 * 24);
+      }
+
+      // Hitung parameter untuk goal ini di hari tersebut
+      const { alpha, beta } = getBetaParams(repetitionCount, goal.difficulty, daysSinceLast);
+      const p = calculateBayesianProbability(alpha, beta);
+      const variance = calculateBetaVariance(alpha, beta);
+
+      totalP += p;
+      totalVar += variance;
+      activeGoalsCount++;
+    }
+
+    // Jika tidak ada goal, p = 0
+    let avgP = 0;
+    let avgSigma = 0;
+    
+    if (activeGoalsCount > 0) {
+      avgP = totalP / activeGoalsCount;
+      // Asumsi independent quests, variance of mean = sum(var) / N^2
+      // Namun untuk visualisasi "rata-rata ketidakpastian individu", mean(sigma) atau sqrt(mean(var)) lebih intuitif
+      const avgVar = totalVar / activeGoalsCount; 
+      avgSigma = Math.sqrt(avgVar);
+    }
+
+    data.push({
+      date: currentDate.toISOString().split('T')[0],
+      prob: Math.round(avgP * 100),
+      lower: Math.max(0, Math.round((avgP - avgSigma) * 100)),
+      upper: Math.min(100, Math.round((avgP + avgSigma) * 100)),
+      reps: totalRepsGlobal,
+    });
+
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  return data;
 }

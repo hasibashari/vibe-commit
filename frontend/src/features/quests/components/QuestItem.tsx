@@ -1,11 +1,10 @@
 import React from 'react';
-import { Check, Settings2, Trash2, TrendingDown, Activity, FlaskConical } from 'lucide-react';
+import { Check, Settings2, Trash2, TrendingDown, Activity } from 'lucide-react';
 import { motion } from 'motion/react';
 import type { Goal } from '../../../shared/types/goal';
 import {
   getBetaParams,
   calculateBayesianProbability,
-  calculateBetaVariance,
   getDaysSinceLastLog,
 } from '../../../shared/utils/vibeMath';
 
@@ -46,14 +45,7 @@ export function QuestItem({
     [alpha, beta]
   );
 
-  const variance = React.useMemo(
-    () => calculateBetaVariance(alpha, beta),
-    [alpha, beta]
-  );
-
-  const sigma = Math.sqrt(variance);
   const probPercent = Math.round(probability * 100);
-  const sigmaPercent = Math.round(sigma * 100);
 
   // Decay warning: tampilkan jika inaktif ≥ 3 hari DAN sudah pernah log
   const isDecaying = daysSinceLastLog >= 3 && goal.repetition_count > 0;
@@ -103,7 +95,7 @@ export function QuestItem({
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 className='text-xs bg-rose-900/30 text-rose-400 px-1.5 py-0.5 rounded border border-rose-800/50 font-mono uppercase font-bold tracking-wider flex items-center gap-1'
-                title={`Tidak ada aktivitas selama ${decayDaysDisplay} hari — probabilitas sedang menurun`}
+                title={`Tidak ada aktivitas selama ${decayDaysDisplay} hari — konsistensi sedang menurun`}
               >
                 <TrendingDown className='w-3 h-3' />
                 {decayDaysDisplay}d idle
@@ -154,12 +146,12 @@ export function QuestItem({
           animate={{ opacity: 1, height: 'auto' }}
           className='mt-4 pt-4 border-t border-slate-800/50 flex flex-col gap-4'
         >
-          {/* ── Probability Bar (Bayesian Posterior Mean) ─────────────────── */}
+          {/* ── Consistency Bar (Visual Representation of Bayesian Habit Strength) ── */}
           <div className='flex flex-col gap-1.5'>
             <div className='flex items-center justify-between'>
               <span className='text-xs text-slate-600 font-bold uppercase tracking-[0.2em] flex items-center gap-1'>
                 <Activity className='w-3 h-3' />
-                Probability
+                Consistency
               </span>
               <div className='flex items-center gap-2'>
                 {isDecaying && (
@@ -188,36 +180,9 @@ export function QuestItem({
             {isDecaying && (
               <p className='text-xs text-rose-400/70 leading-snug'>
                 ⚠ Tidak ada log selama{' '}
-                <span className='font-bold'>{decayDaysDisplay} hari</span> — selesaikan quest ini untuk mengembalikan probabilitas.
+                <span className='font-bold'>{decayDaysDisplay} hari</span> — selesaikan quest ini untuk mengembalikan konsistensi.
               </p>
             )}
-          </div>
-
-          {/* ── Bayesian Stats (α, β, σ) ──────────────────────────────────── */}
-          <div className='flex flex-col gap-1'>
-            <div className='flex items-center gap-1 mb-1'>
-              <FlaskConical className='w-3 h-3 text-slate-600' />
-              <span className='text-xs text-slate-600 font-bold uppercase tracking-[0.2em]'>
-                Model β ~ Beta(α, β)
-              </span>
-            </div>
-            <div className='grid grid-cols-3 gap-2'>
-              <div className='bg-slate-800/40 rounded px-2 py-1.5 text-center'>
-                <p className='text-xs text-slate-500 font-mono uppercase mb-0.5'>α</p>
-                <p className='text-sm font-black text-indigo-400 tabular-nums font-mono'>{alpha.toFixed(0)}</p>
-                <p className='text-[10px] text-slate-600'>bukti berhasil</p>
-              </div>
-              <div className='bg-slate-800/40 rounded px-2 py-1.5 text-center'>
-                <p className='text-xs text-slate-500 font-mono uppercase mb-0.5'>β</p>
-                <p className='text-sm font-black text-rose-400 tabular-nums font-mono'>{beta.toFixed(1)}</p>
-                <p className='text-[10px] text-slate-600'>bukti gagal</p>
-              </div>
-              <div className='bg-slate-800/40 rounded px-2 py-1.5 text-center'>
-                <p className='text-xs text-slate-500 font-mono uppercase mb-0.5'>σ</p>
-                <p className='text-sm font-black text-purple-400 tabular-nums font-mono'>±{sigmaPercent}%</p>
-                <p className='text-[10px] text-slate-600'>ketidakpastian</p>
-              </div>
-            </div>
           </div>
 
           {/* ── Stats Row ─────────────────────────────────────────────────── */}

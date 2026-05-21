@@ -94,14 +94,14 @@ export function HubMonitoring({ goals }: HubMonitoringProps) {
           </div>
 
           <div className='flex flex-col gap-6 md:gap-8 mt-4 pt-6 border-t border-slate-800/50 min-w-0'>
-            {/* Global Probability Shift */}
+            {/* Global Consistency Shift */}
             <div className='flex flex-col gap-3 min-w-0'>
               <div className='px-1'>
                 <h4 className='text-xs font-bold text-slate-300 tracking-widest uppercase flex items-center gap-2 mb-1.5'>
-                  <Activity className='w-4 h-4 text-emerald-500' /> System Probability Shift
+                  <Activity className='w-4 h-4 text-emerald-500' /> System Consistency Shift
                 </h4>
                 <p className='text-xs font-mono text-slate-500 leading-relaxed'>
-                  Pergerakan asimtotik peluang optimal (max 99%).
+                  Pergerakan kekuatan kebiasaan optimal dari waktu ke waktu (maksimal 99%).
                 </p>
               </div>
               <GlobalProbabilityTrend goals={goals} />
