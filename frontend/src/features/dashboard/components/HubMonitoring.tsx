@@ -104,7 +104,7 @@ export function HubMonitoring({ goals }: HubMonitoringProps) {
                   <Activity className='w-4 h-4 text-emerald-500' /> System Consistency Shift
                 </h4>
                 <p className='text-xs font-mono text-slate-500 leading-relaxed'>
-                  Distribusi peluang keberhasilan global — naik saat quest selesai, turun saat absen.
+                  Distribusi peluang keberhasilan — Menunjukkan seberapa besar peluang kamu berdasarkan aktivitas yang telah dilakukan.
                 </p>
               </div>
               <GlobalProbabilityTrend goals={goals} />

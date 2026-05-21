@@ -175,7 +175,7 @@ export function GlobalProbabilityTrend({ goals }: GlobalProbabilityTrendProps) {
       </div>
 
       <p className='text-[10px] text-slate-500 font-mono text-center'>
-        Naik saat quest selesai · Turun perlahan saat absen — Model Beta-Bernoulli Global.
+        Naik saat quest selesai · Turun perlahan saat absen (Model Beta-Bernoulli).
       </p>
     </div>
   );
