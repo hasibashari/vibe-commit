@@ -208,7 +208,7 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
           title: questData.title || 'Untitled Quest',
           description: questData.description || '',
           category: questData.category || 'productivity',
-          difficulty: questData.difficulty ?? 0.5,
+          difficulty: questData.difficulty ?? 1.0,
           reward_alpha: questData.reward_alpha ?? 1,
           repetition_count: 0,
           logs: [],

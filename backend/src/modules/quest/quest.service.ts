@@ -2,7 +2,19 @@ import db from '../../db/database.js';
 
 export class QuestService {
   static getGoalsForUser(userId: string) {
-    return db.prepare('SELECT * FROM goals WHERE user_id = ?').all(userId);
+    // Embed repetition_count directly so the frontend never needs to recount.
+    // Using COALESCE so goals with zero logs still return 0 (not NULL).
+    return db.prepare(`
+      SELECT g.*, COALESCE(lc.cnt, 0) AS repetition_count
+      FROM goals g
+      LEFT JOIN (
+        SELECT goal_id, COUNT(*) AS cnt
+        FROM quest_logs
+        GROUP BY goal_id
+      ) lc ON lc.goal_id = g.id
+      WHERE g.user_id = ?
+      ORDER BY g.created_at ASC
+    `).all(userId);
   }
 
   static createGoal(data: { id: string; userId: string; title: string; description?: string | null; difficulty: number; rewardAlpha: number; category?: string | null }) {

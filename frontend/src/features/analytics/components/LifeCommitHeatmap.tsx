@@ -18,7 +18,9 @@ export const LifeCommitHeatmap: React.FC<HeatmapProps> = ({ logs }) => {
       const d = new Date(log.timestamp);
       d.setHours(0, 0, 0, 0);
       const diffTime = Math.abs(now.getTime() - d.getTime());
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      // Math.floor (not ceil): a log at 10:00 AM today has a 10-hour diff vs midnight,
+      // which is 0.41 days \u2014 floor gives 0 (today), ceil would give 1 (yesterday).
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
       if (diffDays < days) {
         heat[days - 1 - diffDays]++; // newer days are towards the end
       }

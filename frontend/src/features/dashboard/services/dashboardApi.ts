@@ -39,18 +39,21 @@ export const fetchDashboardData = async () => {
 
     const goalsWithCounts = rawGoalsData.map((g: any) => {
       const logs = allLogsData.filter((log: any) => log.goal_id === g.id);
-      return { 
-        ...g, 
-        repetition_count: logs.length, 
-        logs 
+      return {
+        ...g,
+        // `repetition_count` now comes from the backend SQL JOIN (authoritative).
+        // We still recount from the attached logs array so the two values stay
+        // in sync and so the UI can render individual log entries.
+        repetition_count: logs.length > 0 ? logs.length : (g.repetition_count ?? 0),
+        logs,
       };
     });
 
-    return { 
-      goalsWithCounts, 
+    return {
+      goalsWithCounts,
       rawGoalsData,
-      dumpsData, 
-      userData 
+      dumpsData,
+      userData
     };
   } catch (error) {
     handleApiError(error);

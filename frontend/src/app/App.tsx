@@ -31,17 +31,7 @@ import { useAuthStore } from '../store/authStore';
 import { useDashboardStore } from '../store/dashboardStore';
 import { getAuthHeaders } from '../shared/services/session';
 
-function getExpNeededForLevel(level: number): number {
-  return Math.floor(100 * Math.pow(1.2, level - 1));
-}
-
-function getCumulativeExp(level: number, exp: number): number {
-  let sum = 0;
-  for (let i = 1; i < level; i++) {
-    sum += getExpNeededForLevel(i);
-  }
-  return sum + exp;
-}
+import { getAvailableCoins } from '../shared/utils/dateUtils';
 
 import type { Tab } from '../shared/types/navigation';
 
@@ -187,7 +177,8 @@ export default function App() {
   const uLevel = user?.level ?? 1;
   const uExp = user?.exp ?? 0;
   const uSpentCoins = user?.spent_coins ?? 0;
-  const baseCoins = user ? getCumulativeExp(uLevel, uExp) - uSpentCoins : 0;
+  // Uses shared getAvailableCoins (same capped formula as backend & dashboardUtils)
+  const baseCoins = user ? getAvailableCoins(uLevel, uExp, uSpentCoins) : 0;
 
   // --- DEV SANDBOX INJECTION ---
   const [devOverrides, setDevOverrides] = useState<

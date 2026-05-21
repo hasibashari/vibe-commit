@@ -112,7 +112,7 @@ export function QuestItem({
                   Reward / EXP
                 </span>
                 <span className={`text-xs font-mono tabular-nums ${isCompleted ? 'text-slate-600' : 'text-accent-400'}`}>
-                  +{(goal.difficulty * 10 * goal.reward_alpha).toFixed(0)}
+                  +{Math.floor(goal.difficulty * 10 * goal.reward_alpha)}
                 </span>
               </div>
               <div className='flex flex-col'>

@@ -85,11 +85,16 @@ export function getBetaParams(
   const alpha0 = 0.1;
   const alpha = alpha0 + repetitionCount;
 
+  // Guard: difficulty must be > 0. A difficulty of exactly 0 would produce
+  // beta0 = 0, decayRate = 0, and ultimately beta = 0, causing P = alpha / alpha = 1.0
+  // (100% forever) — mathematically nonsensical. Clamp to 0.1 minimum.
+  const safeDifficulty = Math.max(0.1, difficulty);
+
   // Prior β₀ = D: habit sulit membutuhkan lebih banyak bukti untuk terbentuk
-  const beta0 = difficulty;
+  const beta0 = safeDifficulty;
 
   // Laju decay mengecil seiring habit menguat (redaman √)
-  const decayRate = difficulty / Math.sqrt(repetitionCount + 1);
+  const decayRate = safeDifficulty / Math.sqrt(repetitionCount + 1);
   const inactivityPenalty = Math.max(0, daysSinceLastLog) * decayRate;
 
   return { alpha, beta: beta0 + inactivityPenalty };
@@ -203,8 +208,16 @@ export function generateTimeSeriesData(
     // 3. Hitung decay (hari sejak log terakhir yang valid di masa lalu)
     let daysSinceLast = 0;
     if (repetitionCount > 0) {
-      const lastLogMs = new Date(pastLogs[pastLogs.length - 1].timestamp).getTime();
+      const lastLogMs = new Date(pastLogs[pastLogs.length - 1].timestamp.replace(' ', 'T')).getTime();
       daysSinceLast = (currentMs - lastLogMs) / (1000 * 60 * 60 * 24);
+    } else if (startDateStr) {
+      // No logs yet — decay from the quest creation date so that old
+      // un-completed quests show accurate declining probability rather
+      // than a flat prior line.
+      const createdMs = new Date(startDateStr.replace(' ', 'T')).getTime();
+      if (!isNaN(createdMs)) {
+        daysSinceLast = Math.max(0, (currentMs - createdMs) / (1000 * 60 * 60 * 24));
+      }
     }
 
     // 4. Hitung model

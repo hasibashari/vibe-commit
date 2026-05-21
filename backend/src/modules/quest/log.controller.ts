@@ -62,12 +62,16 @@ export class LogController {
       }
 
       db.transaction(() => {
-        db.prepare('INSERT INTO quest_logs (id, goal_id, vibe_score, notes) VALUES (?, ?, ?, ?)').run(
-          id, 
-          goalId, 
-          vibeScore ?? null, 
-          notes ?? null
-        );
+        // INSERT OR IGNORE makes this idempotent — replayed offline logIds
+        // (same UUID sent again during sync) are silently skipped instead of
+        // crashing with a UNIQUE constraint error and discarding the action.
+        const insertResult = db.prepare(
+          'INSERT OR IGNORE INTO quest_logs (id, goal_id, vibe_score, notes) VALUES (?, ?, ?, ?)'
+        ).run(id, goalId, vibeScore ?? null, notes ?? null);
+
+        // If 0 rows were changed the log already existed — skip reward grant
+        // to avoid double-crediting EXP/HP on duplicate requests.
+        if (insertResult.changes === 0) return;
 
         // Fetch user associated with this goal
         const goalData: any = db.prepare('SELECT user_id, difficulty, reward_alpha FROM goals WHERE id = ?').get(goalId);
@@ -77,23 +81,32 @@ export class LogController {
             const expGain = Math.floor(10 * (goalData.difficulty || 1.0) * (goalData.reward_alpha || 0.5));
             let newExp = user.exp + expGain;
             let newLevel = user.level;
-            
-            const getExpNeeded = (lvl: number) => Math.floor(100 * Math.pow(1.2, lvl - 1));
+
+            // Cap level to prevent IEEE 754 precision loss above ~level 200
+            const MAX_LEVEL = 100;
+            const getExpNeeded = (lvl: number) =>
+              Math.floor(100 * Math.pow(1.2, Math.min(lvl - 1, MAX_LEVEL - 1)));
+
             let expNeeded = getExpNeeded(newLevel);
-            while (newExp >= expNeeded) {
+            while (newExp >= expNeeded && newLevel < MAX_LEVEL) {
               newExp -= expNeeded;
               newLevel += 1;
               expNeeded = getExpNeeded(newLevel);
             }
 
-            // Completing a request restores some HP (e.g., +5) up to 100
+            // Completing a quest restores some HP (+5) up to 100
             const newHp = Math.min(100, user.hp + 5);
-            
-            // Completing a task costs some Mana (Focus) - representing effort
-            // Don't let it drop below 0
-            const newMana = Math.max(0, user.mana - 10);
-            
-            const todayStr = new Date().toISOString().split('T')[0];
+
+            // Mana represents daily focus. On the FIRST quest of a new day
+            // mana refreshes to 100 (new day, fresh focus); each subsequent
+            // quest drains 10 points (effort spent).
+            const todayStr = (() => {
+              const now = new Date();
+              return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            })();
+            const isFirstQuestToday = user.last_penalty_date !== todayStr;
+            const manaBase = isFirstQuestToday ? 100 : user.mana;
+            const newMana = Math.max(0, manaBase - 10);
 
             db.prepare('UPDATE users SET hp = ?, mana = ?, level = ?, exp = ?, last_penalty_date = ? WHERE id = ?')
               .run(newHp, newMana, newLevel, newExp, todayStr, user.id);

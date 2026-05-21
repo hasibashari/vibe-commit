@@ -15,16 +15,26 @@ const ITEM_PRICES: Record<string, number> = {
   'aesthetic_title_legendary': 1500,
 };
 
+const MAX_LEVEL = 100;
+
 function getExpNeededForLevel(level: number): number {
-  return Math.floor(100 * Math.pow(1.2, level - 1));
+  // Cap exponent to MAX_LEVEL-1 to prevent IEEE 754 precision loss
+  return Math.floor(100 * Math.pow(1.2, Math.min(level - 1, MAX_LEVEL - 1)));
 }
 
 function getCumulativeExp(level: number, exp: number): number {
+  const safeLevel = Math.min(level, MAX_LEVEL + 1);
   let sum = 0;
-  for (let i = 1; i < level; i++) {
+  for (let i = 1; i < safeLevel; i++) {
     sum += getExpNeededForLevel(i);
   }
   return sum + exp;
+}
+
+/** Returns today's date as YYYY-MM-DD in the SERVER'S LOCAL timezone. */
+function getTodayLocalString(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 }
 
 export class UserService {
@@ -40,58 +50,66 @@ export class UserService {
   }
 
   static applyTimeEffects(user: any) {
-    const todayDate = new Date();
-    todayDate.setHours(0, 0, 0, 0);
-    const todayStr = todayDate.toISOString().split('T')[0];
-    
+    // Use local-timezone date string (not UTC) to avoid timezone-boundary
+    // discrepancies where a UTC+7 user logging in at 18:00 local time gets
+    // assigned tomorrow's UTC date as their last_penalty_date.
+    const todayStr = getTodayLocalString();
+
     if (user.last_penalty_date && user.last_penalty_date !== todayStr) {
-      const lastDate = new Date(user.last_penalty_date);
-      lastDate.setHours(0, 0, 0, 0);
-      
-      const diffTime = Math.abs(todayDate.getTime() - lastDate.getTime());
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      
+      const lastDate = new Date(`${user.last_penalty_date}T00:00:00`);
+      const todayDate = new Date(`${todayStr}T00:00:00`);
+
+      const diffTime = todayDate.getTime() - lastDate.getTime();
+      const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
       if (diffDays > 0) {
         let newHp = user.hp;
-        let newMana = 100; // Mana resets to 100 daily
-        
-        // Calculate penalty days. Did they have a shield?
+
+        // Calculate shielded days
         let shieldedDays = 0;
         if (user.shield_until) {
           const shieldDate = new Date(user.shield_until);
-          const shieldDateNormalized = new Date(shieldDate);
-          shieldDateNormalized.setHours(0, 0, 0, 0);
-          
-          if (shieldDateNormalized > lastDate) {
-            const shieldDiff = Math.floor((Math.min(todayDate.getTime(), shieldDateNormalized.getTime()) - lastDate.getTime()) / (1000 * 60 * 60 * 24));
+          // Normalise to local midnight for fair day-counting
+          const shieldDateStr = `${shieldDate.getFullYear()}-${String(shieldDate.getMonth() + 1).padStart(2, '0')}-${String(shieldDate.getDate()).padStart(2, '0')}`;
+          const shieldDateNorm = new Date(`${shieldDateStr}T00:00:00`);
+
+          if (shieldDateNorm > lastDate) {
+            const shieldDiff = Math.round(
+              (Math.min(todayDate.getTime(), shieldDateNorm.getTime()) - lastDate.getTime())
+              / (1000 * 60 * 60 * 24)
+            );
             shieldedDays = shieldDiff > 0 ? shieldDiff : 0;
           }
 
-          // Clear shield if it has expired relative to today
-          if (shieldDate <= todayDate) {
+          // Clear expired shield
+          if (shieldDate < todayDate) {
             db.prepare('UPDATE users SET shield_until = NULL WHERE id = ?').run(user.id);
             user.shield_until = null;
           }
         }
-        
+
         const penaltyDays = Math.max(0, diffDays - shieldedDays);
         if (penaltyDays > 0) {
-          // Check if they completed any quests on the last_penalty_date 
-          // (Actually, if they didn't login for days, they did 0 quests those days)
           newHp = Math.max(0, newHp - (penaltyDays * 15));
         }
 
+        // Mana now DECAYS on inactive days rather than resetting to 100.
+        // This makes mana_tonic meaningful (you genuinely need it after
+        // extended inactivity) and makes the sleeping animation accurate.
+        // Active days: mana resets to 100 on first quest completion (see log.controller).
+        const newMana = Math.max(0, user.mana - (penaltyDays * 10));
+
         db.prepare('UPDATE users SET hp = ?, mana = ?, last_penalty_date = ? WHERE id = ?')
           .run(newHp, newMana, todayStr, user.id);
-          
+
         user.hp = newHp;
         user.mana = newMana;
         user.last_penalty_date = todayStr;
       }
     } else if (!user.last_penalty_date) {
-        // Initialize if null
-        db.prepare('UPDATE users SET last_penalty_date = ? WHERE id = ?').run(todayStr, user.id);
-        user.last_penalty_date = todayStr;
+      // Initialise if null
+      db.prepare('UPDATE users SET last_penalty_date = ? WHERE id = ?').run(todayStr, user.id);
+      user.last_penalty_date = todayStr;
     }
     return user;
   }
@@ -218,12 +236,17 @@ export class UserService {
       } else if (itemId === 'mana_tonic') {
         newMana = Math.min(100, user.mana + 20);
       } else if (itemId === 'streak_shield') {
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        tomorrow.setHours(23, 59, 59, 999);
-        
+        // Shield covers the gap from last_penalty_date forward — NOT from
+        // today forward — so buying it after missing 2 days actually protects
+        // against those penalty days.
+        const lastPenaltyDate = user.last_penalty_date || getTodayLocalString();
+        const shieldStart = new Date(`${lastPenaltyDate}T00:00:00`);
+        const shieldUntil = new Date(shieldStart);
+        shieldUntil.setDate(shieldUntil.getDate() + 1);
+        shieldUntil.setHours(23, 59, 59, 999);
+
         db.prepare('UPDATE users SET shield_until = ?, spent_coins = spent_coins + ? WHERE id = ?')
-          .run(tomorrow.toISOString(), cost, userId);
+          .run(shieldUntil.toISOString(), cost, userId);
         return; 
       } else if (itemId.startsWith('aesthetic_')) {
         if (newUnlockedItems.includes(itemId)) {

@@ -15,7 +15,9 @@ interface HubMonitoringProps {
 
 export function HubMonitoring({ goals }: HubMonitoringProps) {
   const { allLogs, totalCompleted, activeExp, completedTodayCount } = React.useMemo(() => {
-    const todayStr = new Date().toISOString().split('T')[0];
+    // Use local date (not UTC) so "today" is the user's actual calendar day.
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     let completedToday = 0;
 
     goals.forEach(goal => {
@@ -31,11 +33,12 @@ export function HubMonitoring({ goals }: HubMonitoringProps) {
     return {
       allLogs: goals.flatMap(g => g.logs || []),
       totalCompleted: goals.reduce((acc, g) => acc + g.repetition_count, 0),
-      activeExp: Math.floor(
-        goals.reduce(
-          (acc, g) => acc + (g.repetition_count > 0 ? g.difficulty * 10 * g.reward_alpha : 0),
-          0,
-        ),
+      // FIXED: multiply by repetition_count so we get TOTAL EXP earned across
+      // all completions — not just the EXP for a single hypothetical completion.
+      // This now matches the actual EXP credited to the user's RPG level.
+      activeExp: goals.reduce(
+        (acc, g) => acc + Math.floor(g.difficulty * 10 * g.reward_alpha) * g.repetition_count,
+        0,
       ),
       completedTodayCount: completedToday,
     };

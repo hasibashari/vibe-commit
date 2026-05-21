@@ -1,10 +1,22 @@
 import type { Goal } from '../../../shared/types/goal';
 import type { Log } from '../../../shared/types/log';
 import type { UserStats } from '../../../shared/types/user';
+import { getAvailableCoins } from '../../../shared/utils/dateUtils';
 
+/**
+ * Derives all computed RPG stats from the raw server user row.
+ * Previously a no-op; now calculates `availableCoins` so the frontend
+ * has a correct spendable-coin balance without a dedicated API field.
+ */
 export const calculateRPGStats = (_allLogs: Log[], userData: UserStats) => {
+  const availableCoins = getAvailableCoins(
+    userData.level,
+    userData.exp,
+    userData.spent_coins ?? 0,
+  );
   return {
     ...userData,
+    availableCoins,
   };
 };
 
@@ -77,14 +89,17 @@ export const calculateAchievements = (allLogs: Log[], level: number): Achievemen
 };
 
 export const getCompletedIdsToday = (goalsData: Goal[]) => {
-  const today = new Date().toISOString().split('T')[0];
+  // Use local date (not UTC) so "today" matches the user's timezone.
+  const now = new Date();
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const completedIds: string[] = [];
 
   goalsData.forEach((goal) => {
     if (goal.logs && goal.logs.length > 0) {
       const hasLogToday = goal.logs.some((log) => {
         if (!log.timestamp) return false;
-        const logDateStr = typeof log.timestamp === 'string' ? log.timestamp.split(' ')[0].split('T')[0] : '';
+        // Normalise both SQLite-space and ISO-T timestamps safely
+        const logDateStr = log.timestamp.split('T')[0].split(' ')[0];
         return logDateStr === today;
       });
 

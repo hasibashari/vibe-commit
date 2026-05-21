@@ -73,7 +73,10 @@ export function GlobalProbabilityTrend({ goals }: GlobalProbabilityTrendProps) {
           : '#f43f5e';
 
   const formatXAxis = (tickItem: string) => {
-    const date = new Date(tickItem);
+    // CRITICAL: new Date('2026-05-21') parses as UTC midnight, which shifts the
+    // displayed date back by one day for UTC+ timezones (e.g. Indonesia UTC+7).
+    // Appending 'T00:00:00' forces local-time parsing in all browsers.
+    const date = new Date(tickItem + 'T00:00:00');
     return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
   };
 
@@ -83,7 +86,7 @@ export function GlobalProbabilityTrend({ goals }: GlobalProbabilityTrendProps) {
       return (
         <div className='bg-slate-900/95 border border-slate-700 p-3 rounded-lg shadow-xl backdrop-blur-md'>
           <p className='text-slate-400 text-xs mb-2 font-mono'>
-            {new Date(label).toLocaleDateString('id-ID', {
+            {new Date(label + 'T00:00:00').toLocaleDateString('id-ID', {
               weekday: 'long',
               year: 'numeric',
               month: 'long',
