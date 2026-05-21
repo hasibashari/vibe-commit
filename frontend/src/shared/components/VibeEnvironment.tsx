@@ -1,6 +1,5 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { useMouseParallax } from '../hooks/useMouseParallax';
 import { getWeatherState } from '../utils/weatherUtils';
 
 interface VibeEnvironmentProps {
@@ -133,10 +132,6 @@ export const VibeEnvironment: React.FC<VibeEnvironmentProps> = ({
   const isCriticalHp = hp < 20;
   const theme = THEMES[themeVibe] || THEMES.midnight;
 
-  // Instability representation: Amplified parallax when sigma variance is high
-  const instabilityMultiplier = Math.max(1, sigmaVariance / 1.2);
-  const { x: parallaxX, y: parallaxY } = useMouseParallax(10, instabilityMultiplier);
-
   const getBgStyleClasses = () => {
     switch (weather) {
       case 'rainy':
@@ -153,14 +148,11 @@ export const VibeEnvironment: React.FC<VibeEnvironmentProps> = ({
   return (
     <div className={`fixed inset-0 z-[-1] pointer-events-none overflow-hidden transition-colors duration-2000 ${theme.bg}`}>
       
-      <motion.div 
-        className={`absolute inset-[-30px] bg-cover bg-position-[center_top] bg-no-repeat transition-all duration-3000 ease-in-out ${getBgStyleClasses()}`}
+      <div 
+        className={`absolute inset-0 bg-cover bg-position-[center_top] bg-no-repeat transition-all duration-3000 ease-in-out ${getBgStyleClasses()}`}
         style={{
           backgroundImage: `url('${customMainBg || theme.baseImage}')`,
           filter: customMainBg ? 'none' : (weather === 'rainy' ? theme.hueDark : theme.hueBase),
-          x: parallaxX,
-          y: parallaxY,
-          scale: 1.02
         }}
       />
 
