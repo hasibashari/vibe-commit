@@ -129,7 +129,7 @@ export function GlobalProbabilityTrend({ goals }: GlobalProbabilityTrendProps) {
         </div>
       </div>
 
-      <div className='h-48 sm:h-56 md:h-64 w-full bg-slate-900/20 border border-slate-800/50 rounded-xl p-4 pt-6'>
+      <div className='h-48 sm:h-56 md:h-64 w-full bg-slate-900/50 border border-slate-800/50 rounded-xl p-4 pt-6'>
         <ResponsiveContainer width='100%' height='100%'>
           <AreaChart data={chartData} margin={{ top: 5, right: 0, left: -25, bottom: 0 }}>
             <defs>

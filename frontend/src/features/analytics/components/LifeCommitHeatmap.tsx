@@ -41,7 +41,7 @@ export const LifeCommitHeatmap: React.FC<HeatmapProps> = ({ logs }) => {
   };
 
   return (
-    <div className='w-full bg-slate-900/40 border border-slate-800 rounded-lg p-4 md:p-6 overflow-hidden'>
+    <div className='w-full bg-slate-900/50 border border-slate-800 rounded-lg p-4 md:p-6 overflow-hidden'>
       <div className='grid grid-rows-7 grid-flow-col gap-[3px] overflow-x-auto pb-4 custom-scrollbar'>
         {data.map((count, i) => (
           <div

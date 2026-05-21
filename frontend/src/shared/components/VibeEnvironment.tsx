@@ -66,17 +66,17 @@ const THEMES: Record<string, any> = {
 const SunsetLight = () => {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none mix-blend-screen opacity-60 z-10">
-      <motion.div 
+      <motion.div
         className="absolute top-0 right-[-10%] w-[50%] h-[120%] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-orange-400/20 via-orange-400/5 to-transparent transform-gpu will-change-transform,opacity"
         animate={{ opacity: [0.3, 0.6, 0.3] }}
         transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
       />
-      <motion.div 
+      <motion.div
         className="absolute top-[10%] right-0 w-[40%] h-[80%] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-amber-300/15 via-amber-300/5 to-transparent transform-gpu will-change-transform,opacity"
         animate={{ opacity: [0.2, 0.5, 0.2] }}
         transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 2 }}
       />
-      <motion.div 
+      <motion.div
         className="absolute bottom-0 left-[-10%] w-[40%] h-[80%] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-rose-400/15 via-rose-400/5 to-transparent transform-gpu will-change-transform,opacity"
         animate={{ opacity: [0.2, 0.4, 0.2] }}
         transition={{ duration: 15, repeat: Infinity, ease: "easeInOut", delay: 1 }}
@@ -88,17 +88,17 @@ const SunsetLight = () => {
 const OvercastClouds = () => {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-10 opacity-70">
-      <motion.div 
+      <motion.div
         className="absolute top-[-10%] left-[-10%] w-[70%] h-[50%] bg-[radial-gradient(circle,_var(--tw-gradient-stops))] from-slate-400/10 to-transparent mix-blend-overlay transform-gpu will-change-transform,opacity"
         animate={{ x: [0, 50, 0], opacity: [0.3, 0.5, 0.3] }}
         transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
       />
-      <motion.div 
+      <motion.div
         className="absolute top-[20%] right-[-10%] w-[60%] h-[60%] bg-[radial-gradient(circle,_var(--tw-gradient-stops))] from-slate-500/10 to-transparent mix-blend-overlay transform-gpu will-change-transform,opacity"
         animate={{ x: [0, -60, 0], opacity: [0.3, 0.6, 0.3] }}
         transition={{ duration: 30, repeat: Infinity, ease: "easeInOut", delay: 3 }}
       />
-      <motion.div 
+      <motion.div
         className="absolute bottom-[-20%] left-[20%] w-[80%] h-[50%] bg-[radial-gradient(circle,_var(--tw-gradient-stops))] from-slate-600/10 to-transparent mix-blend-overlay transform-gpu will-change-transform,opacity"
         animate={{ x: [-30, 40, -30], opacity: [0.2, 0.4, 0.2] }}
         transition={{ duration: 35, repeat: Infinity, ease: "easeInOut", delay: 5 }}
@@ -110,7 +110,7 @@ const OvercastClouds = () => {
 
 const HeartbeatVignette = () => {
   return (
-    <motion.div 
+    <motion.div
       className="absolute inset-0 pointer-events-none mix-blend-multiply z-20"
       style={{
         background: 'radial-gradient(ellipse at center, transparent 40%, rgba(220, 38, 38, 0.3) 100%)'
@@ -121,8 +121,8 @@ const HeartbeatVignette = () => {
   );
 };
 
-export const VibeEnvironment: React.FC<VibeEnvironmentProps> = ({ 
-  anxietyScore = 5, 
+export const VibeEnvironment: React.FC<VibeEnvironmentProps> = ({
+  anxietyScore = 5,
   sigmaVariance = 1.0,
   customMainBg,
   themeVibe = 'midnight',
@@ -135,20 +135,20 @@ export const VibeEnvironment: React.FC<VibeEnvironmentProps> = ({
   const getBgStyleClasses = () => {
     switch (weather) {
       case 'rainy':
-        return 'opacity-[0.66] mix-blend-luminosity grayscale-[40%] brightness-75';
+        return 'opacity-[0.47] mix-blend-luminosity grayscale-[40%] brightness-75';
       case 'overcast':
-        return 'opacity-[0.61] mix-blend-luminosity grayscale-[25%] brightness-90';
+        return 'opacity-[0.43] mix-blend-luminosity grayscale-[25%] brightness-90';
       case 'sunny':
       case 'default':
       default:
-        return 'blur-none opacity-[0.7] mix-blend-screen';
+        return 'blur-none opacity-[0.5] mix-blend-screen';
     }
   };
 
   return (
     <div className={`fixed inset-0 z-[-1] pointer-events-none overflow-hidden transition-colors duration-2000 ${theme.bg}`}>
-      
-      <div 
+
+      <div
         className={`absolute inset-0 bg-cover bg-position-[center_top] bg-no-repeat transition-all duration-3000 ease-in-out ${getBgStyleClasses()}`}
         style={{
           backgroundImage: `url('${customMainBg || theme.baseImage}')`,
@@ -156,21 +156,19 @@ export const VibeEnvironment: React.FC<VibeEnvironmentProps> = ({
         }}
       />
 
-      <div className={`absolute inset-0 bg-linear-to-b transition-all duration-2000 ease-in-out ${
-         weather === 'rainy' ? theme.overlayDark : theme.overlayBase
-      }`} />
-      
-      {theme.glow && (
-        <div className={`absolute top-[-10%] left-1/2 -translate-x-1/2 w-[100vw] h-[80vh] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-current via-transparent to-transparent pointer-events-none mix-blend-screen transition-opacity duration-3000 transform-gpu will-change-transform,opacity ${theme.glow.replace('bg-', 'text-')} ${
-          weather === 'rainy' ? 'opacity-10' : (weather === 'overcast' ? 'opacity-20' : 'opacity-40')
+      <div className={`absolute inset-0 bg-linear-to-b transition-all duration-2000 ease-in-out ${weather === 'rainy' ? theme.overlayDark : theme.overlayBase
         }`} />
+
+      {theme.glow && (
+        <div className={`absolute top-[-10%] left-1/2 -translate-x-1/2 w-[100vw] h-[80vh] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-current via-transparent to-transparent pointer-events-none mix-blend-screen transition-opacity duration-3000 transform-gpu will-change-transform,opacity ${theme.glow.replace('bg-', 'text-')} ${weather === 'rainy' ? 'opacity-10' : (weather === 'overcast' ? 'opacity-20' : 'opacity-40')
+          }`} />
       )}
 
       <div className={`absolute inset-0 pointer-events-none opacity-80 ${theme.vignette}`} />
 
       {weather === 'sunny' && <SunsetLight />}
       {weather === 'overcast' && <OvercastClouds />}
-      
+
       {isCriticalHp && <HeartbeatVignette />}
 
     </div>
