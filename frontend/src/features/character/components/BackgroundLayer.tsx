@@ -8,12 +8,12 @@ export const BackgroundLayer: React.FC<BackgroundLayerProps> = ({ imageUrl }) =>
   // Use a placeholder or provided image
   const bgImg =
     imageUrl ||
-    '/images/mountain_anime.jpg';
+    '/images/mountain.jpg';
 
   return (
     <div className='absolute inset-0 w-full h-full overflow-hidden pointer-events-none rounded-xl'>
       <div
-        className='absolute inset-0 bg-cover bg-center opacity-80'
+        className='absolute inset-0 bg-cover bg-center opacity-95'
         style={{ backgroundImage: `url(${bgImg})` }}
       />
       {/* Overlay to ensure UI readability */}

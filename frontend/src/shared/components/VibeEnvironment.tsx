@@ -135,13 +135,13 @@ export const VibeEnvironment: React.FC<VibeEnvironmentProps> = ({
   const getBgStyleClasses = () => {
     switch (weather) {
       case 'rainy':
-        return 'opacity-[0.38] mix-blend-luminosity grayscale-[40%] brightness-75';
+        return 'opacity-[0.66] mix-blend-luminosity grayscale-[40%] brightness-75';
       case 'overcast':
-        return 'opacity-[0.35] mix-blend-luminosity grayscale-[25%] brightness-90';
+        return 'opacity-[0.61] mix-blend-luminosity grayscale-[25%] brightness-90';
       case 'sunny':
       case 'default':
       default:
-        return 'blur-none opacity-[0.4] mix-blend-screen';
+        return 'blur-none opacity-[0.7] mix-blend-screen';
     }
   };
 
