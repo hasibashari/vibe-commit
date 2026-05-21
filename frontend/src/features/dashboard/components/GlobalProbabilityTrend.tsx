@@ -92,9 +92,9 @@ export function GlobalProbabilityTrend({ goals }: GlobalProbabilityTrendProps) {
           </p>
           <div className='flex items-center gap-2 mb-1'>
             <span className='w-3 h-3 rounded-full' style={{ backgroundColor: color }}></span>
-            <span className='text-white font-bold'>Rata-rata Konsistensi: {data.prob}%</span>
+            <span className='text-white font-bold'>Distribusi Peluang: {data.prob}%</span>
           </div>
-          <p className='text-slate-500 text-xs tabular-nums'>Total Log Global: {data.reps}x</p>
+          <p className='text-slate-500 text-xs tabular-nums'>Total Quest Selesai: {data.reps}x</p>
         </div>
       );
     }
@@ -172,7 +172,7 @@ export function GlobalProbabilityTrend({ goals }: GlobalProbabilityTrendProps) {
       </div>
 
       <p className='text-[10px] text-slate-500 font-mono text-center'>
-        Grafik menunjukkan perubahan rata-rata konsistensi aktivitas harian Anda.
+        Naik saat quest selesai · Turun perlahan saat absen — Model Beta-Bernoulli Global.
       </p>
     </div>
   );

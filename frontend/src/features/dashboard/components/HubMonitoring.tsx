@@ -101,7 +101,7 @@ export function HubMonitoring({ goals }: HubMonitoringProps) {
                   <Activity className='w-4 h-4 text-emerald-500' /> System Consistency Shift
                 </h4>
                 <p className='text-xs font-mono text-slate-500 leading-relaxed'>
-                  Pergerakan kekuatan kebiasaan optimal dari waktu ke waktu (maksimal 99%).
+                  Distribusi peluang keberhasilan global — naik saat quest selesai, turun saat absen.
                 </p>
               </div>
               <GlobalProbabilityTrend goals={goals} />

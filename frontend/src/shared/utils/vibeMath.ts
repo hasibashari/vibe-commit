@@ -232,8 +232,38 @@ export function generateTimeSeriesData(
 }
 
 /**
- * Menghasilkan data time-series probabilitas global (Bayesian) untuk Command Hub.
- * Menghitung rata-rata Posterior Mean (P) dari semua quest yang aktif (sudah dibuat).
+ * Menghasilkan data time-series distribusi peluang global (Single Global Beta Model).
+ *
+ * ═══════════════════════════════════════════════════════════════════════════
+ * KONSEP: SINGLE GLOBAL BETA MODEL
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Alih-alih merata-rata N model Beta independen (yang menyebabkan dilusi
+ * saat quest baru ditambahkan dan chart naik-turun tidak intuitif),
+ * seluruh aktivitas user dimodelkan sebagai SATU distribusi Beta tunggal:
+ *
+ *   θ_global ~ Beta(α_global, β_global)
+ *
+ * FORMULA (identik dengan getBetaParams, diterapkan secara global)
+ * ──────────────────────────────────────────────────────────────────────────
+ *   n(t)        = total log di semua quest hingga hari t
+ *   D_eff(t)    = rata-rata difficulty tertimbang (berdasarkan log yang ada)
+ *   t_idle(t)   = hari sejak log MANAPUN terakhir secara global
+ *
+ *   α(t) = 0.1 + n(t)
+ *   β(t) = D_eff + t_idle(t) × (D_eff / √(n(t) + 1))
+ *   P(t) = α(t) / (α(t) + β(t))
+ *
+ * PERILAKU YANG DIHARAPKAN
+ * ──────────────────────────────────────────────────────────────────────────
+ *   ✓ Quest selesai → n naik → α naik → P naik (LANGSUNG)
+ *   ✓ User absen → t_idle naik → β naik → P turun (PERLAHAN)
+ *   ✓ Semakin banyak log → decay lebih lambat (√(n+1) di penyebut)
+ *   ✓ Quest lebih sulit (D besar) → butuh lebih banyak log untuk stabilisasi
+ *   ✓ Menambah quest baru tidak menurunkan chart (tidak ada dilusi)
+ *
+ * CATATAN: D_eff = rata-rata difficulty dari semua quest yang punya log.
+ * Jika belum ada log sama sekali, D_eff = rata-rata difficulty semua quest.
  */
 export function generateGlobalTimeSeriesData(
   goals: { logs: { timestamp: string }[]; difficulty: number; createdAt?: string }[],
@@ -252,69 +282,94 @@ export function generateGlobalTimeSeriesData(
     start.setHours(0, 0, 0, 0);
   }
 
+  // ── Step 1: Kumpulkan semua log dari seluruh quest, urutkan berdasarkan waktu ─
+  // Setiap event menyimpan timestamp dan difficulty quest asalnya.
+  interface GlobalLogEvent {
+    timestampMs: number;
+    difficulty: number;
+  }
+  const allLogEvents: GlobalLogEvent[] = [];
+
+  for (const goal of goals) {
+    for (const log of goal.logs || []) {
+      const ms = new Date(log.timestamp).getTime();
+      if (!isNaN(ms)) {
+        allLogEvents.push({ timestampMs: ms, difficulty: goal.difficulty });
+      }
+    }
+  }
+
+  allLogEvents.sort((a, b) => a.timestampMs - b.timestampMs);
+
+  // ── Step 2: Hitung D_eff baseline (rata-rata difficulty semua quest) ───────
+  // Digunakan sebagai fallback sebelum ada log
+  const difficultyBaseline =
+    goals.length > 0
+      ? goals.reduce((sum, g) => sum + g.difficulty, 0) / goals.length
+      : 5;
+
+  // ── Step 3: Iterasi harian — bangun Single Global Beta Model per hari ──────
   const data = [];
   let currentDate = new Date(start);
+  let eventIndex = 0;     // pointer ke allLogEvents yang sudah ter-scan
+  let totalLogs = 0;      // n(t): akumulasi total log hingga currentDate
+  let diffWeightedSum = 0; // untuk menghitung D_eff(t): Σ difficulty dari log yang ada
+
+  // Pre-scan: hitung log yang terjadi SEBELUM startDate (riwayat sebelum rentang)
+  const startMs = start.getTime();
+  while (eventIndex < allLogEvents.length && allLogEvents[eventIndex].timestampMs < startMs) {
+    totalLogs++;
+    diffWeightedSum += allLogEvents[eventIndex].difficulty;
+    eventIndex++;
+  }
 
   while (currentDate <= end) {
-    const currentMs = currentDate.getTime();
-    let totalP = 0;
-    let totalVar = 0;
-    let activeGoalsCount = 0;
-    let totalRepsGlobal = 0;
+    const endOfDayMs = new Date(currentDate);
+    endOfDayMs.setHours(23, 59, 59, 999);
+    const endOfDayTimestamp = endOfDayMs.getTime();
 
-    for (const goal of goals) {
-      const createdMs = goal.createdAt ? new Date(goal.createdAt).getTime() : 0;
-      
-      // Jika currentDate sebelum quest dibuat, jangan dihitung sama sekali!
-      if (createdMs && currentMs < createdMs) {
-        continue;
-      }
-
-      // Filter log yang terjadi sebelum currentDate
-      const pastLogs = (goal.logs || [])
-        .filter(l => new Date(l.timestamp).getTime() <= currentMs)
-        .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
-
-      const repetitionCount = pastLogs.length;
-      totalRepsGlobal += repetitionCount;
-      
-      let daysSinceLast = 0;
-      if (repetitionCount > 0) {
-        const lastLogMs = new Date(pastLogs[pastLogs.length - 1].timestamp).getTime();
-        daysSinceLast = (currentMs - lastLogMs) / (1000 * 60 * 60 * 24);
-      } else if (createdMs) {
-        // Jika belum pernah di-log, hitung inaktivitas dari tanggal pembuatan quest
-        daysSinceLast = (currentMs - createdMs) / (1000 * 60 * 60 * 24);
-      }
-
-      // Hitung parameter untuk goal ini di hari tersebut
-      const { alpha, beta } = getBetaParams(repetitionCount, goal.difficulty, daysSinceLast);
-      const p = calculateBayesianProbability(alpha, beta);
-      const variance = calculateBetaVariance(alpha, beta);
-
-      totalP += p;
-      totalVar += variance;
-      activeGoalsCount++;
+    // Tambahkan semua log yang jatuh di hari ini
+    while (eventIndex < allLogEvents.length && allLogEvents[eventIndex].timestampMs <= endOfDayTimestamp) {
+      totalLogs++;
+      diffWeightedSum += allLogEvents[eventIndex].difficulty;
+      eventIndex++;
     }
 
-    // Jika tidak ada goal, p = 0
-    let avgP = 0;
-    let avgSigma = 0;
-    
-    if (activeGoalsCount > 0) {
-      avgP = totalP / activeGoalsCount;
-      // Asumsi independent quests, variance of mean = sum(var) / N^2
-      // Namun untuk visualisasi "rata-rata ketidakpastian individu", mean(sigma) atau sqrt(mean(var)) lebih intuitif
-      const avgVar = totalVar / activeGoalsCount; 
-      avgSigma = Math.sqrt(avgVar);
+    // n(t): total penyelesaian global hingga hari ini
+    const n = totalLogs;
+
+    // D_eff(t): rata-rata difficulty tertimbang dari log yang ada
+    // Jika belum ada log, gunakan baseline (rata-rata difficulty semua quest)
+    const D_eff = n > 0 ? diffWeightedSum / n : difficultyBaseline;
+
+    // t_idle(t): hari sejak log terakhir secara global (di semua quest)
+    let t_idle = 0;
+    if (n > 0) {
+      // Log terakhir = event tepat sebelum eventIndex (setelah scan hari ini)
+      const lastLogMs = allLogEvents[eventIndex - 1]?.timestampMs ?? 0;
+      t_idle = Math.max(0, (endOfDayTimestamp - lastLogMs) / (1000 * 60 * 60 * 24));
     }
+
+    // ── Formula Beta Global (sama persis dengan getBetaParams) ──────────────
+    //   α = 0.1 + n
+    //   β = D_eff + t_idle × (D_eff / √(n + 1))
+    //   P = α / (α + β)
+    const alpha = 0.1 + n;
+    const decayRate = D_eff / Math.sqrt(n + 1);
+    const beta = D_eff + t_idle * decayRate;
+    const p = alpha / (alpha + beta);
+
+    // Hitung variance untuk confidence band
+    const s = alpha + beta;
+    const variance = (alpha * beta) / (s * s * (s + 1));
+    const sigma = Math.sqrt(variance);
 
     data.push({
-      date: currentDate.toISOString().split('T')[0],
-      prob: Math.round(avgP * 100),
-      lower: Math.max(0, Math.round((avgP - avgSigma) * 100)),
-      upper: Math.min(100, Math.round((avgP + avgSigma) * 100)),
-      reps: totalRepsGlobal,
+      date: currentDate.toISOString().split('T')[0], // YYYY-MM-DD
+      prob: Math.round(p * 100),
+      lower: Math.max(0, Math.round((p - sigma) * 100)),
+      upper: Math.min(100, Math.round((p + sigma) * 100)),
+      reps: n, // total log kumulatif
     });
 
     currentDate.setDate(currentDate.getDate() + 1);
@@ -322,3 +377,4 @@ export function generateGlobalTimeSeriesData(
 
   return data;
 }
+
