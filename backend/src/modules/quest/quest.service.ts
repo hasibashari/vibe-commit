@@ -35,13 +35,7 @@ export class QuestService {
   }
 
   static deleteGoal(id: string) {
-    const deleteLogs = db.prepare('DELETE FROM quest_logs WHERE goal_id = ?');
-    const deleteGoal = db.prepare('DELETE FROM goals WHERE id = ?');
-    
-    db.transaction(() => {
-      deleteLogs.run(id);
-      deleteGoal.run(id);
-    })();
+    db.prepare("UPDATE goals SET status = 'archived' WHERE id = ?").run(id);
     return { success: true };
   }
 

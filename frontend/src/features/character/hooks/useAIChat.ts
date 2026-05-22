@@ -49,7 +49,7 @@ export function useAIChat(isOpen: boolean, user: UserStats, goals?: Goal[]) {
     setIsTyping(true);
 
     try {
-      const activeGoals = goals?.filter(g => g.status !== 'completed').map(g => g.title).join(', ') || 'Belum ada quest aktif.';
+      const activeGoals = goals?.filter(g => g.status !== 'completed' && g.status !== 'archived').map(g => g.title).join(', ') || 'Belum ada quest aktif.';
       
       const response = await chatWithAI(newMessages, {
         userName: user?.name,

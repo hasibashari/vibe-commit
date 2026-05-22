@@ -5,6 +5,7 @@ import { LifeCommitHeatmap } from '../../analytics/components/LifeCommitHeatmap'
 import { GlobalProbabilityTrend } from './GlobalProbabilityTrend';
 import { VariableCharts } from '../../character/components/VariableCharts';
 import type { Goal } from '../../../shared/types/goal';
+import { getTodayLocalString, getLogDateString } from '../../../shared/utils/dateUtils';
 import { EmptyState } from '../../../shared/components/EmptyState';
 import { StatCard } from '../../../shared/components/StatCard';
 import { Badge } from '../../../shared/components/Badge';
@@ -14,17 +15,17 @@ interface HubMonitoringProps {
 }
 
 export function HubMonitoring({ goals }: HubMonitoringProps) {
+  const activeGoals = React.useMemo(() => goals.filter(g => g.status !== 'archived'), [goals]);
+
   const { allLogs, totalCompleted, activeExp, completedTodayCount } = React.useMemo(() => {
     // Use local date (not UTC) so "today" is the user's actual calendar day.
-    const now = new Date();
-    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const todayStr = getTodayLocalString();
     let completedToday = 0;
 
-    goals.forEach(goal => {
+    activeGoals.forEach(goal => {
       const hasLogToday = (goal.logs || []).some(log => {
         if (!log.timestamp) return false;
-        const logDateStr =
-          typeof log.timestamp === 'string' ? log.timestamp.split('T')[0].split(' ')[0] : '';
+        const logDateStr = getLogDateString(log.timestamp);
         return logDateStr === todayStr;
       });
       if (hasLogToday) completedToday++;
@@ -42,7 +43,7 @@ export function HubMonitoring({ goals }: HubMonitoringProps) {
       ),
       completedTodayCount: completedToday,
     };
-  }, [goals]);
+  }, [goals, activeGoals]);
 
   return (
     <motion.div
@@ -85,13 +86,13 @@ export function HubMonitoring({ goals }: HubMonitoringProps) {
             <StatCard
               icon={<Target className='w-4 h-4 text-emerald-500' />}
               label='Sisa Quest'
-              value={Math.max(0, goals.length - completedTodayCount)}
+              value={Math.max(0, activeGoals.length - completedTodayCount)}
               valueColor='text-emerald-400'
             />
             <StatCard
               icon={<BarChart2 className='w-4 h-4 text-purple-500' />}
               label='Diambil'
-              value={goals.length}
+              value={activeGoals.length}
               valueColor='text-purple-400'
             />
           </div>
@@ -133,7 +134,7 @@ export function HubMonitoring({ goals }: HubMonitoringProps) {
                   Distribusi area fokus saat ini.
                 </p>
               </div>
-              <VariableCharts goals={goals} />
+              <VariableCharts goals={activeGoals} />
             </div>
           </div>
         </>

@@ -12,8 +12,8 @@
 //
 // PARAMETER
 // ──────────────────────────────────────────────────────────────────────────
-//   α  = 0.1 + repetition_count
-//        (prior 0.1 = "prior informatif rendah / sparse prior" + jumlah penyelesaian berhasil)
+//   α  = 1.0 + repetition_count
+//        (prior 1.0 = "prior Laplace informatif standar" + jumlah penyelesaian berhasil)
 //
 //   β  = D + t × decayRate
 //        Prior D = "resistansi awal" berdasarkan kesulitan.
@@ -42,6 +42,31 @@
 // ═══════════════════════════════════════════════════════════════════════════
 
 /**
+ * Parse a timestamp safely across all browsers (including Safari).
+ * SQLite defaults to 'YYYY-MM-DD HH:MM:SS' which causes Safari to return NaN.
+ * Normalizes space separators to 'T'.
+ * If the string has no timezone designator (Z or +/-offset), appends 'Z' to parse as UTC.
+ */
+export function safeParseDate(timestamp: string | Date | number): Date {
+  if (timestamp instanceof Date) return timestamp;
+  if (typeof timestamp === 'number') return new Date(timestamp);
+  if (!timestamp) return new Date();
+
+  let cleanStr = String(timestamp).trim().replace(' ', 'T');
+  if (cleanStr.includes('T') && !cleanStr.includes('Z') && !cleanStr.match(/[+-]\d{2}(:?\d{2})?$/)) {
+    cleanStr += 'Z';
+  }
+
+  const parsed = new Date(cleanStr);
+  if (isNaN(parsed.getTime())) {
+    // Secondary fallback
+    const fallback = new Date(String(timestamp).replace(/-/g, '/'));
+    if (!isNaN(fallback.getTime())) return fallback;
+  }
+  return parsed;
+}
+
+/**
  * Menghitung jumlah hari sejak log terakhir.
  * Jika belum ada log, menghitung hari sejak quest dibuat (createdAt) agar ada decay asimtotik awal.
  * Mengembalikan 0 jika tidak ada log dan tidak ada tanggal dibuat.
@@ -49,13 +74,13 @@
 export function getDaysSinceLastLog(logs: { timestamp: string }[], createdAt?: string): number {
   if (!logs || logs.length === 0) {
     if (createdAt) {
-      return Math.max(0, (Date.now() - new Date(createdAt).getTime()) / (1000 * 60 * 60 * 24));
+      return Math.max(0, (Date.now() - safeParseDate(createdAt).getTime()) / (1000 * 60 * 60 * 24));
     }
     return 0;
   }
 
   const latestMs = logs.reduce((max, log) => {
-    const t = new Date(log.timestamp).getTime();
+    const t = safeParseDate(log.timestamp).getTime();
     return t > max ? t : max;
   }, 0);
 
@@ -65,7 +90,7 @@ export function getDaysSinceLastLog(logs: { timestamp: string }[], createdAt?: s
 /**
  * Menghitung parameter distribusi Beta (α, β) untuk sebuah quest.
  *
- * α = 0.1 + n         [prior informatif rendah + jumlah penyelesaian]
+ * α = 1.0 + n         [prior informatif standar + jumlah penyelesaian]
  * β = D + t × (D/√(n+1))   [resistansi awal + penalti inaktivitas]
  *
  * Laju decay D/√(n+1) memastikan:
@@ -82,7 +107,7 @@ export function getBetaParams(
   difficulty: number,
   daysSinceLastLog: number
 ): { alpha: number; beta: number } {
-  const alpha0 = 0.1;
+  const alpha0 = 1.0;
   const alpha = alpha0 + repetitionCount;
 
   // Guard: difficulty must be > 0. A difficulty of exactly 0 would produce
@@ -131,13 +156,13 @@ export function calculateBetaVariance(alpha: number, beta: number): number {
  * Digunakan oleh analyticsService untuk deteksi burnout.
  *
  * Interval diukur dalam hari antar penyelesaian berturutan.
- * σ tinggi → pola tidak konsisten → potensi burnout.
+ * Menggunakan koreksi Bessel (divisor N-1) untuk memberikan estimasi varians sampel tak bias.
  */
 export function calculateStats(logs: { timestamp: string }[]) {
   if (logs.length < 2) return { mu: 0, sigma: 0 };
 
   const dates = logs
-    .map(l => new Date(l.timestamp).getTime())
+    .map(l => safeParseDate(l.timestamp).getTime())
     .sort((a, b) => a - b);
 
   const intervals: number[] = [];
@@ -146,8 +171,9 @@ export function calculateStats(logs: { timestamp: string }[]) {
   }
 
   const mu = intervals.reduce((a, b) => a + b, 0) / intervals.length;
+  const divisor = intervals.length > 1 ? intervals.length - 1 : 1;
   const variance =
-    intervals.reduce((a, b) => a + Math.pow(b - mu, 2), 0) / intervals.length;
+    intervals.reduce((a, b) => a + Math.pow(b - mu, 2), 0) / divisor;
   const sigma = Math.sqrt(variance);
 
   return { mu, sigma };
@@ -164,7 +190,7 @@ export function generateTimeSeriesData(
   endDateStr?: string
 ) {
   // 1. Tentukan rentang waktu
-  const end = endDateStr ? new Date(endDateStr) : new Date();
+  const end = endDateStr ? safeParseDate(endDateStr) : new Date();
   end.setHours(23, 59, 59, 999);
 
   // Jika tidak ada startDate, default ke 30 hari lalu, atau dari log pertama
@@ -173,11 +199,11 @@ export function generateTimeSeriesData(
   start.setHours(0, 0, 0, 0);
 
   if (startDateStr) {
-    start = new Date(startDateStr);
+    start = safeParseDate(startDateStr);
     start.setHours(0, 0, 0, 0);
   } else if (logs.length > 0) {
     const firstLogDate = new Date(
-      Math.min(...logs.map(l => new Date(l.timestamp).getTime()))
+      Math.min(...logs.map(l => safeParseDate(l.timestamp).getTime()))
     );
     firstLogDate.setHours(0, 0, 0, 0);
     // Jika log pertama lebih tua dari 30 hari, kita pakai log pertama sebagai start
@@ -188,7 +214,7 @@ export function generateTimeSeriesData(
 
   // Sort log berdasarkan waktu
   const sortedLogs = [...logs].sort(
-    (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    (a, b) => safeParseDate(a.timestamp).getTime() - safeParseDate(b.timestamp).getTime()
   );
 
   const data = [];
@@ -200,7 +226,7 @@ export function generateTimeSeriesData(
 
     // 2. Filter log yang terjadi HINGGA (dan termasuk) currentDate
     const pastLogs = sortedLogs.filter(
-      l => new Date(l.timestamp).getTime() <= currentMs
+      l => safeParseDate(l.timestamp).getTime() <= currentMs
     );
 
     const repetitionCount = pastLogs.length;
@@ -208,13 +234,10 @@ export function generateTimeSeriesData(
     // 3. Hitung decay (hari sejak log terakhir yang valid di masa lalu)
     let daysSinceLast = 0;
     if (repetitionCount > 0) {
-      const lastLogMs = new Date(pastLogs[pastLogs.length - 1].timestamp.replace(' ', 'T')).getTime();
+      const lastLogMs = safeParseDate(pastLogs[pastLogs.length - 1].timestamp).getTime();
       daysSinceLast = (currentMs - lastLogMs) / (1000 * 60 * 60 * 24);
     } else if (startDateStr) {
-      // No logs yet — decay from the quest creation date so that old
-      // un-completed quests show accurate declining probability rather
-      // than a flat prior line.
-      const createdMs = new Date(startDateStr.replace(' ', 'T')).getTime();
+      const createdMs = safeParseDate(startDateStr).getTime();
       if (!isNaN(createdMs)) {
         daysSinceLast = Math.max(0, (currentMs - createdMs) / (1000 * 60 * 60 * 24));
       }
@@ -245,45 +268,38 @@ export function generateTimeSeriesData(
 }
 
 /**
- * Menghasilkan data time-series distribusi peluang global (Single Global Beta Model).
+ * Menghasilkan data time-series distribusi peluang global (Single Global Beta Model dengan Jendela Rolling 30 Hari).
  *
  * ═══════════════════════════════════════════════════════════════════════════
- * KONSEP: SINGLE GLOBAL BETA MODEL
+ * KONSEP: ROLLING WINDOW SINGLE GLOBAL BETA MODEL
  * ═══════════════════════════════════════════════════════════════════════════
  *
- * Alih-alih merata-rata N model Beta independen (yang menyebabkan dilusi
- * saat quest baru ditambahkan dan chart naik-turun tidak intuitif),
- * seluruh aktivitas user dimodelkan sebagai SATU distribusi Beta tunggal:
+ * Untuk mencegah "Inactivity Lock-in" (di mana pengguna jangka panjang tetap memiliki
+ * probabilitas global >95% meskipun telah absen selama sebulan penuh karena besarnya nilai α kumulatif),
+ * model ini menggunakan **Jendela Bergulir 30 Hari** (30-day Rolling Window):
  *
- *   θ_global ~ Beta(α_global, β_global)
+ *   n_30(t) = total log aktif di seluruh quest dalam rentang [t - 30 hari, t]
+ *   D_eff(t) = rata-rata difficulty tertimbang dari log aktif dalam jendela rolling
+ *   t_idle(t) = hari sejak log global terakhir (tidak dibatasi jendela rolling)
  *
- * FORMULA (identik dengan getBetaParams, diterapkan secara global)
- * ──────────────────────────────────────────────────────────────────────────
- *   n(t)        = total log di semua quest hingga hari t
- *   D_eff(t)    = rata-rata difficulty tertimbang (berdasarkan log yang ada)
- *   t_idle(t)   = hari sejak log MANAPUN terakhir secara global
- *
- *   α(t) = 0.1 + n(t)
- *   β(t) = D_eff + t_idle(t) × (D_eff / √(n(t) + 1))
- *   P(t) = α(t) / (α(t) + β(t))
+ *   α_global = 1.0 + n_30(t)   [Laplace smoothing + log dalam 30 hari terakhir]
+ *   β_global = D_eff + t_idle × (D_eff / √(n_30 + 1))
+ *   P_global = α_global / (α_global + β_global)
  *
  * PERILAKU YANG DIHARAPKAN
  * ──────────────────────────────────────────────────────────────────────────
- *   ✓ Quest selesai → n naik → α naik → P naik (LANGSUNG)
- *   ✓ User absen → t_idle naik → β naik → P turun (PERLAHAN)
- *   ✓ Semakin banyak log → decay lebih lambat (√(n+1) di penyebut)
- *   ✓ Quest lebih sulit (D besar) → butuh lebih banyak log untuk stabilisasi
+ *   ✓ Quest selesai → n_30 naik → α naik → P naik (LANGSUNG)
+ *   ✓ User absen → t_idle naik & n_30 meluruh → β naik & α menyusut → P turun secara dinamis
+ *   ✓ Absen 30 hari penuh → n_30 kembali ke 0 → P kembali ke basis prior rendah secara elegan
  *   ✓ Menambah quest baru tidak menurunkan chart (tidak ada dilusi)
- *
- * CATATAN: D_eff = rata-rata difficulty dari semua quest yang punya log.
- * Jika belum ada log sama sekali, D_eff = rata-rata difficulty semua quest.
  */
 export function generateGlobalTimeSeriesData(
   goals: { logs: { timestamp: string }[]; difficulty: number; createdAt?: string }[],
   startDateStr?: string,
-  endDateStr?: string
+  endDateStr?: string,
+  windowDays: number = 30
 ) {
-  const end = endDateStr ? new Date(endDateStr) : new Date();
+  const end = endDateStr ? safeParseDate(endDateStr) : new Date();
   end.setHours(23, 59, 59, 999);
 
   let start = new Date();
@@ -291,12 +307,11 @@ export function generateGlobalTimeSeriesData(
   start.setHours(0, 0, 0, 0);
 
   if (startDateStr) {
-    start = new Date(startDateStr);
+    start = safeParseDate(startDateStr);
     start.setHours(0, 0, 0, 0);
   }
 
   // ── Step 1: Kumpulkan semua log dari seluruh quest, urutkan berdasarkan waktu ─
-  // Setiap event menyimpan timestamp dan difficulty quest asalnya.
   interface GlobalLogEvent {
     timestampMs: number;
     difficulty: number;
@@ -305,7 +320,7 @@ export function generateGlobalTimeSeriesData(
 
   for (const goal of goals) {
     for (const log of goal.logs || []) {
-      const ms = new Date(log.timestamp).getTime();
+      const ms = safeParseDate(log.timestamp).getTime();
       if (!isNaN(ms)) {
         allLogEvents.push({ timestampMs: ms, difficulty: goal.difficulty });
       }
@@ -315,7 +330,6 @@ export function generateGlobalTimeSeriesData(
   allLogEvents.sort((a, b) => a.timestampMs - b.timestampMs);
 
   // ── Step 2: Hitung D_eff baseline (rata-rata difficulty semua quest) ───────
-  // Digunakan sebagai fallback sebelum ada log
   const difficultyBaseline =
     goals.length > 0
       ? goals.reduce((sum, g) => sum + g.difficulty, 0) / goals.length
@@ -324,50 +338,37 @@ export function generateGlobalTimeSeriesData(
   // ── Step 3: Iterasi harian — bangun Single Global Beta Model per hari ──────
   const data = [];
   let currentDate = new Date(start);
-  let eventIndex = 0;     // pointer ke allLogEvents yang sudah ter-scan
-  let totalLogs = 0;      // n(t): akumulasi total log hingga currentDate
-  let diffWeightedSum = 0; // untuk menghitung D_eff(t): Σ difficulty dari log yang ada
-
-  // Pre-scan: hitung log yang terjadi SEBELUM startDate (riwayat sebelum rentang)
-  const startMs = start.getTime();
-  while (eventIndex < allLogEvents.length && allLogEvents[eventIndex].timestampMs < startMs) {
-    totalLogs++;
-    diffWeightedSum += allLogEvents[eventIndex].difficulty;
-    eventIndex++;
-  }
 
   while (currentDate <= end) {
     const endOfDayMs = new Date(currentDate);
     endOfDayMs.setHours(23, 59, 59, 999);
     const endOfDayTimestamp = endOfDayMs.getTime();
 
-    // Tambahkan semua log yang jatuh di hari ini
-    while (eventIndex < allLogEvents.length && allLogEvents[eventIndex].timestampMs <= endOfDayTimestamp) {
-      totalLogs++;
-      diffWeightedSum += allLogEvents[eventIndex].difficulty;
-      eventIndex++;
-    }
+    // Rolling Window: log aktif dalam [current_day - windowDays, current_day]
+    const windowMs = windowDays * 24 * 60 * 60 * 1000;
+    const windowStartMs = endOfDayTimestamp - windowMs;
+    
+    const activeLogs = allLogEvents.filter(
+      e => e.timestampMs <= endOfDayTimestamp && e.timestampMs >= windowStartMs
+    );
 
-    // n(t): total penyelesaian global hingga hari ini
-    const n = totalLogs;
+    // n: total log aktif kumulatif dalam window 30 hari
+    const n = activeLogs.length;
 
-    // D_eff(t): rata-rata difficulty tertimbang dari log yang ada
-    // Jika belum ada log, gunakan baseline (rata-rata difficulty semua quest)
+    // D_eff: rata-rata difficulty tertimbang dari log aktif dalam window
+    const diffWeightedSum = activeLogs.reduce((sum, e) => sum + e.difficulty, 0);
     const D_eff = n > 0 ? diffWeightedSum / n : difficultyBaseline;
 
-    // t_idle(t): hari sejak log terakhir secara global (di semua quest)
+    // t_idle: hari sejak log global terakhir secara absolut (tidak terbatas rolling window)
+    const pastLogs = allLogEvents.filter(e => e.timestampMs <= endOfDayTimestamp);
     let t_idle = 0;
-    if (n > 0) {
-      // Log terakhir = event tepat sebelum eventIndex (setelah scan hari ini)
-      const lastLogMs = allLogEvents[eventIndex - 1]?.timestampMs ?? 0;
+    if (pastLogs.length > 0) {
+      const lastLogMs = pastLogs[pastLogs.length - 1].timestampMs;
       t_idle = Math.max(0, (endOfDayTimestamp - lastLogMs) / (1000 * 60 * 60 * 24));
     }
 
-    // ── Formula Beta Global (sama persis dengan getBetaParams) ──────────────
-    //   α = 0.1 + n
-    //   β = D_eff + t_idle × (D_eff / √(n + 1))
-    //   P = α / (α + β)
-    const alpha = 0.1 + n;
+    // ── Formula Beta Global (Jendela Bergulir dengan prior Laplace standar) ──
+    const alpha = 1.0 + n;
     const decayRate = D_eff / Math.sqrt(n + 1);
     const beta = D_eff + t_idle * decayRate;
     const p = alpha / (alpha + beta);
@@ -382,7 +383,7 @@ export function generateGlobalTimeSeriesData(
       prob: Math.round(p * 100),
       lower: Math.max(0, Math.round((p - sigma) * 100)),
       upper: Math.min(100, Math.round((p + sigma) * 100)),
-      reps: n, // total log kumulatif
+      reps: n, // total log aktif di window
     });
 
     currentDate.setDate(currentDate.getDate() + 1);
@@ -390,4 +391,3 @@ export function generateGlobalTimeSeriesData(
 
   return data;
 }
-

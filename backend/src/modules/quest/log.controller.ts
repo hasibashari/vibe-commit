@@ -100,13 +100,28 @@ export class LogController {
             // Mana represents daily focus. On the FIRST quest of a new day
             // mana refreshes to 100 (new day, fresh focus); each subsequent
             // quest drains 10 points (effort spent).
+            //
+            // OBJECTIVE COUNTER: Instead of relying on user.last_penalty_date (which is subject
+            // to race conditions when page loads applyTimeEffects first), we query SQLite to check
+            // how many quest logs the user has completed today (in local server time).
+            // Since the transaction has already inserted the current log, a count of <= 1 indicates
+            // this is the very first quest completion of today.
+            const todayLogs = db.prepare(`
+              SELECT COUNT(*) as count 
+              FROM quest_logs 
+              JOIN goals ON quest_logs.goal_id = goals.id 
+              WHERE goals.user_id = ? 
+                AND DATE(quest_logs.timestamp, 'localtime') = DATE('now', 'localtime')
+            `).get(user.id) as { count: number };
+
+            const isFirstQuestToday = todayLogs.count <= 1;
+            const manaBase = isFirstQuestToday ? 100 : user.mana;
+            const newMana = Math.max(0, manaBase - 10);
+
             const todayStr = (() => {
               const now = new Date();
               return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
             })();
-            const isFirstQuestToday = user.last_penalty_date !== todayStr;
-            const manaBase = isFirstQuestToday ? 100 : user.mana;
-            const newMana = Math.max(0, manaBase - 10);
 
             db.prepare('UPDATE users SET hp = ?, mana = ?, level = ?, exp = ?, last_penalty_date = ? WHERE id = ?')
               .run(newHp, newMana, newLevel, newExp, todayStr, user.id);

@@ -37,21 +37,41 @@ export function parseLocalDate(dateStr: string): Date {
  *   - ISO 8601:     "2026-01-15T10:30:00.000Z"
  *   - SQLite space: "2026-01-15 10:30:00"
  * Safari rejects the space format; normalise it first.
+ * Appends 'Z' if no timezone offset is provided to ensure universal UTC parsing.
  */
 export function parseLogTimestamp(timestamp: string): Date {
   if (!timestamp) return new Date(NaN);
-  // Replace space separator with 'T' for universal compatibility
-  return new Date(timestamp.replace(' ', 'T'));
+  let cleanStr = timestamp.trim().replace(' ', 'T');
+  if (cleanStr.includes('T') && !cleanStr.includes('Z') && !cleanStr.match(/[+-]\d{2}(:?\d{2})?$/)) {
+    cleanStr += 'Z';
+  }
+  return new Date(cleanStr);
 }
 
 /**
  * Extract just the YYYY-MM-DD part from a log timestamp string.
  * Works with both space and 'T' separator formats.
- * Replaces: log.timestamp.split(' ')[0].split('T')[0]
+ * Normalizes the date from UTC (database timezone) to the browser's local timezone
+ * before formatting as YYYY-MM-DD to avoid timezone-boundary discrepancy.
  */
 export function getLogDateString(timestamp: string): string {
   if (!timestamp) return '';
-  return timestamp.split('T')[0].split(' ')[0];
+  
+  let cleanStr = timestamp.trim().replace(' ', 'T');
+  if (cleanStr.includes('T') && !cleanStr.includes('Z') && !cleanStr.match(/[+-]\d{2}(:?\d{2})?$/)) {
+    cleanStr += 'Z';
+  }
+
+  const date = new Date(cleanStr);
+  if (isNaN(date.getTime())) {
+    // Fallback to naive splitting if parsing fails
+    return timestamp.split('T')[0].split(' ')[0];
+  }
+
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
 }
 
 /**

@@ -309,7 +309,7 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
       if (selectedGoal?.id === questToDelete) {
         set({ selectedGoal: null });
       }
-      setGoals(goals.filter((g: any) => g.id !== questToDelete));
+      setGoals(goals.map((g: any) => g.id === questToDelete ? { ...g, status: 'archived' } : g));
       set({ questToDelete: null });
 
       const pendingStr = localStorage.getItem('vibe_commit_pending_actions') || '[]';
@@ -328,14 +328,14 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
       if (selectedGoal?.id === questToDelete) {
         set({ selectedGoal: null });
       }
-      setGoals(goals.filter((g: any) => g.id !== questToDelete));
+      setGoals(goals.map((g: any) => g.id === questToDelete ? { ...g, status: 'archived' } : g));
       set({ questToDelete: null });
       await fetchData();
     } catch (e: unknown) {
       if (selectedGoal?.id === questToDelete) {
         set({ selectedGoal: null });
       }
-      setGoals(goals.filter((g: any) => g.id !== questToDelete));
+      setGoals(goals.map((g: any) => g.id === questToDelete ? { ...g, status: 'archived' } : g));
       set({ questToDelete: null });
 
       const pendingStr = localStorage.getItem('vibe_commit_pending_actions') || '[]';

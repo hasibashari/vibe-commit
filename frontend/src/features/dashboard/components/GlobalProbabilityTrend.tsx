@@ -9,7 +9,7 @@ import {
   ReferenceLine,
 } from 'recharts';
 import type { Goal } from '../../../shared/types/goal';
-import { generateGlobalTimeSeriesData } from '../../../shared/utils/vibeMath';
+import { generateGlobalTimeSeriesData, safeParseDate } from '../../../shared/utils/vibeMath';
 
 interface GlobalProbabilityTrendProps {
   goals: Goal[];
@@ -31,8 +31,8 @@ export function GlobalProbabilityTrend({ goals }: GlobalProbabilityTrendProps) {
       start.setFullYear(end.getFullYear(), 0, 1);
     } else if (filter === 'all') {
       const allDates = [
-        ...goals.flatMap(g => g.logs || []).map(l => new Date(l.timestamp).getTime()),
-        ...goals.filter(g => g.createdAt).map(g => new Date(g.createdAt!).getTime()),
+        ...goals.flatMap(g => g.logs || []).map(l => safeParseDate(l.timestamp).getTime()),
+        ...goals.filter(g => g.createdAt).map(g => safeParseDate(g.createdAt!).getTime()),
       ];
       if (allDates.length > 0) {
         const firstDate = new Date(Math.min(...allDates));
@@ -52,14 +52,40 @@ export function GlobalProbabilityTrend({ goals }: GlobalProbabilityTrendProps) {
     };
   }, [filter, goals]);
 
+  const windowDays = useMemo(() => {
+    if (filter === '30days') return 15; // Jendela 15 hari untuk visibilitas responsif jangka pendek
+    if (filter === '90days') return 30; // Jendela 30 hari standar bulanan
+    if (filter === 'this_year') return 90; // Jendela 90 hari kuartalan untuk melihat habit jangka panjang tahun ini
+
+    // Logika Adaptif untuk filter 'Semua' (all):
+    // Menghitung jarak hari antara log terlama (atau pembuatan quest terlama) hingga hari ini.
+    const allDates = [
+      ...goals.flatMap(g => g.logs || []).map(l => safeParseDate(l.timestamp).getTime()),
+      ...goals.filter(g => g.createdAt).map(g => safeParseDate(g.createdAt!).getTime()),
+    ];
+    if (allDates.length > 0) {
+      const firstDate = Math.min(...allDates);
+      const diffDays = (Date.now() - firstDate) / (1000 * 60 * 60 * 24);
+
+      if (diffDays <= 45) {
+        return 15; // Jika sejarah data <= 1.5 bulan, gunakan jendela memori pendek (15 hari) agar grafik tetap responsif
+      } else if (diffDays <= 180) {
+        return 30; // Jika sejarah data <= 6 bulan, gunakan jendela memori bulanan (30 hari)
+      } else {
+        return 90; // Jika sejarah data > 6 bulan, gunakan jendela memori kuartalan (90 hari) untuk kestabilan jangka panjang
+      }
+    }
+    return 30; // Default fallback jika belum ada data log sama sekali
+  }, [filter, goals]);
+
   const chartData = useMemo(() => {
     const goalsData = goals.map(g => ({
       logs: g.logs || [],
       difficulty: g.difficulty,
       createdAt: g.createdAt,
     }));
-    return generateGlobalTimeSeriesData(goalsData, startDate, endDate);
-  }, [goals, startDate, endDate]);
+    return generateGlobalTimeSeriesData(goalsData, startDate, endDate, windowDays);
+  }, [goals, startDate, endDate, windowDays]);
 
   const latestProb = chartData.length > 0 ? chartData[chartData.length - 1].prob : 0;
 

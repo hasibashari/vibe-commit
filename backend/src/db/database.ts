@@ -45,6 +45,7 @@ export function initDb() {
 
   if (hasGoalCol('is_experimental')) db.exec("ALTER TABLE goals DROP COLUMN is_experimental");
   if (hasGoalCol('parent_id')) db.exec("ALTER TABLE goals DROP COLUMN parent_id");
+  if (!hasGoalCol('status')) db.exec("ALTER TABLE goals ADD COLUMN status TEXT DEFAULT 'active'");
 
   db.exec(`
     CREATE TABLE IF NOT EXISTS goals (
@@ -55,6 +56,7 @@ export function initDb() {
       difficulty REAL DEFAULT 1.0,
       reward_alpha REAL DEFAULT 0.5,
       category TEXT,
+      status TEXT DEFAULT 'active',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 

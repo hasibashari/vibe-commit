@@ -1,4 +1,4 @@
-import { calculateStats } from "../utils/vibeMath";
+import { calculateStats, safeParseDate } from "../utils/vibeMath";
 
 /**
  * Stochastic Nudges: Smart reminders sent during focus peaks.
@@ -10,7 +10,7 @@ export function calculateStochasticNudges(logs: { timestamp: string }[]) {
   // Track frequency of logs by hour of day
   const hourMap: Record<number, number> = {};
   logs.forEach(log => {
-    const hour = new Date(log.timestamp).getHours();
+    const hour = safeParseDate(log.timestamp).getHours();
     hourMap[hour] = (hourMap[hour] || 0) + 1;
   });
 
@@ -41,8 +41,8 @@ export function analyzeBurnoutRisk(logs: Log[], goals: Goal[]): BurnoutPredictio
   const now = new Date().getTime();
   const ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
   
-  const recentLogs = logs.filter(l => now - new Date(l.timestamp).getTime() < ONE_WEEK);
-  const historicalLogs = logs.filter(l => now - new Date(l.timestamp).getTime() >= ONE_WEEK);
+  const recentLogs = logs.filter(l => now - safeParseDate(l.timestamp).getTime() < ONE_WEEK);
+  const historicalLogs = logs.filter(l => now - safeParseDate(l.timestamp).getTime() >= ONE_WEEK);
 
   let recentSigma = 0, historicalSigma = 0;
   let recentHighDiff = 0, historicalHighDiffAvg = 0;

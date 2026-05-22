@@ -1,4 +1,5 @@
 import React from 'react';
+import { safeParseDate } from '../../../shared/utils/vibeMath';
 
 interface HeatmapProps {
   logs: { timestamp: string }[];
@@ -15,7 +16,7 @@ export const LifeCommitHeatmap: React.FC<HeatmapProps> = ({ logs }) => {
     now.setHours(0, 0, 0, 0);
 
     logs.forEach(log => {
-      const d = new Date(log.timestamp);
+      const d = safeParseDate(log.timestamp);
       d.setHours(0, 0, 0, 0);
       const diffTime = Math.abs(now.getTime() - d.getTime());
       // Math.floor (not ceil): a log at 10:00 AM today has a 10-hour diff vs midnight,

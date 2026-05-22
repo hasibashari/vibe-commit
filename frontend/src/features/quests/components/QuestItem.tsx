@@ -2,6 +2,7 @@ import React from 'react';
 import { Check, Settings2, Trash2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import type { Goal } from '../../../shared/types/goal';
+import { calculateQuestProbability } from '../utils/questUtils';
 
 interface QuestItemProps {
   key?: React.Key;
@@ -23,7 +24,33 @@ export function QuestItem({
   isCompleted = false,
   onClick,
 }: QuestItemProps) {
+  const probability = React.useMemo(() => {
+    return calculateQuestProbability(goal);
+  }, [goal]);
 
+  const reliabilityTheme = React.useMemo(() => {
+    if (probability >= 75) {
+      return {
+        badge: 'bg-emerald-950/40 text-emerald-400 border-emerald-800/40 shadow-[0_0_10px_rgba(16,185,129,0.05)]',
+        text: 'text-emerald-400',
+      };
+    } else if (probability >= 45) {
+      return {
+        badge: 'bg-amber-950/40 text-amber-400 border-amber-800/40 shadow-[0_0_10px_rgba(245,158,11,0.05)]',
+        text: 'text-amber-400',
+      };
+    } else if (probability >= 20) {
+      return {
+        badge: 'bg-orange-950/40 text-orange-400 border-orange-800/40 shadow-[0_0_10px_rgba(249,115,22,0.05)]',
+        text: 'text-orange-400',
+      };
+    } else {
+      return {
+        badge: 'bg-rose-950/40 text-rose-400 border-rose-800/40 shadow-[0_0_10px_rgba(244,63,94,0.05)]',
+        text: 'text-rose-400',
+      };
+    }
+  }, [probability]);
 
   return (
     <motion.div
@@ -45,6 +72,11 @@ export function QuestItem({
             <p className='text-xs font-mono uppercase tracking-widest text-slate-500'>
               {goal.category}
             </p>
+            {!isCompleted && (
+              <span className={`text-[10px] md:text-xs px-1.5 py-0.5 rounded border font-mono uppercase font-bold tracking-wider flex items-center gap-1 backdrop-blur-sm ${reliabilityTheme.badge}`}>
+                {probability}% Konsistensi
+              </span>
+            )}
             {isCompleted && (
               <span className='text-xs bg-emerald-900/30 text-emerald-400 px-1.5 py-0.5 rounded border border-emerald-800 font-mono uppercase font-bold tracking-wider flex items-center gap-1'>
                 <Check className='w-3 h-3' /> Completed
@@ -121,6 +153,14 @@ export function QuestItem({
                 </span>
                 <span className={`text-xs font-mono tabular-nums ${isCompleted ? 'text-slate-600' : 'text-purple-400'}`}>
                   +{(goal.reward_alpha * 100).toFixed(0)}%
+                </span>
+              </div>
+              <div className='flex flex-col'>
+                <span className='text-xs text-slate-600 font-bold uppercase tracking-[0.2em] mb-0.5'>
+                  Konsistensi
+                </span>
+                <span className={`text-xs font-mono font-bold tabular-nums ${isCompleted ? 'text-slate-600' : reliabilityTheme.text}`}>
+                  {probability}%
                 </span>
               </div>
               <div className='flex flex-col'>

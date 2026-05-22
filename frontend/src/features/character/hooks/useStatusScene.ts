@@ -66,7 +66,8 @@ export function useDynamicQuotes(
   userName?: string
 ) {
   const [quoteIndex, setQuoteIndex] = useState(0);
-  const dynamicQuotes = getDynamicQuotes(hp, mana, goals, nudge, userName);
+  const activeGoals = goals?.filter(g => g.status !== 'archived');
+  const dynamicQuotes = getDynamicQuotes(hp, mana, activeGoals, nudge, userName);
 
   useEffect(() => {
     const interval = setInterval(() => {
