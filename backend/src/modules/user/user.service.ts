@@ -91,14 +91,41 @@ export class UserService {
           }
         }
 
-        const penaltyDays = Math.max(0, diffDays - shieldedDays);
+        // Fetch all distinct dates where the user completed at least 1 quest
+        // between last_penalty_date and todayStr (exclusive of todayStr itself).
+        const activeLogDays = db.prepare(`
+          SELECT DISTINCT DATE(ql.timestamp, 'localtime') as log_date
+          FROM quest_logs ql
+          JOIN goals g ON ql.goal_id = g.id
+          WHERE g.user_id = ?
+            AND ql.timestamp >= ?
+            AND ql.timestamp < ?
+        `).all(user.id, `${user.last_penalty_date} 00:00:00`, `${todayStr} 00:00:00`) as { log_date: string }[];
+
+        const activeDatesSet = new Set(activeLogDays.map(row => row.log_date));
+
+        // Iterate through all calendar days in the gap to count actual inactive days
+        let inactiveDaysCount = 0;
+        let loopDate = new Date(lastDate);
+        while (loopDate < todayDate) {
+          const y = loopDate.getFullYear();
+          const m = String(loopDate.getMonth() + 1).padStart(2, '0');
+          const d = String(loopDate.getDate()).padStart(2, '0');
+          const loopDateStr = `${y}-${m}-${d}`;
+
+          if (!activeDatesSet.has(loopDateStr)) {
+            inactiveDaysCount++;
+          }
+          loopDate.setDate(loopDate.getDate() + 1);
+        }
+
+        // Penalty is only applied for actual inactive days that were not shielded
+        const penaltyDays = Math.max(0, inactiveDaysCount - shieldedDays);
         if (penaltyDays > 0) {
           newHp = Math.max(0, newHp - (penaltyDays * 15));
         }
 
         // Mana now DECAYS on inactive days rather than resetting to 100.
-        // This makes mana_tonic meaningful (you genuinely need it after
-        // extended inactivity) and makes the sleeping animation accurate.
         // Active days: mana resets to 100 on first quest completion (see log.controller).
         const newMana = Math.max(0, user.mana - (penaltyDays * 10));
 
