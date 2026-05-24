@@ -1,5 +1,5 @@
 import React from 'react';
-import { Send, Sparkles, AlertCircle, Trash2 } from 'lucide-react';
+import { Send, Sparkles, AlertCircle, Trash2, X } from 'lucide-react';
 import { useAIChat } from '../hooks/useAIChat';
 import { Modal } from '../../../shared/components/Modal';
 import { Button } from '../../../shared/components/Button';
@@ -32,7 +32,6 @@ export const AIChatModal: React.FC<AIChatModalProps> = ({ isOpen, onClose, user,
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      position='bottom'
       className='max-w-lg p-0 flex flex-col w-full h-[70dvh] max-h-[85dvh]'
       disableInternalScroll
     >
@@ -46,7 +45,7 @@ export const AIChatModal: React.FC<AIChatModalProps> = ({ isOpen, onClose, user,
             <p className='text-xs text-accent-400 font-mono tracking-wider'>ONLINE</p>
           </div>
         </div>
-        <div className='flex items-center gap-2'>
+        <div className='flex items-center gap-1'>
           <Button
             variant='ghost'
             onClick={clearChat}
@@ -54,6 +53,14 @@ export const AIChatModal: React.FC<AIChatModalProps> = ({ isOpen, onClose, user,
             title='Kosongkan Obrolan'
           >
             <Trash2 className='w-4 h-4' />
+          </Button>
+          <Button
+            variant='ghost'
+            onClick={onClose}
+            className='p-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+            title='Tutup Obrolan'
+          >
+            <X className='w-4 h-4' />
           </Button>
         </div>
       </div>

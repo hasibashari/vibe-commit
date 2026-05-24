@@ -120,7 +120,7 @@ export function FirstTimeOnboarding({ onComplete }: FirstTimeOnboardingProps) {
   };
 
   return (
-    <div className='fixed inset-0 z-999 flex items-center justify-center p-4 sm:p-6 bg-slate-950/95 backdrop-blur-md overflow-hidden font-sans select-none'>
+    <div className='fixed inset-0 z-999 flex items-center justify-center p-4 sm:p-6 bg-slate-950/95 backdrop-blur-md overflow-y-auto font-sans select-none'>
       {/* Background visual effects */}
       <div className='absolute inset-0 pointer-events-none overflow-hidden flex items-center justify-center'>
         <div className='w-[1000px] h-[1000px] bg-[radial-gradient(circle,_var(--tw-gradient-stops))] from-cyan-900/20 via-rose-900/10 to-transparent rounded-full opacity-50 animate-pulse'></div>
@@ -128,12 +128,13 @@ export function FirstTimeOnboarding({ onComplete }: FirstTimeOnboardingProps) {
       </div>
 
       <motion.div
+        layout
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className='w-full max-w-md relative z-10'
+        className='w-full max-w-md relative z-10 my-auto'
       >
-        <div className='bg-slate-900/80 border border-slate-700/50 shadow-[0_0_50px_rgba(0,0,0,0.5),inset_0_1px_rgba(255,255,255,0.05)] rounded-2xl p-8 sm:p-10 relative overflow-hidden'>
+        <div className='bg-slate-900/80 border border-slate-700/50 shadow-[0_0_50px_rgba(0,0,0,0.5),inset_0_1px_rgba(255,255,255,0.05)] rounded-2xl p-6 sm:p-8 relative overflow-hidden'>
           {/* Decorative corner borders */}
           <div className='absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-accent-500/30 rounded-tl-xl'></div>
           <div className='absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/30 rounded-tr-xl'></div>
@@ -144,7 +145,7 @@ export function FirstTimeOnboarding({ onComplete }: FirstTimeOnboardingProps) {
           {step === 3 && (
             <button
               onClick={handleBack}
-              className='absolute top-6 left-6 text-slate-500 hover:text-cyan-400 transition-colors p-1.5 hover:bg-slate-800/40 rounded-lg flex items-center justify-center pointer-events-auto cursor-pointer'
+              className='absolute top-5 left-5 text-slate-500 hover:text-cyan-400 transition-colors p-1.5 hover:bg-slate-800/40 rounded-lg flex items-center justify-center pointer-events-auto cursor-pointer'
               title='Kembali ke tutorial'
             >
               <ArrowLeft className='w-5 h-5' />
@@ -158,7 +159,7 @@ export function FirstTimeOnboarding({ onComplete }: FirstTimeOnboardingProps) {
               animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
               exit={{ opacity: 0, x: -20, filter: 'blur(4px)' }}
               transition={{ duration: 0.4 }}
-              className='flex flex-col items-center text-center mt-4'
+              className='flex flex-col items-center text-center mt-2'
             >
               {step < 3 ? (
                 <>
@@ -188,26 +189,77 @@ export function FirstTimeOnboarding({ onComplete }: FirstTimeOnboardingProps) {
                       </span>
                     ))}
                   </p>
+
+                  {/* Stepper & Action for Slides 0, 1, 2 inside AnimatePresence */}
+                  <div className='w-full flex flex-col items-center gap-6 mt-2'>
+                    {/* Slide dots */}
+                    <div className='flex gap-2'>
+                      {steps.map((_, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setStep(i)}
+                          className='w-2.5 h-2.5 rounded-full transition-all duration-300 bg-slate-800 cursor-pointer hover:bg-slate-700 font-sans p-0 border-0'
+                          style={{
+                            backgroundColor: i === step ? '#22d3ee' : undefined,
+                            width: i === step ? '1.5rem' : undefined,
+                            boxShadow: i === step ? '0 0 8px rgba(34,211,238,0.8)' : undefined,
+                          }}
+                        />
+                      ))}
+                    </div>
+
+                    {/* Navigation buttons */}
+                    <div className='w-full flex gap-3'>
+                      {step > 0 && (
+                        <Button
+                          variant='secondary'
+                          onClick={handleBack}
+                          className='flex-1 py-2.5 border border-slate-700/50 hover:bg-slate-800/40 text-slate-300 font-bold tracking-widest uppercase rounded-xl flex items-center justify-center gap-2 pointer-events-auto cursor-pointer'
+                        >
+                          <ArrowLeft className='w-4 h-4 text-slate-400' /> Back
+                        </Button>
+                      )}
+
+                      <Button
+                        variant='primary'
+                        onClick={handleNext}
+                        className={`${step > 0 ? 'flex-1' : 'w-full'} py-2.5 relative group overflow-hidden pointer-events-auto cursor-pointer`}
+                      >
+                        <span className='relative flex items-center justify-center gap-2 font-bold tracking-widest uppercase text-slate-950'>
+                          Next <ArrowRight className='w-4 h-4 text-slate-950' />
+                        </span>
+                      </Button>
+                    </div>
+
+                    {/* Skip to Login option */}
+                    <button
+                      type='button'
+                      onClick={handleSkip}
+                      className='text-slate-500 hover:text-slate-300 text-xs font-mono tracking-wider uppercase transition-colors cursor-pointer'
+                    >
+                      Skip to Login
+                    </button>
+                  </div>
                 </>
               ) : (
                 <div className='w-full text-left'>
                   {/* Header */}
-                  <div className='text-center mb-6'>
-                    <div className='inline-flex p-3 bg-cyan-950/40 border border-cyan-800/50 rounded-xl mb-4 text-cyan-400 drop-shadow-[0_0_10px_rgba(34,211,238,0.3)]'>
-                      <Cpu className='w-8 h-8 animate-pulse' />
+                  <div className='text-center mb-4'>
+                    <div className='inline-flex p-2 bg-cyan-950/40 border border-cyan-800/50 rounded-xl mb-2 text-cyan-400 drop-shadow-[0_0_10px_rgba(34,211,238,0.3)]'>
+                      <Cpu className='w-6 h-6 animate-pulse' />
                     </div>
-                    <h1 className='text-3xl font-black text-white tracking-widest uppercase mb-1'>
+                    <h1 className='text-2xl sm:text-3xl font-black text-white tracking-widest uppercase mb-0.5'>
                       VIBE<span className='text-cyan-400'>COMMIT</span>
                     </h1>
-                    <p className='text-xs font-mono text-cyan-500/60 uppercase tracking-widest'>
+                    <p className='text-[10px] font-mono text-cyan-500/60 uppercase tracking-widest'>
                       Offline Productivity RPG
                     </p>
                   </div>
 
                   {/* Form */}
-                  <form onSubmit={handleAuthSubmit} className='space-y-4'>
+                  <form onSubmit={handleAuthSubmit} className='space-y-3'>
                     <div>
-                      <label className='block text-xs font-mono uppercase tracking-widest text-slate-400 mb-2'>
+                      <label className='block text-xs font-mono uppercase tracking-widest text-slate-400 mb-1'>
                         Username
                       </label>
                       <div className='relative'>
@@ -220,13 +272,13 @@ export function FirstTimeOnboarding({ onComplete }: FirstTimeOnboardingProps) {
                           value={username}
                           onChange={e => setUsername(e.target.value)}
                           placeholder='Username'
-                          className='w-full pl-10 pr-4 py-2.5 bg-slate-950/40 border border-slate-800 focus:border-cyan-500/80 rounded-xl text-white font-mono text-sm tracking-wider placeholder:text-slate-600 focus:outline-hidden focus:ring-1 focus:ring-cyan-500/30 transition-all shadow-inner'
+                          className='w-full pl-10 pr-4 py-2 bg-slate-950/40 border border-slate-800 focus:border-cyan-500/80 rounded-xl text-white font-mono text-sm tracking-wider placeholder:text-slate-600 focus:outline-hidden focus:ring-1 focus:ring-cyan-500/30 transition-all shadow-inner'
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className='block text-xs font-mono uppercase tracking-widest text-slate-400 mb-2'>
+                      <label className='block text-xs font-mono uppercase tracking-widest text-slate-400 mb-1'>
                         Password
                       </label>
                       <div className='relative'>
@@ -239,7 +291,7 @@ export function FirstTimeOnboarding({ onComplete }: FirstTimeOnboardingProps) {
                           value={password}
                           onChange={e => setPassword(e.target.value)}
                           placeholder='Password'
-                          className='w-full pl-10 pr-4 py-2.5 bg-slate-950/40 border border-slate-800 focus:border-cyan-500/80 rounded-xl text-white font-mono text-sm tracking-wider placeholder:text-slate-600 focus:outline-hidden focus:ring-1 focus:ring-cyan-500/30 transition-all shadow-inner'
+                          className='w-full pl-10 pr-4 py-2 bg-slate-950/40 border border-slate-800 focus:border-cyan-500/80 rounded-xl text-white font-mono text-sm tracking-wider placeholder:text-slate-600 focus:outline-hidden focus:ring-1 focus:ring-cyan-500/30 transition-all shadow-inner'
                         />
                       </div>
                     </div>
@@ -254,7 +306,7 @@ export function FirstTimeOnboarding({ onComplete }: FirstTimeOnboardingProps) {
                     <button
                       type='submit'
                       disabled={isSubmitting}
-                      className='w-full py-3 bg-linear-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-slate-950 font-bold tracking-widest uppercase transition-all rounded-xl shadow-[0_0_15px_rgba(6,182,212,0.3)] hover:shadow-[0_0_20px_rgba(6,182,212,0.5)] flex items-center justify-center gap-2 group disabled:opacity-50 cursor-pointer'
+                      className='w-full py-2.5 bg-linear-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-slate-950 font-bold tracking-widest uppercase transition-all rounded-xl shadow-[0_0_15px_rgba(6,182,212,0.3)] hover:shadow-[0_0_20px_rgba(6,182,212,0.5)] flex items-center justify-center gap-2 group disabled:opacity-50 cursor-pointer'
                     >
                       {isSubmitting ? (
                         <Loader2 className='w-4 h-4 animate-spin text-slate-950' />
@@ -267,11 +319,11 @@ export function FirstTimeOnboarding({ onComplete }: FirstTimeOnboardingProps) {
                     </button>
                   </form>
 
-                  <div className='relative my-5 flex items-center justify-center'>
+                  <div className='relative my-4 flex items-center justify-center'>
                     <div className='absolute inset-0 flex items-center'>
                       <div className='w-full border-t border-slate-800/60'></div>
                     </div>
-                    <span className='relative px-3 bg-surface text-[10px] font-mono text-slate-500 uppercase tracking-widest'>
+                    <span className='relative px-3 bg-slate-900 text-[10px] font-mono text-slate-500 uppercase tracking-widest'>
                       atau masuk sebagai guest
                     </span>
                   </div>
@@ -280,13 +332,13 @@ export function FirstTimeOnboarding({ onComplete }: FirstTimeOnboardingProps) {
                     onClick={handleGuestLogin}
                     disabled={isSubmitting}
                     type='button'
-                    className='w-full py-2.5 bg-emerald-950/20 hover:bg-emerald-950/40 border border-emerald-800/30 hover:border-emerald-500/50 text-emerald-400 font-bold tracking-widest uppercase transition-all rounded-xl flex items-center justify-center gap-2 group disabled:opacity-50 cursor-pointer'
+                    className='w-full py-2 bg-emerald-950/20 hover:bg-emerald-950/40 border border-emerald-800/30 hover:border-emerald-500/50 text-emerald-400 font-bold tracking-widest uppercase transition-all rounded-xl flex items-center justify-center gap-2 group disabled:opacity-50 cursor-pointer'
                   >
                     <Zap className='w-4 h-4 text-emerald-400 animate-pulse' />
                     <span>MASUK SEBAGAI GUEST</span>
                   </button>
 
-                  <div className='text-center mt-5'>
+                  <div className='text-center mt-4'>
                     <button
                       type='button'
                       onClick={() => {
@@ -302,58 +354,6 @@ export function FirstTimeOnboarding({ onComplete }: FirstTimeOnboardingProps) {
               )}
             </motion.div>
           </AnimatePresence>
-
-          {/* Stepper & Action for Slides 0, 1, 2 */}
-          {step < 3 && (
-            <div className='flex flex-col items-center gap-6 mt-4'>
-              {/* Slide dots */}
-              <div className='flex gap-2'>
-                {steps.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setStep(i)}
-                    className='w-2.5 h-2.5 rounded-full transition-all duration-300 bg-slate-800 cursor-pointer hover:bg-slate-700 font-sans p-0 border-0'
-                    style={{
-                      backgroundColor: i === step ? '#22d3ee' : undefined,
-                      width: i === step ? '1.5rem' : undefined,
-                      boxShadow: i === step ? '0 0 8px rgba(34,211,238,0.8)' : undefined,
-                    }}
-                  />
-                ))}
-              </div>
-
-              {/* Navigation buttons */}
-              <div className='w-full flex gap-3'>
-                {step > 0 && (
-                  <Button
-                    variant='secondary'
-                    onClick={handleBack}
-                    className='flex-1 py-3 border border-slate-700/50 hover:bg-slate-800/40 text-slate-300 font-bold tracking-widest uppercase rounded-xl flex items-center justify-center gap-2 pointer-events-auto cursor-pointer'
-                  >
-                    <ArrowLeft className='w-4 h-4 text-slate-400' /> Back
-                  </Button>
-                )}
-
-                <Button
-                  variant='primary'
-                  onClick={handleNext}
-                  className={`${step > 0 ? 'flex-1' : 'w-full'} py-3 relative group overflow-hidden pointer-events-auto cursor-pointer`}
-                >
-                  <span className='relative flex items-center justify-center gap-2 font-bold tracking-widest uppercase text-slate-950'>
-                    Next <ArrowRight className='w-4 h-4 text-slate-950' />
-                  </span>
-                </Button>
-              </div>
-
-              {/* Skip to Login option */}
-              <button
-                onClick={handleSkip}
-                className='text-slate-500 hover:text-slate-300 text-xs font-mono tracking-wider uppercase transition-colors cursor-pointer'
-              >
-                Skip to Login
-              </button>
-            </div>
-          )}
         </div>
       </motion.div>
     </div>
