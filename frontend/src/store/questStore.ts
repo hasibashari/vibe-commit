@@ -4,6 +4,7 @@ import { logQuestActionApi, updateQuestApi, createQuestApi, deleteQuestApi } fro
 import { useToastStore } from './toastStore';
 import { useDashboardStore } from './dashboardStore';
 import { useUIStore } from './uiStore';
+import { getExpNeededForLevel, MAX_LEVEL } from '../shared/utils/dateUtils';
 
 const playVictoryOscillator = () => {
   try {
@@ -32,15 +33,11 @@ const playVictoryOscillator = () => {
   } catch (e) {}
 };
 
-const getExpNeededForLevel = (level: number): number => {
-  return Math.floor(100 * Math.pow(1.2, level - 1));
-};
-
 const handleOptimisticRPGStats = (currentLevel: number, currentExp: number, expEarned: number) => {
   let level = currentLevel;
   let exp = currentExp + expEarned;
   
-  while (exp >= getExpNeededForLevel(level)) {
+  while (level < MAX_LEVEL && exp >= getExpNeededForLevel(level)) {
     exp -= getExpNeededForLevel(level);
     level += 1;
   }

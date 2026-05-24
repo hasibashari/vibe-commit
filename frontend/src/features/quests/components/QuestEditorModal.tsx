@@ -81,7 +81,7 @@ export const QuestEditorModal: React.FC<QuestEditorModalProps> = ({
           </div>
           <div className='space-y-1.5'>
             <label className='text-xs font-bold uppercase tracking-widest text-slate-500 flex justify-between'>
-              <span>Bonus EXP Multiplier</span>
+              <span>Multiplier Bonus EXP</span>
               <span className='text-amber-400 font-mono'>{formData.reward_alpha.toFixed(2)}x</span>
             </label>
             <input
@@ -93,6 +93,9 @@ export const QuestEditorModal: React.FC<QuestEditorModalProps> = ({
               onChange={e => setFormData({ ...formData, reward_alpha: parseFloat(e.target.value) })}
               className='w-full accent-amber-500'
             />
+            <p className='text-[9px] leading-tight text-slate-500 font-mono'>
+              Multiplier hadiah quest (Semakin besar dampak/nilai quest bagi hidup lo, naikkan slider ini).
+            </p>
           </div>
         </div>
 

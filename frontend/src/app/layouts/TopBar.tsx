@@ -19,6 +19,7 @@ import { useAudio } from '../providers/AudioProvider';
 import { Button } from '../../shared/components/Button';
 
 import type { UserStats } from '../../shared/types/user';
+import { getExpNeededForLevel } from '../../shared/utils/dateUtils';
 
 interface TopBarProps {
   hp: number;
@@ -31,9 +32,7 @@ interface TopBarProps {
   onOpenSettings?: () => void;
 }
 
-function getExpNeededForLevel(level: number): number {
-  return Math.floor(100 * Math.pow(1.2, level - 1));
-}
+
 
 export const TopBar: React.FC<TopBarProps> = ({
   hp,

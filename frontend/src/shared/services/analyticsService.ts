@@ -63,7 +63,16 @@ export function analyzeBurnoutRisk(logs: Log[], goals: Goal[], offset: number = 
     });
 
     recentHighDiff = getHighDiffLogs(recentLogs).length;
-    historicalHighDiffAvg = getHighDiffLogs(historicalLogs).length / Math.max(1, historicalLogs.length / Math.max(1, recentLogs.length));
+
+    // Temukan timestamp log historis paling awal
+    const histTimestamps = historicalLogs.map(l => safeParseDate(l.timestamp).getTime());
+    const earliestHistMs = Math.min(...histTimestamps);
+
+    // Hitung jumlah minggu historis riil (aman dari pembagian tidak valid, minimal 1 minggu)
+    const histWeeks = Math.max(1, (nowTime - earliestHistMs) / (7 * 24 * 60 * 60 * 1000));
+
+    // Dapatkan rata-rata murni log kesulitan tinggi per minggu historis
+    historicalHighDiffAvg = getHighDiffLogs(historicalLogs).length / histWeeks;
   } else if (logs.length > 5) {
     const overallStats = calculateStats(logs);
     if (overallStats.sigma > 2.0) {

@@ -3,6 +3,7 @@ import { Check, Settings2, Trash2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import type { Goal } from '../../../shared/types/goal';
 import { calculateQuestProbability } from '../utils/questUtils';
+import { useDashboardStore } from '../../../store/dashboardStore';
 
 interface QuestItemProps {
   key?: React.Key;
@@ -24,9 +25,12 @@ export function QuestItem({
   isCompleted = false,
   onClick,
 }: QuestItemProps) {
+  const user = useDashboardStore(state => state.user);
+  const sandboxDateOffset = user?.sandbox_date_offset || 0;
+
   const probability = React.useMemo(() => {
-    return calculateQuestProbability(goal);
-  }, [goal]);
+    return calculateQuestProbability(goal, sandboxDateOffset);
+  }, [goal, sandboxDateOffset]);
 
   const reliabilityTheme = React.useMemo(() => {
     if (probability >= 75) {
@@ -149,7 +153,7 @@ export function QuestItem({
               </div>
               <div className='flex flex-col'>
                 <span className='text-xs text-slate-600 font-bold uppercase tracking-[0.2em] mb-0.5'>
-                  Impact
+                  Bonus EXP
                 </span>
                 <span className={`text-xs font-mono tabular-nums ${isCompleted ? 'text-slate-600' : 'text-purple-400'}`}>
                   +{(goal.reward_alpha * 100).toFixed(0)}%

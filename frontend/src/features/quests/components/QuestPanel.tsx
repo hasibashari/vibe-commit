@@ -114,11 +114,9 @@ export function QuestPanel({
             Quest Log
           </h3>
           <div className='flex items-center gap-2'>
-            {/* RENAMED: This value is the arithmetic mean of reward_alpha across quests,
-                NOT a global EXP multiplier. Showing it as 'Avg Reward α' is accurate. */}
-            <span className='text-xs text-slate-500'>Avg Reward α:</span>
+            <span className='text-xs text-slate-500'>Rata-rata Pengali EXP:</span>
             <span className='text-sm font-black text-amber-500 tabular-nums'>
-              {goals.length > 0 ? `${expMultiplier}` : '—'}
+              {goals.length > 0 ? `${expMultiplier.toFixed(2)}x` : '—'}
             </span>
           </div>
         </div>

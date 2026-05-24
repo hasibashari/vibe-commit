@@ -71,10 +71,16 @@ export function safeParseDate(timestamp: string | Date | number): Date {
  * Jika belum ada log, menghitung hari sejak quest dibuat (createdAt) agar ada decay asimtotik awal.
  * Mengembalikan 0 jika tidak ada log dan tidak ada tanggal dibuat.
  */
-export function getDaysSinceLastLog(logs: { timestamp: string }[], createdAt?: string): number {
+export function getDaysSinceLastLog(
+  logs: { timestamp: string }[],
+  createdAt?: string,
+  sandboxDateOffset: number = 0
+): number {
+  const nowMs = Date.now() + sandboxDateOffset * 24 * 60 * 60 * 1000;
+
   if (!logs || logs.length === 0) {
     if (createdAt) {
-      return Math.max(0, (Date.now() - safeParseDate(createdAt).getTime()) / (1000 * 60 * 60 * 24));
+      return Math.max(0, (nowMs - safeParseDate(createdAt).getTime()) / (1000 * 60 * 60 * 24));
     }
     return 0;
   }
@@ -84,7 +90,7 @@ export function getDaysSinceLastLog(logs: { timestamp: string }[], createdAt?: s
     return t > max ? t : max;
   }, 0);
 
-  return Math.max(0, (Date.now() - latestMs) / (1000 * 60 * 60 * 24));
+  return Math.max(0, (nowMs - latestMs) / (1000 * 60 * 60 * 24));
 }
 
 /**
@@ -365,6 +371,15 @@ export function generateGlobalTimeSeriesData(
     if (pastLogs.length > 0) {
       const lastLogMs = pastLogs[pastLogs.length - 1].timestampMs;
       t_idle = Math.max(0, (endOfDayTimestamp - lastLogMs) / (1000 * 60 * 60 * 24));
+    } else {
+      // SEV-04 FIX: Jika belum ada log sama sekali, t_idle dihitung sejak pembuatan quest paling awal
+      const allCreatedTimes = goals
+        .map(g => g.createdAt ? safeParseDate(g.createdAt).getTime() : NaN)
+        .filter(t => !isNaN(t));
+      if (allCreatedTimes.length > 0) {
+        const earliestCreatedMs = Math.min(...allCreatedTimes);
+        t_idle = Math.max(0, (endOfDayTimestamp - earliestCreatedMs) / (1000 * 60 * 60 * 24));
+      }
     }
 
     // ── Formula Beta Global (Jendela Bergulir dengan prior Laplace standar) ──

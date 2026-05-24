@@ -17,8 +17,8 @@ export const calculateExpMultiplier = (goals: Goal[]) => {
   return Number((totalAlpha / activeGoals.length).toFixed(2));
 };
 
-export const calculateQuestProbability = (goal: Goal): number => {
-  const daysSinceLast = getDaysSinceLastLog(goal.logs || [], goal.createdAt);
+export const calculateQuestProbability = (goal: Goal, sandboxDateOffset: number = 0): number => {
+  const daysSinceLast = getDaysSinceLastLog(goal.logs || [], goal.createdAt, sandboxDateOffset);
   const { alpha, beta } = getBetaParams(goal.repetition_count, goal.difficulty, daysSinceLast);
   const prob = calculateBayesianProbability(alpha, beta);
   return Math.round(prob * 100);
