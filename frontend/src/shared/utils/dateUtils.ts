@@ -15,8 +15,11 @@
  * Returns today's date as a YYYY-MM-DD string in the *local* timezone.
  * Replaces the scattered: new Date().toISOString().split('T')[0]  (which is UTC)
  */
-export function getTodayLocalString(): string {
+export function getTodayLocalString(offset: number = 0): string {
   const now = new Date();
+  if (offset !== 0) {
+    now.setDate(now.getDate() + offset);
+  }
   const y = now.getFullYear();
   const m = String(now.getMonth() + 1).padStart(2, '0');
   const d = String(now.getDate()).padStart(2, '0');

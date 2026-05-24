@@ -9,6 +9,7 @@ import { getTodayLocalString, getLogDateString } from '../../../shared/utils/dat
 import { EmptyState } from '../../../shared/components/EmptyState';
 import { StatCard } from '../../../shared/components/StatCard';
 import { Badge } from '../../../shared/components/Badge';
+import { useDashboardStore } from '../../../store/dashboardStore';
 
 interface HubMonitoringProps {
   goals: Goal[];
@@ -17,9 +18,12 @@ interface HubMonitoringProps {
 export function HubMonitoring({ goals }: HubMonitoringProps) {
   const activeGoals = React.useMemo(() => goals.filter(g => g.status !== 'archived'), [goals]);
 
+  const user = useDashboardStore(state => state.user);
+  const sandboxDateOffset = user?.sandbox_date_offset || 0;
+
   const { allLogs, totalCompleted, activeExp, completedTodayCount } = React.useMemo(() => {
     // Use local date (not UTC) so "today" is the user's actual calendar day.
-    const todayStr = getTodayLocalString();
+    const todayStr = getTodayLocalString(sandboxDateOffset);
     let completedToday = 0;
 
     activeGoals.forEach(goal => {
@@ -108,7 +112,7 @@ export function HubMonitoring({ goals }: HubMonitoringProps) {
                   Distribusi peluang keberhasilan — Menunjukkan seberapa besar peluang kamu berdasarkan aktivitas yang telah dilakukan.
                 </p>
               </div>
-              <GlobalProbabilityTrend goals={goals} />
+              <GlobalProbabilityTrend goals={goals} sandboxDateOffset={sandboxDateOffset} />
             </div>
 
             {/* Consistency Heatmap */}
@@ -121,7 +125,7 @@ export function HubMonitoring({ goals }: HubMonitoringProps) {
                   Riwayat aktivitas 90 hari terakhir.
                 </p>
               </div>
-              <LifeCommitHeatmap logs={allLogs} />
+              <LifeCommitHeatmap logs={allLogs} sandboxDateOffset={sandboxDateOffset} />
             </div>
 
             {/* Quest Focus Distribution */}

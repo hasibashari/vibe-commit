@@ -32,8 +32,11 @@ function getCumulativeExp(level: number, exp: number): number {
 }
 
 /** Returns today's date as YYYY-MM-DD in the SERVER'S LOCAL timezone. */
-function getTodayLocalString(): string {
+function getTodayLocalString(user?: any): string {
   const now = new Date();
+  if (user && user.sandbox_date_offset) {
+    now.setDate(now.getDate() + user.sandbox_date_offset);
+  }
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 }
 
@@ -53,7 +56,7 @@ export class UserService {
     // Use local-timezone date string (not UTC) to avoid timezone-boundary
     // discrepancies where a UTC+7 user logging in at 18:00 local time gets
     // assigned tomorrow's UTC date as their last_penalty_date.
-    const todayStr = getTodayLocalString();
+    const todayStr = getTodayLocalString(user);
 
     if (user.last_penalty_date && user.last_penalty_date !== todayStr) {
       const lastDate = new Date(`${user.last_penalty_date}T00:00:00`);
@@ -239,7 +242,7 @@ export class UserService {
         // Shield covers the gap from last_penalty_date forward — NOT from
         // today forward — so buying it after missing 2 days actually protects
         // against those penalty days.
-        const lastPenaltyDate = user.last_penalty_date || getTodayLocalString();
+        const lastPenaltyDate = user.last_penalty_date || getTodayLocalString(user);
         const shieldStart = new Date(`${lastPenaltyDate}T00:00:00`);
         const shieldUntil = new Date(shieldStart);
         shieldUntil.setDate(shieldUntil.getDate() + 1);
@@ -272,7 +275,7 @@ export class UserService {
     return this.getUser(userId);
   }
 
-  static sandboxUpdate(userId: string, payload: { hp?: number; mana?: number; level?: number; coins_delta?: number }) {
+  static sandboxUpdate(userId: string, payload: { hp?: number; mana?: number; level?: number; coins_delta?: number; sandbox_date_offset?: number }) {
     const user = db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
     if (!user) throw new Error('User not found');
     
@@ -294,6 +297,17 @@ export class UserService {
     if (payload.coins_delta !== undefined && payload.coins_delta !== null) {
       setClauses.push('spent_coins = spent_coins - ?'); 
       queryArgs.push(payload.coins_delta);
+    }
+    if (payload.sandbox_date_offset !== undefined && payload.sandbox_date_offset !== null) {
+      setClauses.push('sandbox_date_offset = ?');
+      queryArgs.push(payload.sandbox_date_offset);
+
+      if (payload.sandbox_date_offset === 0) {
+        setClauses.push('last_penalty_date = ?');
+        const now = new Date();
+        const realToday = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        queryArgs.push(realToday);
+      }
     }
     
     if (setClauses.length > 0) {

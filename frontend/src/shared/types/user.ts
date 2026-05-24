@@ -17,4 +17,5 @@ export interface UserStats {
   last_penalty_date?: string | null;
   shield_until?: string | null;
   unlocked_items?: string;
+  sandbox_date_offset?: number;
 }

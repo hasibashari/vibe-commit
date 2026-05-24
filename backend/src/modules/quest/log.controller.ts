@@ -62,12 +62,23 @@ export class LogController {
       }
 
       db.transaction(() => {
+        // Fetch user's date offset to determine quest log's simulated timestamp
+        const userOffsetObj = db.prepare('SELECT sandbox_date_offset FROM users WHERE id = ?').get(goal.user_id) as { sandbox_date_offset: number } | undefined;
+        const offset = userOffsetObj?.sandbox_date_offset || 0;
+
+        // Calculate simulated timestamp
+        const logTime = new Date();
+        if (offset !== 0) {
+          logTime.setDate(logTime.getDate() + offset);
+        }
+        const timestampStr = logTime.toISOString().replace('T', ' ').substring(0, 19); // SQLite friendly space format
+
         // INSERT OR IGNORE makes this idempotent — replayed offline logIds
         // (same UUID sent again during sync) are silently skipped instead of
         // crashing with a UNIQUE constraint error and discarding the action.
         const insertResult = db.prepare(
-          'INSERT OR IGNORE INTO quest_logs (id, goal_id, vibe_score, notes) VALUES (?, ?, ?, ?)'
-        ).run(id, goalId, vibeScore ?? null, notes ?? null);
+          'INSERT OR IGNORE INTO quest_logs (id, goal_id, vibe_score, notes, timestamp) VALUES (?, ?, ?, ?, ?)'
+        ).run(id, goalId, vibeScore ?? null, notes ?? null, timestampStr);
 
         // If 0 rows were changed the log already existed — skip reward grant
         // to avoid double-crediting EXP/HP on duplicate requests.
@@ -111,17 +122,14 @@ export class LogController {
               FROM quest_logs 
               JOIN goals ON quest_logs.goal_id = goals.id 
               WHERE goals.user_id = ? 
-                AND DATE(quest_logs.timestamp, 'localtime') = DATE('now', 'localtime')
-            `).get(user.id) as { count: number };
+                AND DATE(quest_logs.timestamp, 'localtime') = DATE(?, 'localtime')
+            `).get(user.id, timestampStr) as { count: number };
 
             const isFirstQuestToday = todayLogs.count <= 1;
             const manaBase = isFirstQuestToday ? 100 : user.mana;
             const newMana = Math.max(0, manaBase - 10);
 
-            const todayStr = (() => {
-              const now = new Date();
-              return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-            })();
+            const todayStr = `${logTime.getFullYear()}-${String(logTime.getMonth() + 1).padStart(2, '0')}-${String(logTime.getDate()).padStart(2, '0')}`;
 
             db.prepare('UPDATE users SET hp = ?, mana = ?, level = ?, exp = ?, last_penalty_date = ? WHERE id = ?')
               .run(newHp, newMana, newLevel, newExp, todayStr, user.id);

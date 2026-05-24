@@ -39,6 +39,7 @@ export function initDb() {
   if (!hasUserCol('shield_until')) db.exec("ALTER TABLE users ADD COLUMN shield_until TEXT DEFAULT null");
   if (!hasUserCol('unlocked_items')) db.exec("ALTER TABLE users ADD COLUMN unlocked_items TEXT DEFAULT '[]'");
   if (!hasUserCol('avatar_icon')) db.exec("ALTER TABLE users ADD COLUMN avatar_icon TEXT DEFAULT 'shield'");
+  if (!hasUserCol('sandbox_date_offset')) db.exec("ALTER TABLE users ADD COLUMN sandbox_date_offset INTEGER DEFAULT 0");
 
   const goalCols = db.pragma('table_info(goals)') as any[];
   const hasGoalCol = (name: string) => goalCols.some((c) => c.name === name);

@@ -13,14 +13,22 @@ import { generateGlobalTimeSeriesData, safeParseDate } from '../../../shared/uti
 
 interface GlobalProbabilityTrendProps {
   goals: Goal[];
+  sandboxDateOffset?: number;
 }
 
-export function GlobalProbabilityTrend({ goals }: GlobalProbabilityTrendProps) {
+export function GlobalProbabilityTrend({ goals, sandboxDateOffset = 0 }: GlobalProbabilityTrendProps) {
   const [filter, setFilter] = useState<'30days' | '90days' | 'this_year' | 'all'>('30days');
 
   const { startDate, endDate } = useMemo(() => {
     const end = new Date();
+    if (sandboxDateOffset !== 0) {
+      end.setDate(end.getDate() + sandboxDateOffset);
+    }
+    
     const start = new Date();
+    if (sandboxDateOffset !== 0) {
+      start.setDate(start.getDate() + sandboxDateOffset);
+    }
     start.setHours(0, 0, 0, 0);
 
     if (filter === '30days') {
@@ -50,7 +58,7 @@ export function GlobalProbabilityTrend({ goals }: GlobalProbabilityTrendProps) {
       startDate: start.toISOString(),
       endDate: end.toISOString(),
     };
-  }, [filter, goals]);
+  }, [filter, goals, sandboxDateOffset]);
 
   const windowDays = useMemo(() => {
     if (filter === '30days') return 15; // Jendela 15 hari untuk visibilitas responsif jangka pendek
@@ -65,7 +73,12 @@ export function GlobalProbabilityTrend({ goals }: GlobalProbabilityTrendProps) {
     ];
     if (allDates.length > 0) {
       const firstDate = Math.min(...allDates);
-      const diffDays = (Date.now() - firstDate) / (1000 * 60 * 60 * 24);
+      
+      const now = new Date();
+      if (sandboxDateOffset !== 0) {
+        now.setDate(now.getDate() + sandboxDateOffset);
+      }
+      const diffDays = (now.getTime() - firstDate) / (1000 * 60 * 60 * 24);
 
       if (diffDays <= 45) {
         return 15; // Jika sejarah data <= 1.5 bulan, gunakan jendela memori pendek (15 hari) agar grafik tetap responsif
@@ -76,7 +89,7 @@ export function GlobalProbabilityTrend({ goals }: GlobalProbabilityTrendProps) {
       }
     }
     return 30; // Default fallback jika belum ada data log sama sekali
-  }, [filter, goals]);
+  }, [filter, goals, sandboxDateOffset]);
 
   const chartData = useMemo(() => {
     const goalsData = goals.map(g => ({

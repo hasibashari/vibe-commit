@@ -37,12 +37,18 @@ export interface BurnoutPrediction {
 import type { Log } from '../types/log';
 import type { Goal } from '../types/goal';
 
-export function analyzeBurnoutRisk(logs: Log[], goals: Goal[]): BurnoutPrediction {
-  const now = new Date().getTime();
+export function analyzeBurnoutRisk(logs: Log[], goals: Goal[], offset: number = 0): BurnoutPrediction {
+  const nowTime = (() => {
+    const now = new Date();
+    if (offset !== 0) {
+      now.setDate(now.getDate() + offset);
+    }
+    return now.getTime();
+  })();
   const ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
   
-  const recentLogs = logs.filter(l => now - safeParseDate(l.timestamp).getTime() < ONE_WEEK);
-  const historicalLogs = logs.filter(l => now - safeParseDate(l.timestamp).getTime() >= ONE_WEEK);
+  const recentLogs = logs.filter(l => nowTime - safeParseDate(l.timestamp).getTime() < ONE_WEEK);
+  const historicalLogs = logs.filter(l => nowTime - safeParseDate(l.timestamp).getTime() >= ONE_WEEK);
 
   let recentSigma = 0, historicalSigma = 0;
   let recentHighDiff = 0, historicalHighDiffAvg = 0;

@@ -64,8 +64,8 @@ export class UserController {
     }
 
     try {
-      const { hp, mana, level, coins_delta } = req.body;
-      res.json(UserService.sandboxUpdate(req.params.id, { hp, mana, level, coins_delta }));
+      const { hp, mana, level, coins_delta, sandbox_date_offset } = req.body;
+      res.json(UserService.sandboxUpdate(req.params.id, { hp, mana, level, coins_delta, sandbox_date_offset }));
     } catch(err: any) {
       res.status(400).json({ error: err.message });
     }

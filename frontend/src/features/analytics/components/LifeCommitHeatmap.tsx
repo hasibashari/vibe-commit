@@ -3,32 +3,36 @@ import { safeParseDate } from '../../../shared/utils/vibeMath';
 
 interface HeatmapProps {
   logs: { timestamp: string }[];
+  sandboxDateOffset?: number;
 }
 
-export const LifeCommitHeatmap: React.FC<HeatmapProps> = ({ logs }) => {
+export const LifeCommitHeatmap: React.FC<HeatmapProps> = ({ logs, sandboxDateOffset = 0 }) => {
   const data = React.useMemo(() => {
     // Generate ~90 days of data (approx 3 months for a minimal view)
     const days = 90;
     const heat = new Array(days).fill(0);
 
-    // Map logs to the last 90 days
+    // Map logs to the last 90 days relative to simulated date
     const now = new Date();
+    if (sandboxDateOffset !== 0) {
+      now.setDate(now.getDate() + sandboxDateOffset);
+    }
     now.setHours(0, 0, 0, 0);
 
     logs.forEach(log => {
       const d = safeParseDate(log.timestamp);
       d.setHours(0, 0, 0, 0);
-      const diffTime = Math.abs(now.getTime() - d.getTime());
-      // Math.floor (not ceil): a log at 10:00 AM today has a 10-hour diff vs midnight,
-      // which is 0.41 days \u2014 floor gives 0 (today), ceil would give 1 (yesterday).
+      
+      const diffTime = now.getTime() - d.getTime();
       const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-      if (diffDays < days) {
+      
+      if (diffDays >= 0 && diffDays < days) {
         heat[days - 1 - diffDays]++; // newer days are towards the end
       }
     });
 
     return heat;
-  }, [logs]);
+  }, [logs, sandboxDateOffset]);
 
   const getColor = (count: number) => {
     if (count === 0) return 'bg-slate-800/30 border border-slate-800/80';

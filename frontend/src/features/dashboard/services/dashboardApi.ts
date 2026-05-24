@@ -102,7 +102,7 @@ export const resetProfileData = async () => {
 
 export const updateSandboxData = async (
   _userIdStr?: string,
-  payload?: { hp?: number | null; mana?: number | null; level?: number | null; coins_delta?: number | null }
+  payload?: { hp?: number | null; mana?: number | null; level?: number | null; coins_delta?: number | null; sandbox_date_offset?: number | null }
 ) => {
   const user = getCurrentUser();
   if (!user || !payload) throw new Error("Not authenticated");

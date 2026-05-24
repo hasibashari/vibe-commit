@@ -88,9 +88,9 @@ export const calculateAchievements = (allLogs: Log[], level: number): Achievemen
   ];
 };
 
-export const getCompletedIdsToday = (goalsData: Goal[]) => {
+export const getCompletedIdsToday = (goalsData: Goal[], offset: number = 0) => {
   // Use local date (not UTC) so "today" matches the user's timezone.
-  const today = getTodayLocalString();
+  const today = getTodayLocalString(offset);
   const completedIds: string[] = [];
 
   goalsData.forEach((goal) => {

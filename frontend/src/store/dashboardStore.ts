@@ -23,7 +23,7 @@ interface DashboardStore {
   fetchData: () => Promise<void>;
   updateProfile: (data: Partial<UserStats>, silent?: boolean) => Promise<void>;
   resetProfile: () => Promise<void>;
-  updateSandbox: (payload: { hp?: number | null; mana?: number | null; level?: number | null; coins_delta?: number | null }) => Promise<void>;
+  updateSandbox: (payload: { hp?: number | null; mana?: number | null; level?: number | null; coins_delta?: number | null; sandbox_date_offset?: number | null }) => Promise<void>;
   buyItem: (itemId: string, cost?: number, overrideCoins?: number | null) => Promise<boolean>;
   syncOfflineData: () => Promise<void>;
 }
@@ -53,12 +53,13 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
         const { goalsWithCounts, dumpsData, userData } = JSON.parse(cachedDataStr);
         const allLogs = goalsWithCounts.flatMap((g: any) => (g.logs || []).map((l: any) => ({ ...l, goal_id: g.id })));
         const calculatedUser = calculateRPGStats(allLogs, userData);
+        const offset = userData?.sandbox_date_offset || 0;
         
         set({
           goals: goalsWithCounts,
-          recentlyCompletedIds: getCompletedIdsToday(goalsWithCounts),
+          recentlyCompletedIds: getCompletedIdsToday(goalsWithCounts, offset),
           nudge: calculateStochasticNudges(allLogs) || null,
-          burnoutMonitor: analyzeBurnoutRisk(allLogs, goalsWithCounts),
+          burnoutMonitor: analyzeBurnoutRisk(allLogs, goalsWithCounts, offset),
           latestDump: dumpsData && dumpsData.length > 0 ? JSON.parse(dumpsData[0].analysis) : null,
           user: calculatedUser,
           achievements: calculateAchievements(allLogs, calculatedUser.level),
@@ -90,12 +91,13 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
       
       const allLogs = goalsWithCounts.flatMap(g => (g.logs || []).map((l: any) => ({ ...l, goal_id: g.id })));
       const calculatedUser = calculateRPGStats(allLogs, userData);
+      const offset = userData?.sandbox_date_offset || 0;
       
       set({
         goals: goalsWithCounts,
-        recentlyCompletedIds: getCompletedIdsToday(goalsWithCounts),
+        recentlyCompletedIds: getCompletedIdsToday(goalsWithCounts, offset),
         nudge: calculateStochasticNudges(allLogs) || null,
-        burnoutMonitor: analyzeBurnoutRisk(allLogs, goalsWithCounts),
+        burnoutMonitor: analyzeBurnoutRisk(allLogs, goalsWithCounts, offset),
         latestDump: dumpsData && dumpsData.length > 0 ? JSON.parse(dumpsData[0].analysis) : null,
         user: calculatedUser,
         achievements: calculateAchievements(allLogs, calculatedUser.level),
@@ -155,9 +157,17 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
       const { user, goals } = get();
       const data = await updateSandboxData(user.id, payload);
       const newUser = { ...user, ...data };
-      set({ user: newUser });
+      
+      const allLogs = goals.flatMap(g => (g.logs || []).map((l: any) => ({ ...l, goal_id: g.id })));
+      const offset = newUser.sandbox_date_offset || 0;
+
+      set({ 
+        user: newUser,
+        recentlyCompletedIds: getCompletedIdsToday(goals, offset),
+        burnoutMonitor: analyzeBurnoutRisk(allLogs, goals, offset),
+      });
+
       if (payload.level !== undefined && payload.level !== null) {
-        const allLogs = goals.flatMap(g => g.logs || []);
         set({ achievements: calculateAchievements(allLogs, data.level) });
       }
     } catch (e) {
