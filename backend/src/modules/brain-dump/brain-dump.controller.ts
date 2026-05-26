@@ -3,20 +3,20 @@ import { z } from 'zod';
 import { BrainDumpService } from './brain-dump.service.js';
 
 export class BrainDumpController {
-  static getLatestDump(req: Request, res: Response, next: NextFunction) {
+  static async getLatestDump(req: Request, res: Response, next: NextFunction) {
     if (req.params.userId !== (req as any).user?.id) {
       res.status(403).json({ error: 'Forbidden: Access denied to other user brain dumps' });
       return;
     }
     try {
-      const dumps = BrainDumpService.getLatestDump(req.params.userId);
+      const dumps = await BrainDumpService.getLatestDump(req.params.userId);
       res.json(dumps);
     } catch (err) {
       next(err);
     }
   }
 
-  static createDump(req: Request, res: Response, next: NextFunction) {
+  static async createDump(req: Request, res: Response, next: NextFunction) {
     try {
       const schema = z.object({
         id: z.string(),
@@ -31,7 +31,7 @@ export class BrainDumpController {
         return;
       }
       
-      const result = BrainDumpService.createDump(data);
+      const result = await BrainDumpService.createDump(data);
       res.json(result);
     } catch (err) {
       next(err);

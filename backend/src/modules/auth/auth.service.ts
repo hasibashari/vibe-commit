@@ -17,14 +17,15 @@ export class AuthService {
     return hash === inputHash;
   }
 
-  static register(username: string, password: string) {
+  static async register(username: string, password: string) {
     const normalizedUsername = username.trim().toLowerCase();
     if (!normalizedUsername || password.length < 4) {
       throw new Error('Username tidak boleh kosong dan Password minimal 4 karakter');
     }
 
     // Check if username already exists
-    const existing = db.prepare('SELECT id FROM accounts WHERE LOWER(username) = ?').get(normalizedUsername);
+    const existingRes = await db.query('SELECT id FROM accounts WHERE LOWER(username) = $1', [normalizedUsername]);
+    const existing = existingRes.rows[0];
     if (existing) {
       throw new Error('Username sudah digunakan');
     }
@@ -34,28 +35,39 @@ export class AuthService {
     const hash = this.hashPassword(password, salt);
     const passwordHash = `${salt}:${hash}`;
 
-    db.transaction(() => {
+    const client = await db.connect();
+    try {
+      await client.query('BEGIN');
+      
       // Create auth account
-      db.prepare('INSERT INTO accounts (id, username, password_hash) VALUES (?, ?, ?)').run(
+      await client.query('INSERT INTO accounts (id, username, password_hash) VALUES ($1, $2, $3)', [
         id,
         username,
         passwordHash
-      );
+      ]);
 
       // Initialize game stats in the users table via UserService.getUser
       // This creates the corresponding user record automatically!
-      UserService.getUser(id);
+      await UserService.getUser(id, client);
       
       // Update name to match the registered username (instead of 'Explorer')
-      db.prepare('UPDATE users SET name = ? WHERE id = ?').run(username, id);
-    })();
+      await client.query('UPDATE users SET name = $1 WHERE id = $2', [username, id]);
+
+      await client.query('COMMIT');
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
+    }
 
     return { id, username };
   }
 
-  static login(username: string, password: string) {
+  static async login(username: string, password: string) {
     const normalizedUsername = username.trim().toLowerCase();
-    const account: any = db.prepare('SELECT * FROM accounts WHERE LOWER(username) = ?').get(normalizedUsername);
+    const accountRes = await db.query('SELECT * FROM accounts WHERE LOWER(username) = $1', [normalizedUsername]);
+    const account: any = accountRes.rows[0];
     
     if (!account) {
       throw new Error('Username atau Password salah');
@@ -70,7 +82,7 @@ export class AuthService {
     return { id: account.id, username: account.username, token };
   }
 
-  static loginAsGuest() {
+  static async loginAsGuest() {
     const randSuffix = crypto.randomBytes(3).toString('hex');
     const guestUsername = `Guest_${randSuffix}`;
     const id = `guest_${randSuffix}`;
@@ -79,20 +91,30 @@ export class AuthService {
     const salt = crypto.randomBytes(16).toString('hex');
     const dummyPasswordHash = `${salt}:${crypto.randomUUID()}`;
 
-    db.transaction(() => {
-      db.prepare('INSERT INTO accounts (id, username, password_hash) VALUES (?, ?, ?)').run(
+    const client = await db.connect();
+    try {
+      await client.query('BEGIN');
+
+      await client.query('INSERT INTO accounts (id, username, password_hash) VALUES ($1, $2, $3)', [
         id,
         guestUsername,
         dummyPasswordHash
-      );
+      ]);
 
-      UserService.getUser(id);
-      db.prepare('UPDATE users SET name = ?, title = ? WHERE id = ?').run(
+      await UserService.getUser(id, client);
+      await client.query('UPDATE users SET name = $1, title = $2 WHERE id = $3', [
         guestUsername,
         'Guest Operative',
         id
-      );
-    })();
+      ]);
+
+      await client.query('COMMIT');
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
+    }
 
     const token = JwtUtil.sign({ id, username: guestUsername });
     return { id, username: guestUsername, token };

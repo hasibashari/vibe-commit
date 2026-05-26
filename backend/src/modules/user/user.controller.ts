@@ -3,19 +3,20 @@ import { z } from 'zod';
 import { UserService } from './user.service.js';
 
 export class UserController {
-  static getUser(req: Request, res: Response, next: NextFunction) {
+  static async getUser(req: Request, res: Response, next: NextFunction) {
     if (req.params.id !== (req as any).user?.id) {
       res.status(403).json({ error: 'Forbidden: Access denied to other user data' });
       return;
     }
     try {
-      res.json(UserService.getUser(req.params.id));
+      const result = await UserService.getUser(req.params.id);
+      res.json(result);
     } catch (err) {
       next(err);
     }
   }
 
-  static updateUser(req: Request, res: Response, next: NextFunction) {
+  static async updateUser(req: Request, res: Response, next: NextFunction) {
     if (req.params.id !== (req as any).user?.id) {
       res.status(403).json({ error: 'Forbidden: Access denied to other user data' });
       return;
@@ -33,13 +34,14 @@ export class UserController {
         bgm_muted: z.number().int().optional()
       });
       const parsed = schema.parse(req.body);
-      res.json(UserService.updateUser(req.params.id, parsed));
+      const result = await UserService.updateUser(req.params.id, parsed);
+      res.json(result);
     } catch (err) {
       next(err);
     }
   }
 
-  static buyItem(req: Request, res: Response, next: NextFunction) {
+  static async buyItem(req: Request, res: Response, next: NextFunction) {
     if (req.params.id !== (req as any).user?.id) {
       res.status(403).json({ error: 'Forbidden: Access denied to other user data' });
       return;
@@ -47,13 +49,14 @@ export class UserController {
     try {
       const schema = z.object({ itemId: z.string() });
       const { itemId } = schema.parse(req.body);
-      res.json(UserService.buyItem(req.params.id, itemId));
+      const result = await UserService.buyItem(req.params.id, itemId);
+      res.json(result);
     } catch (err: any) {
       next(err);
     }
   }
 
-  static sandboxUpdate(req: Request, res: Response, _next: NextFunction) {
+  static async sandboxUpdate(req: Request, res: Response, _next: NextFunction) {
     if (req.params.id !== (req as any).user?.id) {
       res.status(403).json({ error: 'Forbidden: Access denied to other user data' });
       return;
@@ -65,39 +68,40 @@ export class UserController {
 
     try {
       const { hp, mana, level, coins_delta, sandbox_date_offset } = req.body;
-      res.json(UserService.sandboxUpdate(req.params.id, { hp, mana, level, coins_delta, sandbox_date_offset }));
+      const result = await UserService.sandboxUpdate(req.params.id, { hp, mana, level, coins_delta, sandbox_date_offset });
+      res.json(result);
     } catch(err: any) {
       res.status(400).json({ error: err.message });
     }
   }
 
-  static resetUser(req: Request, res: Response, next: NextFunction) {
+  static async resetUser(req: Request, res: Response, next: NextFunction) {
     if (req.params.id !== (req as any).user?.id) {
       res.status(403).json({ error: 'Forbidden: Access denied to other user data' });
       return;
     }
     try {
-      UserService.resetUser(req.params.id);
+      await UserService.resetUser(req.params.id);
       res.json({ success: true });
     } catch (err) {
       next(err);
     }
   }
 
-  static deleteAccount(req: Request, res: Response, next: NextFunction) {
+  static async deleteAccount(req: Request, res: Response, next: NextFunction) {
     if (req.params.id !== (req as any).user?.id) {
       res.status(403).json({ error: 'Forbidden: Access denied to other user data' });
       return;
     }
     try {
-      UserService.deleteAccount(req.params.id);
+      await UserService.deleteAccount(req.params.id);
       res.json({ success: true });
     } catch (err) {
       next(err);
     }
   }
 
-  static importData(req: Request, res: Response, next: NextFunction) {
+  static async importData(req: Request, res: Response, next: NextFunction) {
     if (req.params.id !== (req as any).user?.id) {
       res.status(403).json({ error: 'Forbidden: Access denied to other user data' });
       return;
@@ -122,7 +126,7 @@ export class UserController {
       });
       
       const parsed = importSchema.parse(req.body);
-      UserService.importData(req.params.id, parsed);
+      await UserService.importData(req.params.id, parsed);
       res.json({ success: true });
     } catch (err) {
       next(err);

@@ -4,19 +4,20 @@ import { QuestService } from './quest.service.js';
 import db from '../../db/database.js';
 
 export class QuestController {
-  static getGoalsForUser(req: Request, res: Response, next: NextFunction) {
+  static async getGoalsForUser(req: Request, res: Response, next: NextFunction) {
     if (req.params.userId !== (req as any).user?.id) {
       res.status(403).json({ error: 'Forbidden: Access denied to other user quests' });
       return;
     }
     try {
-      res.json(QuestService.getGoalsForUser(req.params.userId));
+      const goals = await QuestService.getGoalsForUser(req.params.userId);
+      res.json(goals);
     } catch (err) {
       next(err);
     }
   }
 
-  static createGoal(req: Request, res: Response, next: NextFunction) {
+  static async createGoal(req: Request, res: Response, next: NextFunction) {
     try {
       const schema = z.object({
         id: z.string(),
@@ -34,15 +35,17 @@ export class QuestController {
         return;
       }
       
-      res.json(QuestService.createGoal(parsed));
+      const result = await QuestService.createGoal(parsed);
+      res.json(result);
     } catch (err) {
       next(err);
     }
   }
 
-  static updateGoal(req: Request, res: Response, next: NextFunction) {
+  static async updateGoal(req: Request, res: Response, next: NextFunction) {
     try {
-      const goal = db.prepare('SELECT user_id FROM goals WHERE id = ?').get(req.params.id) as { user_id: string } | undefined;
+      const goalRes = await db.query('SELECT user_id FROM goals WHERE id = $1', [req.params.id]);
+      const goal = goalRes.rows[0] as { user_id: string } | undefined;
       if (!goal) {
         res.status(404).json({ error: 'Quest not found' });
         return;
@@ -60,15 +63,17 @@ export class QuestController {
         category: z.string().nullable().optional()
       });
       const parsed = schema.parse(req.body);
-      res.json(QuestService.updateGoal(req.params.id, parsed));
+      const result = await QuestService.updateGoal(req.params.id, parsed);
+      res.json(result);
     } catch (err) {
       next(err);
     }
   }
 
-  static deleteGoal(req: Request, res: Response, next: NextFunction) {
+  static async deleteGoal(req: Request, res: Response, next: NextFunction) {
     try {
-      const goal = db.prepare('SELECT user_id FROM goals WHERE id = ?').get(req.params.id) as { user_id: string } | undefined;
+      const goalRes = await db.query('SELECT user_id FROM goals WHERE id = $1', [req.params.id]);
+      const goal = goalRes.rows[0] as { user_id: string } | undefined;
       if (!goal) {
         res.status(404).json({ error: 'Quest not found' });
         return;
@@ -78,15 +83,17 @@ export class QuestController {
         return;
       }
 
-      res.json(QuestService.deleteGoal(req.params.id));
+      const result = await QuestService.deleteGoal(req.params.id);
+      res.json(result);
     } catch (error) {
       next(error);
     }
   }
 
-  static updateDifficulty(req: Request, res: Response, next: NextFunction) {
+  static async updateDifficulty(req: Request, res: Response, next: NextFunction) {
     try {
-      const goal = db.prepare('SELECT user_id FROM goals WHERE id = ?').get(req.params.id) as { user_id: string } | undefined;
+      const goalRes = await db.query('SELECT user_id FROM goals WHERE id = $1', [req.params.id]);
+      const goal = goalRes.rows[0] as { user_id: string } | undefined;
       if (!goal) {
         res.status(404).json({ error: 'Quest not found' });
         return;
@@ -100,7 +107,8 @@ export class QuestController {
         difficulty: z.coerce.number()
       });
       const { difficulty } = schema.parse(req.body);
-      res.json(QuestService.updateDifficulty(req.params.id, difficulty));
+      const result = await QuestService.updateDifficulty(req.params.id, difficulty);
+      res.json(result);
     } catch (err) {
       next(err);
     }

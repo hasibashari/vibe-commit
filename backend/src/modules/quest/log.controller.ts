@@ -3,28 +3,29 @@ import { z } from 'zod';
 import db from '../../db/database.js';
 
 export class LogController {
-  static getLogsForUser(req: Request, res: Response, next: NextFunction) {
+  static async getLogsForUser(req: Request, res: Response, next: NextFunction) {
     if (req.params.userId !== (req as any).user?.id) {
       res.status(403).json({ error: 'Forbidden: Access denied to other user logs' });
       return;
     }
     try {
-      const logs = db.prepare(`
+      const logsRes = await db.query(`
         SELECT quest_logs.* 
         FROM quest_logs 
         JOIN goals ON quest_logs.goal_id = goals.id 
-        WHERE goals.user_id = ? 
+        WHERE goals.user_id = $1 
         ORDER BY quest_logs.timestamp DESC
-      `).all(req.params.userId);
-      res.json(logs);
+      `, [req.params.userId]);
+      res.json(logsRes.rows);
     } catch (err) {
       next(err);
     }
   }
 
-  static getLogsForGoal(req: Request, res: Response, next: NextFunction) {
+  static async getLogsForGoal(req: Request, res: Response, next: NextFunction) {
     try {
-      const goal = db.prepare('SELECT user_id FROM goals WHERE id = ?').get(req.params.goalId) as { user_id: string } | undefined;
+      const goalRes = await db.query('SELECT user_id FROM goals WHERE id = $1', [req.params.goalId]);
+      const goal = goalRes.rows[0] as { user_id: string } | undefined;
       if (!goal) {
         res.status(404).json({ error: 'Quest not found' });
         return;
@@ -34,14 +35,14 @@ export class LogController {
         return;
       }
 
-      const logs = db.prepare('SELECT * FROM quest_logs WHERE goal_id = ? ORDER BY timestamp DESC').all(req.params.goalId);
-      res.json(logs);
+      const logsRes = await db.query('SELECT * FROM quest_logs WHERE goal_id = $1 ORDER BY timestamp DESC', [req.params.goalId]);
+      res.json(logsRes.rows);
     } catch (err) {
       next(err);
     }
   }
 
-  static createLog(req: Request, res: Response, next: NextFunction) {
+  static async createLog(req: Request, res: Response, next: NextFunction) {
     try {
       const schema = z.object({
         id: z.string(),
@@ -51,7 +52,8 @@ export class LogController {
       });
       const { id, goalId, vibeScore, notes } = schema.parse(req.body);
       
-      const goal = db.prepare('SELECT user_id FROM goals WHERE id = ?').get(goalId) as { user_id: string } | undefined;
+      const goalRes = await db.query('SELECT user_id FROM goals WHERE id = $1', [goalId]);
+      const goal = goalRes.rows[0] as { user_id: string } | undefined;
       if (!goal) {
         res.status(404).json({ error: 'Quest not found for this log' });
         return;
@@ -61,9 +63,13 @@ export class LogController {
         return;
       }
 
-      db.transaction(() => {
+      const client = await db.connect();
+      try {
+        await client.query('BEGIN');
+
         // Fetch user's date offset to determine quest log's simulated timestamp
-        const userOffsetObj = db.prepare('SELECT sandbox_date_offset FROM users WHERE id = ?').get(goal.user_id) as { sandbox_date_offset: number } | undefined;
+        const userOffsetObjRes = await client.query('SELECT sandbox_date_offset FROM users WHERE id = $1', [goal.user_id]);
+        const userOffsetObj = userOffsetObjRes.rows[0] as { sandbox_date_offset: number } | undefined;
         const offset = userOffsetObj?.sandbox_date_offset || 0;
 
         // Calculate simulated timestamp
@@ -71,29 +77,36 @@ export class LogController {
         if (offset !== 0) {
           logTime.setDate(logTime.getDate() + offset);
         }
-        const timestampStr = logTime.toISOString().replace('T', ' ').substring(0, 19); // SQLite friendly space format
+        const timestampStr = logTime.toISOString();
 
-        // INSERT OR IGNORE makes this idempotent — replayed offline logIds
+        // INSERT ON CONFLICT DO NOTHING makes this idempotent — replayed offline logIds
         // (same UUID sent again during sync) are silently skipped instead of
         // crashing with a UNIQUE constraint error and discarding the action.
-        const insertResult = db.prepare(
-          'INSERT OR IGNORE INTO quest_logs (id, goal_id, vibe_score, notes, timestamp) VALUES (?, ?, ?, ?, ?)'
-        ).run(id, goalId, vibeScore ?? null, notes ?? null, timestampStr);
+        const insertResult = await client.query(
+          'INSERT INTO quest_logs (id, goal_id, vibe_score, notes, timestamp) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (id) DO NOTHING',
+          [id, goalId, vibeScore ?? null, notes ?? null, timestampStr]
+        );
 
-        // If 0 rows were changed the log already existed — skip reward grant
+        // If 0 rows were changed (rowCount === 0) the log already existed — skip reward grant
         // to avoid double-crediting EXP/HP on duplicate requests.
-        if (insertResult.changes === 0) return;
+        if (insertResult.rowCount === 0) {
+          await client.query('COMMIT');
+          res.json({ success: true });
+          return;
+        }
 
         // Fetch user associated with this goal
-        const goalData: any = db.prepare('SELECT user_id, difficulty, reward_alpha FROM goals WHERE id = ?').get(goalId);
+        const goalDataRes = await client.query('SELECT user_id, difficulty, reward_alpha FROM goals WHERE id = $1', [goalId]);
+        const goalData = goalDataRes.rows[0] as any;
         if (goalData) {
-          const user: any = db.prepare('SELECT id, hp, mana, level, exp, last_penalty_date FROM users WHERE id = ?').get(goalData.user_id);
+          const userRes = await client.query('SELECT id, hp, mana, level, exp, last_penalty_date FROM users WHERE id = $1', [goalData.user_id]);
+          const user = userRes.rows[0] as any;
           if (user) {
             const expGain = Math.floor(10 * (goalData.difficulty || 1.0) * (goalData.reward_alpha || 0.5));
             let newExp = user.exp + expGain;
             let newLevel = user.level;
 
-            // Cap level to prevent IEEE 754 precision loss above ~level 200
+            // Cap level to prevent precision loss
             const MAX_LEVEL = 100;
             const getExpNeeded = (lvl: number) =>
               Math.floor(100 * Math.pow(1.2, Math.min(lvl - 1, MAX_LEVEL - 1)));
@@ -112,32 +125,43 @@ export class LogController {
             // mana refreshes to 100 (new day, fresh focus); each subsequent
             // quest drains 10 points (effort spent).
             //
-            // OBJECTIVE COUNTER: Instead of relying on user.last_penalty_date (which is subject
-            // to race conditions when page loads applyTimeEffects first), we query SQLite to check
-            // how many quest logs the user has completed today (in local server time).
-            // Since the transaction has already inserted the current log, a count of <= 1 indicates
-            // this is the very first quest completion of today.
-            const todayLogs = db.prepare(`
+            // OBJECTIVE COUNTER: Query PostgreSQL to check how many quest logs the user has completed today.
+            const todayLogsRes = await client.query(`
               SELECT COUNT(*) as count 
               FROM quest_logs 
               JOIN goals ON quest_logs.goal_id = goals.id 
-              WHERE goals.user_id = ? 
-                AND DATE(quest_logs.timestamp, 'localtime') = DATE(?, 'localtime')
-            `).get(user.id, timestampStr) as { count: number };
+              WHERE goals.user_id = $1 
+                AND DATE(quest_logs.timestamp) = DATE($2::timestamp)
+            `, [user.id, timestampStr]);
+            
+            const todayLogs = todayLogsRes.rows[0] as { count: string | number };
+            const todayCount = Number(todayLogs.count);
 
-            const isFirstQuestToday = todayLogs.count <= 1;
+            const isFirstQuestToday = todayCount <= 1;
             const manaBase = isFirstQuestToday ? 100 : user.mana;
             const newMana = Math.max(0, manaBase - 10);
 
             const todayStr = `${logTime.getFullYear()}-${String(logTime.getMonth() + 1).padStart(2, '0')}-${String(logTime.getDate()).padStart(2, '0')}`;
 
-            db.prepare('UPDATE users SET hp = ?, mana = ?, level = ?, exp = ?, last_penalty_date = ? WHERE id = ?')
-              .run(newHp, newMana, newLevel, newExp, todayStr, user.id);
+            await client.query('UPDATE users SET hp = $1, mana = $2, level = $3, exp = $4, last_penalty_date = $5 WHERE id = $6', [
+              newHp,
+              newMana,
+              newLevel,
+              newExp,
+              todayStr,
+              user.id
+            ]);
           }
         }
-      })();
-      
-      res.json({ success: true });
+
+        await client.query('COMMIT');
+        res.json({ success: true });
+      } catch (err) {
+        await client.query('ROLLBACK');
+        throw err;
+      } finally {
+        client.release();
+      }
     } catch (err) {
       next(err);
     }

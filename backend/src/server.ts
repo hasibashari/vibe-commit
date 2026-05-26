@@ -17,10 +17,10 @@ import brainDumpRoutes from './modules/brain-dump/brain-dump.routes.js';
 import aiRoutes from './modules/ai/ai.routes.js';
 import authRoutes from './modules/auth/auth.routes.js';
 
-// Initialize schema
-initDb();
-
 async function startServer() {
+  // Initialize schema
+  await initDb();
+
   const app = express();
   const PORT = Number(process.env.PORT) || 5173;
 
