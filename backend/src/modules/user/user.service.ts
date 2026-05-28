@@ -112,6 +112,15 @@ export class UserService {
 
         const activeDatesSet = new Set(activeLogDays);
 
+        // Fetch all active goals for the user to determine if they had any active quests on a given day
+        const activeGoalsRes = await targetDb.query(`
+          SELECT id, created_at
+          FROM goals
+          WHERE user_id = $1 AND status != 'archived'
+        `, [user.id]);
+
+        const activeGoals = activeGoalsRes.rows;
+
         // Iterate through all calendar days in the gap to count actual inactive days
         let inactiveDaysCount = 0;
         let loopDate = new Date(lastDate);
@@ -122,7 +131,16 @@ export class UserService {
           const loopDateStr = `${y}-${m}-${d}`;
 
           if (!activeDatesSet.has(loopDateStr)) {
-            inactiveDaysCount++;
+            // Only count as inactive if the user had at least one active quest created on or before this day
+            const hasActiveQuestOnDay = activeGoals.some((goal: any) => {
+              const createdDate = new Date(goal.created_at);
+              const createdDateStr = `${createdDate.getFullYear()}-${String(createdDate.getMonth() + 1).padStart(2, '0')}-${String(createdDate.getDate()).padStart(2, '0')}`;
+              return createdDateStr <= loopDateStr;
+            });
+
+            if (hasActiveQuestOnDay) {
+              inactiveDaysCount++;
+            }
           }
           loopDate.setDate(loopDate.getDate() + 1);
         }
