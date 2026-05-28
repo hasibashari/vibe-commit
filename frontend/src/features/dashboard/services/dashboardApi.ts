@@ -44,7 +44,7 @@ export const fetchDashboardData = async () => {
         // `repetition_count` now comes from the backend SQL JOIN (authoritative).
         // We still recount from the attached logs array so the two values stay
         // in sync and so the UI can render individual log entries.
-        repetition_count: logs.length > 0 ? logs.length : (g.repetition_count ?? 0),
+        repetition_count: logs.length > 0 ? logs.length : Number(g.repetition_count ?? 0),
         logs,
       };
     });

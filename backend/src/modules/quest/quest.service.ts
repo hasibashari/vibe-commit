@@ -5,7 +5,7 @@ export class QuestService {
     // Embed repetition_count directly so the frontend never needs to recount.
     // Using COALESCE so goals with zero logs still return 0 (not NULL).
     const res = await db.query(`
-      SELECT g.*, COALESCE(lc.cnt, 0) AS repetition_count
+      SELECT g.*, COALESCE(lc.cnt, 0)::integer AS repetition_count
       FROM goals g
       LEFT JOIN (
         SELECT goal_id, COUNT(*) AS cnt

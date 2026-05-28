@@ -112,7 +112,7 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
             }];
             return {
               ...g,
-              repetition_count: g.repetition_count + 1,
+              repetition_count: Number(g.repetition_count || 0) + 1,
               logs: newLogs
             };
           }
@@ -148,7 +148,7 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
             }];
             return {
               ...g,
-              repetition_count: g.repetition_count + 1,
+              repetition_count: Number(g.repetition_count || 0) + 1,
               logs: newLogs
             };
           }

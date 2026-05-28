@@ -37,12 +37,12 @@ export function HubMonitoring({ goals }: HubMonitoringProps) {
 
     return {
       allLogs: goals.flatMap(g => g.logs || []),
-      totalCompleted: goals.reduce((acc, g) => acc + g.repetition_count, 0),
+      totalCompleted: goals.reduce((acc, g) => acc + Number(g.repetition_count || 0), 0),
       // FIXED: multiply by repetition_count so we get TOTAL EXP earned across
       // all completions — not just the EXP for a single hypothetical completion.
       // This now matches the actual EXP credited to the user's RPG level.
       activeExp: goals.reduce(
-        (acc, g) => acc + Math.floor(g.difficulty * 10 * g.reward_alpha) * g.repetition_count,
+        (acc, g) => acc + Math.floor(g.difficulty * 10 * g.reward_alpha) * Number(g.repetition_count || 0),
         0,
       ),
       completedTodayCount: completedToday,
