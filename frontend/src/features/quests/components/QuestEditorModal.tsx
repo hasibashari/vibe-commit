@@ -18,12 +18,20 @@ export const QuestEditorModal: React.FC<QuestEditorModalProps> = ({
   onSave,
   initialData,
 }) => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    title: string;
+    description: string;
+    difficulty: number;
+    reward_alpha: number;
+    category: string;
+    type: 'daily' | 'one-off' | 'project';
+  }>({
     title: '',
     description: '',
     difficulty: 5.0,
     reward_alpha: 0.5,
     category: 'Daily Quest',
+    type: 'daily',
   });
 
   useEffect(() => {
@@ -34,6 +42,7 @@ export const QuestEditorModal: React.FC<QuestEditorModalProps> = ({
         difficulty: initialData.difficulty,
         reward_alpha: initialData.reward_alpha || 0.5,
         category: initialData.category || 'Daily Quest',
+        type: initialData.type || 'daily',
       });
     } else {
       setFormData({
@@ -42,6 +51,7 @@ export const QuestEditorModal: React.FC<QuestEditorModalProps> = ({
         difficulty: 5.0,
         reward_alpha: 0.5,
         category: 'Daily Quest',
+        type: 'daily',
       });
     }
   }, [initialData, isOpen]);
@@ -99,19 +109,35 @@ export const QuestEditorModal: React.FC<QuestEditorModalProps> = ({
           </div>
         </div>
 
-        <div className='space-y-1.5'>
-          <label className='text-xs font-mono uppercase tracking-widest text-slate-400 mb-1.5 ml-1'>
-            Kategori Quest
-          </label>
-          <select
-            value={formData.category}
-            onChange={e => setFormData({ ...formData, category: e.target.value })}
-            className='w-full h-11 bg-slate-900 border border-slate-800 text-sm rounded-lg px-4 focus:outline-none focus:border-accent-500/50 transition-colors text-slate-200'
-          >
-            <option value='Main Quest'>👑 Main Quest (Tujuan Utama)</option>
-            <option value='Daily Quest'>📅 Daily Quest (Misi Harian)</option>
-            <option value='Side Quest'>📌 Side Quest (Tugas Tambahan)</option>
-          </select>
+        <div className='grid grid-cols-2 gap-4'>
+          <div className='space-y-1.5'>
+            <label className='text-xs font-mono uppercase tracking-widest text-slate-400 mb-1.5 ml-1'>
+              Kategori Quest
+            </label>
+            <select
+              value={formData.category}
+              onChange={e => setFormData({ ...formData, category: e.target.value })}
+              className='w-full h-11 bg-slate-900 border border-slate-800 text-sm rounded-lg px-4 focus:outline-none focus:border-accent-500/50 transition-colors text-slate-200'
+            >
+              <option value='Main Quest'>👑 Main Quest (Tujuan Utama)</option>
+              <option value='Daily Quest'>📅 Daily Quest (Misi Harian)</option>
+              <option value='Side Quest'>📌 Side Quest (Tugas Tambahan)</option>
+            </select>
+          </div>
+          
+          <div className='space-y-1.5'>
+            <label className='text-xs font-mono uppercase tracking-widest text-slate-400 mb-1.5 ml-1'>
+              Tipe Quest
+            </label>
+            <select
+              value={formData.type}
+              onChange={e => setFormData({ ...formData, type: e.target.value as 'daily' | 'one-off' | 'project' })}
+              className='w-full h-11 bg-slate-900 border border-slate-800 text-sm rounded-lg px-4 focus:outline-none focus:border-accent-500/50 transition-colors text-slate-200'
+            >
+              <option value='daily'>🔄 Rutinitas (Habit)</option>
+              <option value='one-off'>⚡ Sekali Jalan (One-Off)</option>
+            </select>
+          </div>
         </div>
       </div>
 

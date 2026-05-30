@@ -25,12 +25,12 @@ export class BrainDumpController {
         analysis: z.any()
       });
       const data = schema.parse(req.body);
-      
+
       if (data.userId !== (req as any).user?.id) {
         res.status(403).json({ error: 'Forbidden: Access denied to create brain dump for other user' });
         return;
       }
-      
+
       const result = await BrainDumpService.createDump(data);
       res.json(result);
     } catch (err) {

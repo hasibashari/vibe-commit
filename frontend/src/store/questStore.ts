@@ -219,6 +219,7 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
           category: questData.category || 'productivity',
           difficulty: questData.difficulty ?? 1.0,
           reward_alpha: questData.reward_alpha ?? 0.5,
+          type: questData.type || 'daily',
           repetition_count: 0,
           logs: [],
           status: 'active'
@@ -291,6 +292,7 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
           category: questData.category || 'productivity',
           difficulty: questData.difficulty ?? 1.0,
           reward_alpha: questData.reward_alpha ?? 0.5,
+          type: questData.type || 'daily',
           repetition_count: 0,
           logs: [],
           status: 'active'

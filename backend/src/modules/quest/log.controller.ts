@@ -10,7 +10,7 @@ export class LogController {
     }
     try {
       const logsRes = await db.query(`
-        SELECT quest_logs.* 
+        SELECT quest_logs.*, goals.difficulty, goals.created_at as goal_created_at 
         FROM quest_logs 
         JOIN goals ON quest_logs.goal_id = goals.id 
         WHERE goals.user_id = $1 
@@ -96,13 +96,27 @@ export class LogController {
         }
 
         // Fetch user associated with this goal
-        const goalDataRes = await client.query('SELECT user_id, difficulty, reward_alpha FROM goals WHERE id = $1', [goalId]);
+        const goalDataRes = await client.query('SELECT user_id, difficulty, reward_alpha, type FROM goals WHERE id = $1', [goalId]);
         const goalData = goalDataRes.rows[0] as any;
         if (goalData) {
           const userRes = await client.query('SELECT id, hp, mana, level, exp, last_penalty_date FROM users WHERE id = $1', [goalData.user_id]);
           const user = userRes.rows[0] as any;
           if (user) {
-            const expGain = Math.floor(10 * (goalData.difficulty || 1.0) * (goalData.reward_alpha || 0.5));
+            let expGain = 0;
+            
+            if (goalData.type === 'one-off') {
+              // Gacha Burst Logic for One-off Quests
+              // RNG Multiplier between 1.5x and 3.0x instead of relying on reward_alpha streak
+              const gachaMultiplier = 1.5 + Math.random() * 1.5;
+              expGain = Math.floor(10 * (goalData.difficulty || 1.0) * gachaMultiplier);
+              
+              // Auto-complete the quest
+              await client.query("UPDATE goals SET status = 'completed' WHERE id = $1", [goalId]);
+            } else {
+              // Standard Habit EXP Calculation
+              expGain = Math.floor(10 * (goalData.difficulty || 1.0) * (goalData.reward_alpha || 0.5));
+            }
+
             let newExp = user.exp + expGain;
             let newLevel = user.level;
 

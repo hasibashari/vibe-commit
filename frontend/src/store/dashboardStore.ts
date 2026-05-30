@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { Goal } from '../shared/types/goal';
+import type { Log } from '../shared/types/log';
 import type { UserStats } from '../shared/types/user';
 import { BurnoutPrediction, calculateStochasticNudges, analyzeBurnoutRisk } from '../shared/services/analyticsService';
 import { fetchDashboardData, updateProfileData, resetProfileData, updateSandboxData, buyItemAPI } from '../features/dashboard/services/dashboardApi';
@@ -18,6 +19,7 @@ interface DashboardStore {
   setExpPopups: (popups: { id: string, exp: number }[]) => void;
   nudge: { optimalHour: number; suggestion: string } | null;
   recentlyCompletedIds: string[];
+  allLogs: Log[];
   isLoading: boolean;
 
   fetchData: () => Promise<void>;
@@ -40,6 +42,7 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
   setExpPopups: (popups) => set({ expPopups: popups }),
   nudge: null,
   recentlyCompletedIds: [],
+  allLogs: [],
   isLoading: true,
 
   fetchData: async () => {
@@ -50,8 +53,8 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
 
     if (cachedDataStr) {
       try {
-        const { goalsWithCounts, dumpsData, userData } = JSON.parse(cachedDataStr);
-        const allLogs = goalsWithCounts.flatMap((g: any) => (g.logs || []).map((l: any) => ({ ...l, goal_id: g.id })));
+        const { goalsWithCounts, dumpsData, userData, allLogsData } = JSON.parse(cachedDataStr);
+        const allLogs = allLogsData || goalsWithCounts.flatMap((g: any) => (g.logs || []).map((l: any) => ({ ...l, goal_id: g.id })));
         const calculatedUser = calculateRPGStats(allLogs, userData);
         const offset = userData?.sandbox_date_offset || 0;
 
@@ -61,11 +64,18 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
           nudge: calculateStochasticNudges(allLogs) || null,
           burnoutMonitor: analyzeBurnoutRisk(allLogs, goalsWithCounts, offset),
           latestDump: dumpsData && dumpsData.length > 0
-            ? (typeof dumpsData[0].analysis === 'string' ? JSON.parse(dumpsData[0].analysis) : dumpsData[0].analysis)
+            ? (() => {
+              const parsed = typeof dumpsData[0].analysis === 'string' ? JSON.parse(dumpsData[0].analysis) : dumpsData[0].analysis;
+              return {
+                ...parsed,
+                summary: parsed.summary || parsed.analysisSummary || ''
+              };
+            })()
             : null,
           user: calculatedUser,
           achievements: calculateAchievements(allLogs, calculatedUser.level),
-          isLoading: false // Instantly clear the loading spinner
+          allLogs,
+          isLoading: false
         });
         cachedDataLoaded = true;
       } catch (cacheErr) {
@@ -79,19 +89,20 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
     }
 
     try {
-      const { goalsWithCounts, dumpsData, userData } = await fetchDashboardData();
+      const { goalsWithCounts, dumpsData, userData, allLogsData } = await fetchDashboardData();
 
       try {
         localStorage.setItem('vibe_commit_dashboard_cache', JSON.stringify({
           goalsWithCounts,
           dumpsData,
-          userData
+          userData,
+          allLogsData
         }));
       } catch (err) {
         console.error('Failed to write local dashboard cache', err);
       }
 
-      const allLogs = goalsWithCounts.flatMap(g => (g.logs || []).map((l: any) => ({ ...l, goal_id: g.id })));
+      const allLogs = allLogsData || goalsWithCounts.flatMap(g => (g.logs || []).map((l: any) => ({ ...l, goal_id: g.id })));
       const calculatedUser = calculateRPGStats(allLogs, userData);
       const offset = userData?.sandbox_date_offset || 0;
 
@@ -101,7 +112,13 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
         nudge: calculateStochasticNudges(allLogs) || null,
         burnoutMonitor: analyzeBurnoutRisk(allLogs, goalsWithCounts, offset),
         latestDump: dumpsData && dumpsData.length > 0
-          ? (typeof dumpsData[0].analysis === 'string' ? JSON.parse(dumpsData[0].analysis) : dumpsData[0].analysis)
+          ? (() => {
+            const parsed = typeof dumpsData[0].analysis === 'string' ? JSON.parse(dumpsData[0].analysis) : dumpsData[0].analysis;
+            return {
+              ...parsed,
+              summary: parsed.summary || parsed.analysisSummary || ''
+            };
+          })()
           : null,
         user: calculatedUser,
         achievements: calculateAchievements(allLogs, calculatedUser.level),
@@ -126,6 +143,10 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
       const updatedUser = await updateProfileData(undefined, data);
 
       const { goals, user } = get();
+      
+      // Need to fetch full logs to calculate stats accurately after profile update
+      // But for immediate UI update, we fallback to reconstructing from goals
+      // since syncOfflineData/fetchData is typically called shortly after.
       const allLogs = goals.flatMap(g => (g.logs || []).map((l: any) => ({ ...l, goal_id: g.id })));
       const newStats = calculateRPGStats(allLogs, { ...user, ...updatedUser });
 
@@ -147,6 +168,7 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
         expPopups: [],
         recentlyCompletedIds: [],
         nudge: null,
+        allLogs: [],
         user: { hp: 100, mana: 100, level: 1, exp: 0 },
         achievements: calculateAchievements([], 1)
       });
@@ -162,6 +184,7 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
       const data = await updateSandboxData(user.id, payload);
       const newUser = { ...user, ...data };
 
+      // Reconstruct temporary allLogs for immediate UI optimism before fetchData overwrites it
       const allLogs = goals.flatMap(g => (g.logs || []).map((l: any) => ({ ...l, goal_id: g.id })));
       const offset = newUser.sandbox_date_offset || 0;
 
@@ -174,6 +197,8 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
       if (payload.level !== undefined && payload.level !== null) {
         set({ achievements: calculateAchievements(allLogs, data.level) });
       }
+
+      await get().fetchData();
     } catch (e) {
       console.error(e);
     }

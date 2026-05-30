@@ -1,8 +1,6 @@
 import { getCurrentUser, getAuthHeaders } from '../../../shared/services/session';
 import type { UserStats } from '../../../shared/types/user';
 
-
-
 export const fetchDashboardData = async () => {
   const user = getCurrentUser();
   if (!user) {
@@ -50,7 +48,8 @@ export const fetchDashboardData = async () => {
       goalsWithCounts,
       rawGoalsData,
       dumpsData,
-      userData
+      userData,
+      allLogsData
     };
   } catch (error) {
     throw error;

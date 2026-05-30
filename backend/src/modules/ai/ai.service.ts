@@ -25,6 +25,14 @@ Instruksi (Langkah-demi-Langkah):
    - Jika input tidak jelas atau terlalu singkat → berikan analysisSummary yang meminta pengguna untuk menjelaskan lebih detail.
 
 2. Lakukan Fragmentasi Tugas Mikro: pecah masalah besar menjadi tugas-tugas terstruktur yang lebih kecil (Quest).
+   Batas Pembuatan Quest:
+   - Main Quest: Maksimal 2 tugas (fokus prioritas utama).
+   - Daily Quest: Maksimal 4 tugas (untuk rutinitas).
+   - Side Quest: Maksimal 10 tugas (fleksibel, untuk tugas kecil / ad-hoc).
+   
+   Untuk setiap quest, tentukan tipenya:
+   - type: "daily" (jika itu adalah kebiasaan/rutinitas berulang).
+   - type: "one-off" (jika itu adalah tugas sekali jalan yang langsung selesai, terutama untuk Side Quest).
 
 3. Tetapkan bobot Difficulty dan RewardAlpha untuk setiap Quest berdasarkan rubrik berikut:
 
@@ -123,8 +131,13 @@ export class AiService {
                     enum: ["Main Quest", "Daily Quest", "Side Quest"],
                     description: "Main Quest=tugas utama/deadline. Daily Quest=rutinitas harian. Side Quest=opsional/pengembangan diri.",
                   },
+                  type: {
+                    type: Type.STRING,
+                    enum: ["daily", "one-off"],
+                    description: "Tipe tugas: daily (rutinitas) atau one-off (sekali jalan/selesai).",
+                  },
                 },
-                required: ["title", "description", "difficulty", "rewardAlpha", "category"],
+                required: ["title", "description", "difficulty", "rewardAlpha", "category", "type"],
               },
             }
           },

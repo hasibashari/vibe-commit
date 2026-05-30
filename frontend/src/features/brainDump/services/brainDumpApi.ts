@@ -14,6 +14,7 @@ interface BrainDumpQuest {
   difficulty: number;
   rewardAlpha: number;
   category: string;
+  type?: 'daily' | 'one-off';
 }
 
 
@@ -62,7 +63,8 @@ export const saveQuestsFromBrainDumpApi = async (quests: BrainDumpQuest[]) => {
           description: res.description || '',
           difficulty: typeof res.difficulty === 'number' ? res.difficulty : 1.0,
           rewardAlpha: typeof res.rewardAlpha === 'number' ? res.rewardAlpha : 0.5,
-          category: categoryNorm
+          category: categoryNorm,
+          type: res.type || 'daily'
         })
       });
 

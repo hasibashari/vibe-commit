@@ -55,6 +55,7 @@ export async function initDb() {
         difficulty REAL DEFAULT 1.0,
         reward_alpha REAL DEFAULT 0.5,
         category VARCHAR(100),
+        type VARCHAR(50) DEFAULT 'daily',
         status VARCHAR(50) DEFAULT 'active',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
@@ -75,6 +76,12 @@ export async function initDb() {
         analysis JSONB,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
+
+      -- Migration: Add type column to existing goals (silently skip if already exists)
+      DO $$ BEGIN
+        ALTER TABLE goals ADD COLUMN type VARCHAR(50) DEFAULT 'daily';
+      EXCEPTION WHEN duplicate_column THEN NULL;
+      END $$;
 
       -- Migration: Add FK constraints to existing tables (silently skip if already exist)
       DO $$ BEGIN

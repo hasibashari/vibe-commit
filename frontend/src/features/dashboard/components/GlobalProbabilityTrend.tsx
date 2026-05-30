@@ -10,6 +10,7 @@ import {
 } from 'recharts';
 import type { Goal } from '../../../shared/types/goal';
 import { generateGlobalTimeSeriesData, safeParseDate } from '../../../shared/utils/vibeMath';
+import { useDashboardStore } from '../../../store/dashboardStore';
 
 interface GlobalProbabilityTrendProps {
   goals: Goal[];
@@ -92,11 +93,36 @@ export function GlobalProbabilityTrend({ goals, sandboxDateOffset = 0 }: GlobalP
   }, [filter, goals, sandboxDateOffset]);
 
   const chartData = useMemo(() => {
-    const goalsData = goals.map(g => ({
-      logs: g.logs || [],
-      difficulty: g.difficulty,
-      createdAt: g.createdAt,
-    }));
+    const allLogs = useDashboardStore.getState().allLogs;
+    
+    // Reconstruct goalsData from allLogs and active goals
+    // We combine the known active goals with any historical goals discovered via allLogs
+    const goalsMap = new Map<string, any>();
+    
+    // First, add all active goals (which guarantees we have their difficulty/createdAt even if 0 logs)
+    goals.forEach(g => {
+      goalsMap.set(g.id, { id: g.id, logs: g.logs || [], difficulty: g.difficulty, createdAt: g.createdAt });
+    });
+    
+    // Next, add logs from allLogs (which includes logs from archived/hidden goals)
+    allLogs.forEach((log: any) => {
+      if (!goalsMap.has(log.goal_id)) {
+        goalsMap.set(log.goal_id, {
+          id: log.goal_id,
+          logs: [],
+          difficulty: log.difficulty || 5, // Fallback if missing, though our updated API returns it
+          createdAt: log.goal_created_at || log.timestamp // Fallback to first log timestamp if needed
+        });
+      }
+      
+      const goalRecord = goalsMap.get(log.goal_id);
+      // Only push the log if it isn't already there (active goals already have their logs from g.logs)
+      if (!goalRecord.logs.some((l: any) => l.id === log.id)) {
+        goalRecord.logs.push(log);
+      }
+    });
+
+    const goalsData = Array.from(goalsMap.values());
     return generateGlobalTimeSeriesData(goalsData, startDate, endDate, windowDays);
   }, [goals, startDate, endDate, windowDays]);
 

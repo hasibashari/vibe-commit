@@ -26,7 +26,8 @@ export class QuestController {
         description: z.string().nullable().optional(),
         difficulty: z.coerce.number().default(1.0),
         rewardAlpha: z.coerce.number().default(0.5),
-        category: z.string().nullable().optional()
+        category: z.string().nullable().optional(),
+        type: z.enum(['daily', 'one-off']).default('daily')
       });
       const parsed = schema.parse(req.body);
       
@@ -60,7 +61,8 @@ export class QuestController {
         description: z.string().nullable().optional(),
         difficulty: z.coerce.number().default(1.0),
         rewardAlpha: z.coerce.number().default(0.5),
-        category: z.string().nullable().optional()
+        category: z.string().nullable().optional(),
+        type: z.enum(['daily', 'one-off']).default('daily')
       });
       const parsed = schema.parse(req.body);
       const result = await QuestService.updateGoal(req.params.id, parsed);

@@ -76,7 +76,12 @@ export function QuestItem({
             <p className='text-xs font-mono uppercase tracking-widest text-slate-500'>
               {goal.category}
             </p>
-            {!isCompleted && (
+            {goal.type === 'one-off' && (
+              <span className='text-[10px] px-1.5 py-0.5 rounded border border-purple-500/30 bg-purple-500/10 text-purple-400 font-mono uppercase tracking-wider'>
+                ⚡ Sekali Jalan
+              </span>
+            )}
+            {!isCompleted && goal.type !== 'one-off' && (
               <span className={`text-[10px] md:text-xs px-1.5 py-0.5 rounded border font-mono uppercase font-bold tracking-wider flex items-center gap-1 backdrop-blur-sm ${reliabilityTheme.badge}`}>
                 {probability}% Konsistensi
               </span>
@@ -159,22 +164,26 @@ export function QuestItem({
                   +{(goal.reward_alpha * 100).toFixed(0)}%
                 </span>
               </div>
-              <div className='flex flex-col'>
-                <span className='text-xs text-slate-600 font-bold uppercase tracking-[0.2em] mb-0.5'>
-                  Konsistensi
-                </span>
-                <span className={`text-xs font-mono font-bold tabular-nums ${isCompleted ? 'text-slate-600' : reliabilityTheme.text}`}>
-                  {probability}%
-                </span>
-              </div>
-              <div className='flex flex-col'>
-                <span className='text-xs text-slate-600 font-bold uppercase tracking-[0.2em] mb-0.5'>
-                  Reps
-                </span>
-                <span className='text-xs font-mono tabular-nums text-slate-400'>
-                  ×{goal.repetition_count}
-                </span>
-              </div>
+              {goal.type !== 'one-off' && (
+                <>
+                  <div className='flex flex-col'>
+                    <span className='text-xs text-slate-600 font-bold uppercase tracking-[0.2em] mb-0.5'>
+                      Konsistensi
+                    </span>
+                    <span className={`text-xs font-mono font-bold tabular-nums ${isCompleted ? 'text-slate-600' : reliabilityTheme.text}`}>
+                      {probability}%
+                    </span>
+                  </div>
+                  <div className='flex flex-col'>
+                    <span className='text-xs text-slate-600 font-bold uppercase tracking-[0.2em] mb-0.5'>
+                      Reps
+                    </span>
+                    <span className='text-xs font-mono tabular-nums text-slate-400'>
+                      ×{goal.repetition_count}
+                    </span>
+                  </div>
+                </>
+              )}
             </div>
 
             <div className='flex items-center gap-2'>

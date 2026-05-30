@@ -62,7 +62,8 @@ export const updateQuestApi = async (questId: string, questData: Partial<Goal>) 
         description: questData.description,
         difficulty: questData.difficulty,
         rewardAlpha: questData.reward_alpha,
-        category: questData.category
+        category: questData.category,
+        type: questData.type
       })
     });
     if (!res.ok) throw new ApiError("Gagal memperbarui quest", res.status);
@@ -85,7 +86,8 @@ export const createQuestApi = async (questData: Partial<Goal>, id: string) => {
         description: questData.description,
         difficulty: questData.difficulty,
         rewardAlpha: questData.reward_alpha,
-        category: questData.category
+        category: questData.category,
+        type: questData.type
       })
     });
     if (!res.ok) throw new ApiError("Gagal membuat quest", res.status);
