@@ -48,7 +48,9 @@ export class JwtUtil {
         .update(`${encodedHeader}.${encodedPayload}`)
         .digest('base64url');
 
-      if (signature !== expectedSignature) {
+      const sigBuf = Buffer.from(signature, 'base64url');
+      const expectedBuf = Buffer.from(expectedSignature, 'base64url');
+      if (sigBuf.length !== expectedBuf.length || !crypto.timingSafeEqual(sigBuf, expectedBuf)) {
         return null;
       }
 

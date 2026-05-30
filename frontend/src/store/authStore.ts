@@ -236,8 +236,15 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
   initAuth: () => {
     const localUserStr = localStorage.getItem('vibe_commit_user');
-    if (localUserStr) {
+    const token = localStorage.getItem('vibe_commit_token');
+    
+    if (localUserStr && token) {
       try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        if (payload.exp && Date.now() / 1000 > payload.exp) {
+          throw new Error('Token expired');
+        }
+        
         const user = JSON.parse(localUserStr);
         const mapped = {
           uid: user.id,

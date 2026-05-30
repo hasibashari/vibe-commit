@@ -34,33 +34,56 @@ async function startServer() {
   app.set('trust proxy', 1);
 
   // Rate Limiting
-  const apiLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, 
+  const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
     max: 1000,
-    message: 'Too many requests from this IP, please try again after 15 minutes',
     standardHeaders: true,
     legacyHeaders: false,
-    validate: false
   });
+  app.use(limiter);
 
-  // Security Middlewares
+  // Stricter rate limit for expensive AI endpoints
+  const aiLimiter = rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    max: 5,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Terlalu banyak permintaan AI. Silakan coba lagi dalam 1 menit.' }
+  });
+  app.use('/api/ai', aiLimiter);
+
+  // Security headers with proper CSP
   app.use(helmet({
-    contentSecurityPolicy: false, 
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+        styleSrc: ["'self'", "'unsafe-inline'", "fonts.googleapis.com"],
+        fontSrc: ["'self'", "fonts.gstatic.com"],
+        imgSrc: ["'self'", "data:", "blob:"],
+        connectSrc: ["'self'", "generativelanguage.googleapis.com"],
+      }
+    },
     crossOriginEmbedderPolicy: false,
   }));
-  app.use(cors());
+
+  // Restrict CORS origins
+  app.use(cors({
+    origin: process.env.APP_URL || 'http://localhost:5173',
+    credentials: true
+  }));
 
   app.use(morgan('dev', {
     skip: (req) => !req.url.startsWith('/api')
   }));
   app.use(express.json({ limit: '1mb' })); // Reduced from 10mb for security
   app.use(express.urlencoded({ extended: true, limit: '1mb' }));
-  app.use('/api/', apiLimiter);
 
   // Serve uploaded images statically
   app.use('/uploads', express.static(path.join(process.cwd(), 'backend', 'public', 'uploads')));
 
-  // Use Modules
+  // API Routes
+  app.use('/api/', limiter);
   app.use('/api/auth', authRoutes);
   app.use('/api/user', userRoutes);
   app.use('/api/goals', questRoutes);

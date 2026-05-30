@@ -1,10 +1,7 @@
 import { getCurrentUser, getAuthHeaders } from '../../../shared/services/session';
 import type { UserStats } from '../../../shared/types/user';
 
-function handleApiError(error: unknown) {
-  console.error('API Error:', error);
-  throw error;
-}
+
 
 export const fetchDashboardData = async () => {
   const user = getCurrentUser();
@@ -56,8 +53,7 @@ export const fetchDashboardData = async () => {
       userData
     };
   } catch (error) {
-    handleApiError(error);
-    return { goalsWithCounts: [], rawGoalsData: [], dumpsData: [], userData: null };
+    throw error;
   }
 };
 
@@ -78,7 +74,6 @@ export const updateProfileData = async (
     if (!res.ok) throw new Error("Gagal memperbarui profil di server");
     return await res.json();
   } catch (error) {
-    handleApiError(error);
     throw error;
   }
 };
@@ -95,7 +90,6 @@ export const resetProfileData = async () => {
     });
     if (!res.ok) throw new Error("Gagal mereset profil di server");
   } catch (error) {
-    handleApiError(error);
     throw error;
   }
 };
@@ -117,7 +111,6 @@ export const updateSandboxData = async (
     if (!res.ok) throw new Error("Gagal memperbarui sandbox");
     return await res.json();
   } catch (error) {
-    handleApiError(error);
     throw error;
   }
 };

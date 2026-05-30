@@ -3,18 +3,34 @@ import crypto from 'node:crypto';
 import { UserService } from '../user/user.service.js';
 import { JwtUtil } from './jwt.util.js';
 
+const PBKDF2_ITERATIONS = 600_000;
+const PBKDF2_LEGACY_ITERATIONS = 1000;
+
 export class AuthService {
-  // Hash password using PBKDF2 with SHA-512 for secure, native, zero-dependency hashing
-  static hashPassword(password: string, salt: string): string {
-    return crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex');
+  // Hash password using PBKDF2 with SHA-512 (OWASP 2023: minimum 600,000 iterations)
+  static hashPassword(password: string, salt: string, iterations = PBKDF2_ITERATIONS): string {
+    return crypto.pbkdf2Sync(password, salt, iterations, 64, 'sha512').toString('hex');
   }
 
-  static verifyPassword(password: string, storedValue: string): boolean {
+  static verifyPassword(password: string, storedValue: string): { valid: boolean; needsRehash: boolean } {
     const parts = storedValue.split(':');
-    if (parts.length !== 2) return false;
-    const [salt, hash] = parts;
-    const inputHash = this.hashPassword(password, salt);
-    return hash === inputHash;
+
+    // New format: v2:salt:hash (600K iterations)
+    if (parts.length === 3 && parts[0] === 'v2') {
+      const [, salt, hash] = parts;
+      const inputHash = this.hashPassword(password, salt, PBKDF2_ITERATIONS);
+      return { valid: crypto.timingSafeEqual(Buffer.from(hash, 'hex'), Buffer.from(inputHash, 'hex')), needsRehash: false };
+    }
+
+    // Legacy format: salt:hash (1K iterations) — flag for re-hash
+    if (parts.length === 2) {
+      const [salt, hash] = parts;
+      const inputHash = this.hashPassword(password, salt, PBKDF2_LEGACY_ITERATIONS);
+      const valid = crypto.timingSafeEqual(Buffer.from(hash, 'hex'), Buffer.from(inputHash, 'hex'));
+      return { valid, needsRehash: valid };
+    }
+
+    return { valid: false, needsRehash: false };
   }
 
   static async register(username: string, password: string) {
@@ -33,7 +49,7 @@ export class AuthService {
     const id = crypto.randomUUID();
     const salt = crypto.randomBytes(16).toString('hex');
     const hash = this.hashPassword(password, salt);
-    const passwordHash = `${salt}:${hash}`;
+    const passwordHash = `v2:${salt}:${hash}`;
 
     const client = await db.connect();
     try {
@@ -42,7 +58,7 @@ export class AuthService {
       // Create auth account
       await client.query('INSERT INTO accounts (id, username, password_hash) VALUES ($1, $2, $3)', [
         id,
-        username,
+        normalizedUsername,
         passwordHash
       ]);
 
@@ -51,7 +67,7 @@ export class AuthService {
       await UserService.getUser(id, client);
       
       // Update name to match the registered username (instead of 'Explorer')
-      await client.query('UPDATE users SET name = $1 WHERE id = $2', [username, id]);
+      await client.query('UPDATE users SET name = $1 WHERE id = $2', [username.trim(), id]);
 
       await client.query('COMMIT');
     } catch (err) {
@@ -73,9 +89,17 @@ export class AuthService {
       throw new Error('Username atau Password salah');
     }
 
-    const isValid = this.verifyPassword(password, account.password_hash);
-    if (!isValid) {
+    const { valid, needsRehash } = this.verifyPassword(password, account.password_hash);
+    if (!valid) {
       throw new Error('Username atau Password salah');
+    }
+
+    // Transparently upgrade legacy hashes (1K → 600K iterations) on successful login
+    if (needsRehash) {
+      const newSalt = crypto.randomBytes(16).toString('hex');
+      const newHash = this.hashPassword(password, newSalt);
+      const newPasswordHash = `v2:${newSalt}:${newHash}`;
+      await db.query('UPDATE accounts SET password_hash = $1 WHERE id = $2', [newPasswordHash, account.id]);
     }
 
     const token = JwtUtil.sign({ id: account.id, username: account.username });

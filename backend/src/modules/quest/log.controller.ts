@@ -121,9 +121,10 @@ export class LogController {
             // Completing a quest restores some HP (+5) up to 100
             const newHp = Math.min(100, user.hp + 5);
 
-            // Mana represents daily focus. On the FIRST quest of a new day
-            // mana refreshes to 100 (new day, fresh focus); each subsequent
-            // quest drains 10 points (effort spent).
+            // Mana represents daily focus.
+            // First quest of a new day gives a partial mana recovery (+30, capped at 100)
+            // instead of a full reset — so inactivity penalties still have lasting impact.
+            // Subsequent quests drain 10 mana (effort spent).
             //
             // OBJECTIVE COUNTER: Query PostgreSQL to check how many quest logs the user has completed today.
             const todayLogsRes = await client.query(`
@@ -138,7 +139,7 @@ export class LogController {
             const todayCount = Number(todayLogs.count);
 
             const isFirstQuestToday = todayCount <= 1;
-            const manaBase = isFirstQuestToday ? 100 : user.mana;
+            const manaBase = isFirstQuestToday ? Math.min(100, user.mana + 30) : user.mana;
             const newMana = Math.max(0, manaBase - 10);
 
             const todayStr = `${logTime.getFullYear()}-${String(logTime.getMonth() + 1).padStart(2, '0')}-${String(logTime.getDate()).padStart(2, '0')}`;

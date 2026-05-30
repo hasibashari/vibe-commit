@@ -16,10 +16,6 @@ interface BrainDumpQuest {
   category: string;
 }
 
-function handleApiError(error: unknown) {
-  console.error('API Error:', error);
-  throw error;
-}
 
 export const saveBrainDumpApi = async (draftContent: string, analysisResult: BrainDumpAnalysisResult) => {
   const user = getCurrentUser();
@@ -36,13 +32,13 @@ export const saveBrainDumpApi = async (draftContent: string, analysisResult: Bra
         analysis: {
           anxietyLevel: analysisResult.anxietyLevel,
           anxietyScore: analysisResult.anxietyScore,
-          summary: analysisResult.analysisSummary
+          analysisSummary: analysisResult.analysisSummary
         }
       })
     });
     if (!res.ok) throw new Error("Gagal menyimpan brain dump");
   } catch (err) {
-    handleApiError(err);
+    throw err;
   }
 };
 
@@ -75,7 +71,7 @@ export const saveQuestsFromBrainDumpApi = async (quests: BrainDumpQuest[]) => {
       }
     }));
   } catch (err) {
-    handleApiError(err);
+    throw err;
   }
 };
 

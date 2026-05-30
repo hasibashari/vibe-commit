@@ -10,10 +10,7 @@ export class ApiError extends Error {
   }
 }
 
-function handleApiError(error: unknown) {
-  console.error('API Error:', error);
-  throw error;
-}
+
 
 export const logQuestActionApi = async (goalId: string, logId: string) => {
   const user = getCurrentUser();
@@ -32,7 +29,7 @@ export const logQuestActionApi = async (goalId: string, logId: string) => {
     if (!res.ok) throw new ApiError("Gagal menyimpan log quest", res.status);
     return await res.json();
   } catch (err) {
-    handleApiError(err);
+    throw err;
   }
 };
 
@@ -40,8 +37,8 @@ export const updateQuestDifficultyApi = async (goalId: string, newDifficulty: nu
   const user = getCurrentUser();
   if (!user) throw new Error("Not authenticated");
   try {
-    const res = await fetch(`/api/goals/${goalId}`, {
-      method: 'PUT',
+    const res = await fetch(`/api/goals/${goalId}/difficulty`, {
+      method: 'PATCH',
       headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({
         difficulty: newDifficulty
@@ -49,7 +46,7 @@ export const updateQuestDifficultyApi = async (goalId: string, newDifficulty: nu
     });
     if (!res.ok) throw new ApiError("Gagal memperbarui tingkat kesulitan quest", res.status);
   } catch (err) {
-    handleApiError(err);
+    throw err;
   }
 };
 
@@ -70,7 +67,7 @@ export const updateQuestApi = async (questId: string, questData: Partial<Goal>) 
     });
     if (!res.ok) throw new ApiError("Gagal memperbarui quest", res.status);
   } catch (err) {
-    handleApiError(err);
+    throw err;
   }
 };
 
@@ -93,7 +90,7 @@ export const createQuestApi = async (questData: Partial<Goal>, id: string) => {
     });
     if (!res.ok) throw new ApiError("Gagal membuat quest", res.status);
   } catch (err) {
-    handleApiError(err);
+    throw err;
   }
 };
 
@@ -107,6 +104,6 @@ export const deleteQuestApi = async (questId: string) => {
     });
     if (!res.ok) throw new ApiError("Gagal menghapus quest", res.status);
   } catch (err) {
-    handleApiError(err);
+    throw err;
   }
 };

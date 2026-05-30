@@ -5,7 +5,8 @@ const { Pool } = pg;
 const connectionString = process.env.DATABASE_URL;
 
 if (!connectionString) {
-  console.error('DATABASE_URL is not set in environmental variables!');
+  console.error('FATAL: DATABASE_URL is not set in environment variables!');
+  process.exit(1);
 }
 
 const db = new Pool({
@@ -48,7 +49,7 @@ export async function initDb() {
 
       CREATE TABLE IF NOT EXISTS goals (
         id TEXT PRIMARY KEY,
-        user_id TEXT,
+        user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
         title VARCHAR(255) NOT NULL,
         description TEXT,
         difficulty REAL DEFAULT 1.0,
@@ -69,11 +70,22 @@ export async function initDb() {
 
       CREATE TABLE IF NOT EXISTS brain_dumps (
         id TEXT PRIMARY KEY,
-        user_id TEXT,
+        user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
         raw_content TEXT,
         analysis JSONB,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
+
+      -- Migration: Add FK constraints to existing tables (silently skip if already exist)
+      DO $$ BEGIN
+        ALTER TABLE goals ADD CONSTRAINT goals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+      EXCEPTION WHEN duplicate_object THEN NULL;
+      END $$;
+
+      DO $$ BEGIN
+        ALTER TABLE brain_dumps ADD CONSTRAINT brain_dumps_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+      EXCEPTION WHEN duplicate_object THEN NULL;
+      END $$;
     `);
     console.log('PostgreSQL database initialized successfully.');
   } catch (err) {

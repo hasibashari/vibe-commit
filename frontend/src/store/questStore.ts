@@ -97,8 +97,11 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
         const pendingStr = localStorage.getItem('vibe_commit_pending_actions') || '[]';
         try {
           const pending = JSON.parse(pendingStr);
-          pending.push({ type: 'LOG_QUEST', goalId, logId });
-          localStorage.setItem('vibe_commit_pending_actions', JSON.stringify(pending));
+          const isDuplicate = pending.some((a: any) => a.type === 'LOG_QUEST' && a.goalId === goalId && a.logId === logId);
+          if (!isDuplicate) {
+            pending.push({ type: 'LOG_QUEST', goalId, logId });
+            localStorage.setItem('vibe_commit_pending_actions', JSON.stringify(pending));
+          }
         } catch (e) {
           console.error(e);
         }
@@ -136,8 +139,11 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
         const pendingStr = localStorage.getItem('vibe_commit_pending_actions') || '[]';
         try {
           const pending = JSON.parse(pendingStr);
-          pending.push({ type: 'LOG_QUEST', goalId, logId });
-          localStorage.setItem('vibe_commit_pending_actions', JSON.stringify(pending));
+          const isDuplicate = pending.some((a: any) => a.type === 'LOG_QUEST' && a.goalId === goalId && a.logId === logId);
+          if (!isDuplicate) {
+            pending.push({ type: 'LOG_QUEST', goalId, logId });
+            localStorage.setItem('vibe_commit_pending_actions', JSON.stringify(pending));
+          }
         } catch (err) { }
 
         const updatedGoals = goals.map(g => {
@@ -195,7 +201,12 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
         const pendingStr = localStorage.getItem('vibe_commit_pending_actions') || '[]';
         try {
           const pending = JSON.parse(pendingStr);
-          pending.push({ type: 'UPDATE_QUEST', questId: questToEdit.id, questData });
+          const existingIdx = pending.findIndex((a: any) => a.type === 'UPDATE_QUEST' && a.questId === questToEdit.id);
+          if (existingIdx !== -1) {
+            pending[existingIdx].questData = { ...pending[existingIdx].questData, ...questData };
+          } else {
+            pending.push({ type: 'UPDATE_QUEST', questId: questToEdit.id, questData });
+          }
           localStorage.setItem('vibe_commit_pending_actions', JSON.stringify(pending));
         } catch (e) { }
 
@@ -207,7 +218,7 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
           description: questData.description || '',
           category: questData.category || 'productivity',
           difficulty: questData.difficulty ?? 1.0,
-          reward_alpha: questData.reward_alpha ?? 1,
+          reward_alpha: questData.reward_alpha ?? 0.5,
           repetition_count: 0,
           logs: [],
           status: 'active'
@@ -217,8 +228,11 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
         const pendingStr = localStorage.getItem('vibe_commit_pending_actions') || '[]';
         try {
           const pending = JSON.parse(pendingStr);
-          pending.push({ type: 'CREATE_QUEST', id: questId, questData });
-          localStorage.setItem('vibe_commit_pending_actions', JSON.stringify(pending));
+          const isDuplicate = pending.some((a: any) => a.type === 'CREATE_QUEST' && a.id === questId);
+          if (!isDuplicate) {
+            pending.push({ type: 'CREATE_QUEST', id: questId, questData });
+            localStorage.setItem('vibe_commit_pending_actions', JSON.stringify(pending));
+          }
         } catch (e) { }
 
         toast({ title: "Quest Baru Dibuat (Offline)", type: 'success' });
@@ -259,7 +273,12 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
         const pendingStr = localStorage.getItem('vibe_commit_pending_actions') || '[]';
         try {
           const pending = JSON.parse(pendingStr);
-          pending.push({ type: 'UPDATE_QUEST', questId: questToEdit.id, questData });
+          const existingIdx = pending.findIndex((a: any) => a.type === 'UPDATE_QUEST' && a.questId === questToEdit.id);
+          if (existingIdx !== -1) {
+            pending[existingIdx].questData = { ...pending[existingIdx].questData, ...questData };
+          } else {
+            pending.push({ type: 'UPDATE_QUEST', questId: questToEdit.id, questData });
+          }
           localStorage.setItem('vibe_commit_pending_actions', JSON.stringify(pending));
         } catch (err) { }
 
@@ -270,8 +289,8 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
           title: questData.title || 'Untitled Quest',
           description: questData.description || '',
           category: questData.category || 'productivity',
-          difficulty: questData.difficulty ?? 0.5,
-          reward_alpha: questData.reward_alpha ?? 1,
+          difficulty: questData.difficulty ?? 1.0,
+          reward_alpha: questData.reward_alpha ?? 0.5,
           repetition_count: 0,
           logs: [],
           status: 'active'
@@ -281,8 +300,11 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
         const pendingStr = localStorage.getItem('vibe_commit_pending_actions') || '[]';
         try {
           const pending = JSON.parse(pendingStr);
-          pending.push({ type: 'CREATE_QUEST', id: questId, questData });
-          localStorage.setItem('vibe_commit_pending_actions', JSON.stringify(pending));
+          const isDuplicate = pending.some((a: any) => a.type === 'CREATE_QUEST' && a.id === questId);
+          if (!isDuplicate) {
+            pending.push({ type: 'CREATE_QUEST', id: questId, questData });
+            localStorage.setItem('vibe_commit_pending_actions', JSON.stringify(pending));
+          }
         } catch (err) { }
 
         toast({ title: "Koneksi Bermasalah - Dibuat Lokal", type: 'info' });
@@ -313,8 +335,11 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
       const pendingStr = localStorage.getItem('vibe_commit_pending_actions') || '[]';
       try {
         const pending = JSON.parse(pendingStr);
-        pending.push({ type: 'DELETE_QUEST', questId: questToDelete });
-        localStorage.setItem('vibe_commit_pending_actions', JSON.stringify(pending));
+        const isDuplicate = pending.some((a: any) => a.type === 'DELETE_QUEST' && a.questId === questToDelete);
+        if (!isDuplicate) {
+          pending.push({ type: 'DELETE_QUEST', questId: questToDelete });
+          localStorage.setItem('vibe_commit_pending_actions', JSON.stringify(pending));
+        }
       } catch (e) { }
 
       return;
@@ -339,8 +364,11 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
       const pendingStr = localStorage.getItem('vibe_commit_pending_actions') || '[]';
       try {
         const pending = JSON.parse(pendingStr);
-        pending.push({ type: 'DELETE_QUEST', questId: questToDelete });
-        localStorage.setItem('vibe_commit_pending_actions', JSON.stringify(pending));
+        const isDuplicate = pending.some((a: any) => a.type === 'DELETE_QUEST' && a.questId === questToDelete);
+        if (!isDuplicate) {
+          pending.push({ type: 'DELETE_QUEST', questId: questToDelete });
+          localStorage.setItem('vibe_commit_pending_actions', JSON.stringify(pending));
+        }
       } catch (err) { }
     }
   }

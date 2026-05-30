@@ -207,7 +207,9 @@ export class UserService {
       const base64Content = base64Data.replace(/^data:image\/\w+;base64,/, '');
       const buffer = Buffer.from(base64Content, 'base64');
       
-      const filename = `user_${userId}_${fieldName}.${ext}`;
+      const safeUserId = userId.replace(/[^a-zA-Z0-9_-]/g, '');
+      const safeFieldName = fieldName.replace(/[^a-zA-Z0-9_-]/g, '');
+      const filename = `user_${safeUserId}_${safeFieldName}.${ext}`;
       const filePath = path.join(uploadsDir, filename);
 
       if (!fs.existsSync(uploadsDir)) {
