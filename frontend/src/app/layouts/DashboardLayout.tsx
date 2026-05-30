@@ -16,11 +16,11 @@ export function DashboardLayout({
   rightSidebar,
 }: DashboardLayoutProps) {
   return (
-    <div className='w-full h-full flex flex-col md:grid md:grid-cols-12 gap-0 md:gap-6 pb-20 md:pb-0 overflow-hidden'>
+    <div className='w-full h-full flex flex-col md:grid md:grid-cols-12 gap-0 md:gap-6 pb-24 md:pb-0 overflow-hidden'>
       {/* Left Sidebar: Quest List (4 cols on lg, 5 on md) */}
       <aside
         className={cn(
-          'h-full overflow-y-auto overflow-x-hidden custom-scrollbar',
+          'h-full min-h-0 flex-1 md:flex-none overflow-y-auto overflow-x-hidden custom-scrollbar',
           'md:col-span-5 lg:col-span-4',
           activeTab === 'quests' ? 'flex flex-col' : 'hidden md:flex flex-col',
         )}
@@ -31,7 +31,7 @@ export function DashboardLayout({
       {/* Right Content Area: Dashboard & Status (8 cols on lg, 7 on md) */}
       <main
         className={cn(
-          'h-full overflow-y-auto overflow-x-hidden custom-scrollbar',
+          'h-full min-h-0 flex-1 md:flex-none overflow-y-auto overflow-x-hidden custom-scrollbar',
           'md:col-span-7 lg:col-span-8',
           activeTab === 'dashboard' || activeTab === 'character'
             ? 'flex flex-col'

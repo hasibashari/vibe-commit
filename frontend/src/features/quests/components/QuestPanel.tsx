@@ -123,7 +123,7 @@ export function QuestPanel({
           </button>
 
           <div
-            className={`space-y-3 overflow-hidden transition-all duration-300 ${expandedCategory === 'Main Quest' ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0 pointer-events-none'}`}
+            className={`space-y-3 overflow-hidden transition-all duration-300 ${expandedCategory === 'Main Quest' ? 'max-h-[2500px] opacity-100' : 'max-h-0 opacity-0 pointer-events-none'}`}
           >
             {mainQuests.map(goal => (
               <QuestItem
@@ -167,7 +167,7 @@ export function QuestPanel({
           </button>
 
           <div
-            className={`space-y-3 overflow-hidden transition-all duration-300 ${expandedCategory === 'Daily Quest' ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0 pointer-events-none'}`}
+            className={`space-y-3 overflow-hidden transition-all duration-300 ${expandedCategory === 'Daily Quest' ? 'max-h-[2500px] opacity-100' : 'max-h-0 opacity-0 pointer-events-none'}`}
           >
             {dailyQuests.map(goal => (
               <QuestItem
@@ -211,7 +211,7 @@ export function QuestPanel({
           </button>
 
           <div
-            className={`space-y-3 overflow-hidden transition-all duration-300 ${expandedCategory === 'Side Quest' ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0 pointer-events-none'}`}
+            className={`space-y-3 overflow-hidden transition-all duration-300 ${expandedCategory === 'Side Quest' ? 'max-h-[2500px] opacity-100' : 'max-h-0 opacity-0 pointer-events-none'}`}
           >
             {sideQuests.map(goal => (
               <QuestItem
