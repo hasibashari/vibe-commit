@@ -11,7 +11,7 @@ interface ModalProps {
   description?: string;
   children: React.ReactNode;
   variant?: 'default' | 'danger' | 'fullscreen';
-  position?: 'center' | 'bottom';
+  position?: 'center' | 'bottom' | 'top';
   className?: string;
   preventBackdropClose?: boolean;
   disableInternalScroll?: boolean;
@@ -55,7 +55,11 @@ export function Modal({
       {isOpen && (
         <div className={cn(
           "fixed inset-0 z-100 flex justify-center p-4 sm:p-6",
-          position === 'center' ? "items-center" : "items-end sm:items-center pb-24 sm:pb-6"
+          position === 'center' 
+            ? "items-center" 
+            : position === 'top'
+              ? "items-start pt-12 sm:items-center sm:pt-0"
+              : "items-end sm:items-center pb-24 sm:pb-6"
         )}>
           <motion.div 
             initial={{ opacity: 0 }}

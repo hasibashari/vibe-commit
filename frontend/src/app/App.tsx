@@ -19,6 +19,7 @@ const ProfileModal = React.lazy(() => import('../features/profile/components/Pro
 const SettingsModal = React.lazy(() => import('../features/profile/components/SettingsModal').then(m => ({ default: m.SettingsModal })));
 const DeleteQuestModal = React.lazy(() => import('../features/quests/components/DeleteQuestModal').then(m => ({ default: m.DeleteQuestModal })));
 const DevSandboxPanel = React.lazy(() => import('../shared/components/DevSandboxPanel').then(m => ({ default: m.DevSandboxPanel })));
+const AIChatModal = React.lazy(() => import('../features/character/components/AIChatModal').then(m => ({ default: m.AIChatModal })));
 import { calculateStats } from '../shared/utils/vibeMath';
 import { getWeatherState } from '../shared/utils/weatherUtils';
 
@@ -53,7 +54,7 @@ export default function App() {
     return () => unsubscribe();
   }, [initAuth]);
 
-  const { isProfileOpen, setIsProfileOpen, isSettingsOpen, setIsSettingsOpen } = useAppContext();
+  const { isProfileOpen, setIsProfileOpen, isSettingsOpen, setIsSettingsOpen, isAIChatOpen, setIsAIChatOpen } = useAppContext();
 
   const {
     goals,
@@ -379,6 +380,12 @@ export default function App() {
               setDraftContent={setDraftContent}
               onSubmit={handleBrainDump}
               analysisResult={analysisResult}
+            />
+            <AIChatModal
+              isOpen={isAIChatOpen}
+              onClose={() => setIsAIChatOpen(false)}
+              user={effectiveUser}
+              goals={goals}
             />
           </React.Suspense>
         }

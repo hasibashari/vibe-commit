@@ -32,6 +32,7 @@ export const AIChatModal: React.FC<AIChatModalProps> = ({ isOpen, onClose, user,
     <Modal
       isOpen={isOpen}
       onClose={onClose}
+      position='top'
       className='max-w-lg p-0 flex flex-col w-full h-[70dvh] max-h-[85dvh]'
       disableInternalScroll
     >

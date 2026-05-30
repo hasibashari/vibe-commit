@@ -21,12 +21,16 @@ export function useAppContext() {
   const setIsProfileOpen = useUIStore((state) => state.setIsProfileOpen);
   const isSettingsOpen = useUIStore((state) => state.isSettingsOpen);
   const setIsSettingsOpen = useUIStore((state) => state.setIsSettingsOpen);
+  const isAIChatOpen = useUIStore((state) => state.isAIChatOpen);
+  const setIsAIChatOpen = useUIStore((state) => state.setIsAIChatOpen);
 
   return {
     isProfileOpen,
     setIsProfileOpen,
     isSettingsOpen,
     setIsSettingsOpen,
+    isAIChatOpen,
+    setIsAIChatOpen,
   };
 }
 

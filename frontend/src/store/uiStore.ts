@@ -9,6 +9,8 @@ interface UIState {
   setIsBrainDumpOpen: (isOpen: boolean) => void;
   isQuestEditorOpen: boolean;
   setIsQuestEditorOpen: (isOpen: boolean) => void;
+  isAIChatOpen: boolean;
+  setIsAIChatOpen: (isOpen: boolean) => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -20,4 +22,6 @@ export const useUIStore = create<UIState>((set) => ({
   setIsBrainDumpOpen: (isOpen) => set({ isBrainDumpOpen: isOpen }),
   isQuestEditorOpen: false,
   setIsQuestEditorOpen: (isOpen) => set({ isQuestEditorOpen: isOpen }),
+  isAIChatOpen: false,
+  setIsAIChatOpen: (isOpen) => set({ isAIChatOpen: isOpen }),
 }));

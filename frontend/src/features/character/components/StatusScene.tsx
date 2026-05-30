@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { BackgroundLayer } from './BackgroundLayer';
 import { GroundLayer } from './GroundLayer';
 import { CharacterSprite } from './CharacterSprite';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, MessageCircle } from 'lucide-react';
-import { AIChatModal } from './AIChatModal';
 import { useDynamicQuotes, useEasterEgg, useTypingEffect } from '../hooks/useStatusScene';
 import { NaturalRain } from '../../../shared/components/NaturalRain';
+import { useUIStore } from '../../../store/uiStore';
 
 import type { Goal } from '../../../shared/types/goal';
 
@@ -31,7 +31,7 @@ export const StatusScene: React.FC<StatsProps> = ({
   customCharBg,
   weather = 'sunny',
 }) => {
-  const [isChatOpen, setIsChatOpen] = useState(false);
+  const setIsAIChatOpen = useUIStore(state => state.setIsAIChatOpen);
 
   const { dynamicQuotes, quoteIndex } = useDynamicQuotes(hp, mana, goals, nudge, userName);
   const { overrideQuote, tapCount, handleCharacterTap } = useEasterEgg();
@@ -40,7 +40,7 @@ export const StatusScene: React.FC<StatsProps> = ({
   const { displayedText, isTyping } = useTypingEffect(currentQuote);
 
   const handleOpenChat = () => {
-    setIsChatOpen(true);
+    setIsAIChatOpen(true);
   };
 
   return (
@@ -116,12 +116,6 @@ export const StatusScene: React.FC<StatsProps> = ({
         </motion.div>
       </div>
 
-      <AIChatModal
-        isOpen={isChatOpen}
-        onClose={() => setIsChatOpen(false)}
-        user={{ name: userName, hp, mana, level, exp: 0 }}
-        goals={goals}
-      />
     </div>
   );
 };
