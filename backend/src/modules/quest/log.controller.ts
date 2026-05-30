@@ -152,7 +152,7 @@ export class LogController {
               FROM quest_logs 
               JOIN goals ON quest_logs.goal_id = goals.id 
               WHERE goals.user_id = $1 
-                AND DATE(quest_logs.timestamp AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta') = DATE($2::timestamp AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta')
+                AND DATE(quest_logs.timestamp AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta') = DATE($2::timestamptz AT TIME ZONE 'Asia/Jakarta')
             `, [user.id, timestampStr]);
             
             const todayLogs = todayLogsRes.rows[0] as { count: string | number };

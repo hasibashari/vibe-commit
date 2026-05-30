@@ -4,13 +4,22 @@ import { chatWithAI } from '../../../shared/services/aiService';
 import type { Goal } from '../../../shared/types/goal';
 import type { UserStats } from '../../../shared/types/user';
 
-const CHAT_HISTORY_KEY = 'ai_chat_history';
+const CHAT_STATE_KEY = 'ai_chat_state_v2';
+
+interface StoredChatState {
+  hp: number;
+  mana: number;
+  messages: { role: 'user' | 'model'; content: string }[];
+}
 
 export function useAIChat(isOpen: boolean, user: UserStats, goals?: Goal[]) {
   const [messages, setMessages] = useState<{ role: 'user' | 'model', content: string }[]>(() => {
     try {
-      const stored = localStorage.getItem(CHAT_HISTORY_KEY);
-      if (stored) return JSON.parse(stored);
+      const stored = localStorage.getItem(CHAT_STATE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored) as StoredChatState;
+        return parsed.messages || [];
+      }
     } catch {
       // ignore
     }
@@ -21,11 +30,37 @@ export function useAIChat(isOpen: boolean, user: UserStats, goals?: Goal[]) {
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Auto-clear chat history if user stats (HP/Mana) have changed to prevent stale AI context
+  useEffect(() => {
+    if (isOpen) {
+      try {
+        const stored = localStorage.getItem(CHAT_STATE_KEY);
+        if (stored) {
+          const parsed = JSON.parse(stored) as StoredChatState;
+          if (parsed.hp !== user.hp || parsed.mana !== user.mana) {
+            setMessages([
+              { role: 'model', content: `Hei ${user?.name || 'Petualang'}! Ada yang bisa kubantu hari ini?` }
+            ]);
+            localStorage.removeItem(CHAT_STATE_KEY);
+            return;
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+  }, [isOpen, user.hp, user.mana, user?.name]);
+
   useEffect(() => {
     if (messages.length > 0) {
-      localStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(messages));
+      const state: StoredChatState = {
+        hp: user.hp,
+        mana: user.mana,
+        messages
+      };
+      localStorage.setItem(CHAT_STATE_KEY, JSON.stringify(state));
     }
-  }, [messages]);
+  }, [messages, user.hp, user.mana]);
 
   useEffect(() => {
     if (isOpen && messages.length === 0) {
@@ -71,6 +106,9 @@ export function useAIChat(isOpen: boolean, user: UserStats, goals?: Goal[]) {
     setMessages([
       { role: 'model', content: `Hei ${user?.name || 'Petualang'}! Ada yang bisa kubantu hari ini?` }
     ]);
+    try {
+      localStorage.removeItem(CHAT_STATE_KEY);
+    } catch (e) {}
   }, [user?.name]);
 
   return {

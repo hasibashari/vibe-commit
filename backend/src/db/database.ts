@@ -2,6 +2,13 @@ import pg from 'pg';
 
 const { Pool } = pg;
 
+// OID for TIMESTAMP without time zone is 1114.
+// Force pg parser to treat naive timestamp strings as UTC by converting the space
+// to 'T' and appending 'Z'. This prevents the server from parsing it as local time.
+pg.types.setTypeParser(1114, (strVal) => {
+  return new Date(strVal.trim().replace(' ', 'T') + 'Z');
+});
+
 const connectionString = process.env.DATABASE_URL;
 
 if (!connectionString) {

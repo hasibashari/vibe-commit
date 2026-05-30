@@ -35,6 +35,7 @@ export class AiController {
       });
 
       const { history, context } = schema.parse(req.body);
+      console.log('AI Chat Controller Context Received:', context);
 
       const result = await AiService.chat(history, context);
       res.json({ response: result });

@@ -30,13 +30,25 @@ function getCumulativeExp(level: number, exp: number): number {
   return sum + exp;
 }
 
-/** Returns today's date as YYYY-MM-DD in the SERVER'S LOCAL timezone. */
+/** Returns today's date as YYYY-MM-DD in the Asia/Jakarta timezone, accounting for sandbox offset. */
 function getTodayLocalString(user?: any): string {
   const now = new Date();
   if (user && user.sandbox_date_offset) {
     now.setDate(now.getDate() + user.sandbox_date_offset);
   }
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  
+  // Format specifically in Asia/Jakarta timezone
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Jakarta',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
+  const parts = formatter.formatToParts(now);
+  const year = parts.find(p => p.type === 'year')?.value;
+  const month = parts.find(p => p.type === 'month')?.value;
+  const day = parts.find(p => p.type === 'day')?.value;
+  return `${year}-${month}-${day}`;
 }
 
 export class UserService {
@@ -95,28 +107,38 @@ export class UserService {
           }
         }
 
-        // Fetch all distinct dates where the user completed at least 1 quest
+        // Fetch all distinct dates where the user completed at least 1 quest (in Asia/Jakarta timezone)
         const activeLogDaysRes = await targetDb.query(`
-          SELECT DISTINCT DATE(ql.timestamp) as log_date
+          SELECT DISTINCT DATE(ql.timestamp AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta') as log_date
           FROM quest_logs ql
           JOIN goals g ON ql.goal_id = g.id
           WHERE g.user_id = $1
-            AND ql.timestamp >= $2::timestamp
-            AND ql.timestamp < $3::timestamp
+            AND ql.timestamp AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta' >= $2::timestamp
+            AND ql.timestamp AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta' < $3::timestamp
         `, [user.id, `${user.last_penalty_date} 00:00:00`, `${todayStr} 00:00:00`]);
 
         const activeLogDays = activeLogDaysRes.rows.map((row: any) => {
-          const d = new Date(row.log_date);
-          return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+          const rawDate = row.log_date;
+          if (rawDate instanceof Date) {
+            const y = rawDate.getFullYear();
+            const m = String(rawDate.getMonth() + 1).padStart(2, '0');
+            const d = String(rawDate.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+          }
+          if (typeof rawDate === 'string') {
+            return rawDate.split('T')[0];
+          }
+          return String(rawDate);
         });
 
         const activeDatesSet = new Set(activeLogDays);
 
         // Fetch all active goals for the user to determine if they had any active quests on a given day
         const activeGoalsRes = await targetDb.query(`
-          SELECT id, created_at
-          FROM goals
-          WHERE user_id = $1 AND status != 'archived'
+          SELECT g.id, g.created_at, g.type, g.status,
+                 (SELECT MIN(ql.timestamp) FROM quest_logs ql WHERE ql.goal_id = g.id) as completed_at
+          FROM goals g
+          WHERE g.user_id = $1 AND g.status != 'archived'
         `, [user.id]);
 
         const activeGoals = activeGoalsRes.rows;
@@ -135,6 +157,13 @@ export class UserService {
             const hasActiveQuestOnDay = activeGoals.some((goal: any) => {
               const createdDate = new Date(goal.created_at);
               const createdDateStr = `${createdDate.getFullYear()}-${String(createdDate.getMonth() + 1).padStart(2, '0')}-${String(createdDate.getDate()).padStart(2, '0')}`;
+              
+              if (goal.type === 'one-off' && goal.status === 'completed' && goal.completed_at) {
+                const completedDate = new Date(goal.completed_at);
+                const completedDateStr = `${completedDate.getFullYear()}-${String(completedDate.getMonth() + 1).padStart(2, '0')}-${String(completedDate.getDate()).padStart(2, '0')}`;
+                return createdDateStr <= loopDateStr && loopDateStr <= completedDateStr;
+              }
+              
               return createdDateStr <= loopDateStr;
             });
 
