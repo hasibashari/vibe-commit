@@ -71,7 +71,14 @@ export class QuestService {
   }
 
   static async deleteGoal(id: string) {
-    await db.query("UPDATE goals SET status = 'archived' WHERE id = $1", [id]);
+    const logsRes = await db.query('SELECT COUNT(*) FROM quest_logs WHERE goal_id = $1', [id]);
+    const logCount = parseInt(logsRes.rows[0].count, 10);
+
+    if (logCount === 0) {
+      await db.query('DELETE FROM goals WHERE id = $1', [id]);
+    } else {
+      await db.query("UPDATE goals SET status = 'archived' WHERE id = $1", [id]);
+    }
     return { success: true };
   }
 

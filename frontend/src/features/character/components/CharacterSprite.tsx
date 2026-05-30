@@ -23,14 +23,15 @@ export const CharacterSprite: React.FC<CharacterSpriteProps> = ({
 
   return (
     <motion.div
-      className='relative w-48 h-48 sm:w-40 sm:h-40 md:w-40 md:h-40 lg:w-40 lg:h-40 drop-shadow-2xl z-10 flex items-center justify-center select-none'
+      className='relative w-48 h-48 sm:w-40 sm:h-40 md:w-40 md:h-40 lg:w-40 lg:h-40 drop-shadow-2xl z-10 flex items-center justify-center select-none shrink-0 aspect-square'
     >
       <svg
         viewBox='0 0 64 64'
-          className='w-full h-full overflow-visible'
-          shapeRendering='geometricPrecision'
-          style={{ overflow: 'visible' }}
-        >
+        preserveAspectRatio='xMidYMid meet'
+        className='w-full h-full overflow-visible shrink-0'
+        shapeRendering='geometricPrecision'
+        style={{ overflow: 'visible' }}
+      >
           <defs>
             {/* Glossy Gradient for Head/Body Outer Shell */}
             <linearGradient id='shellGrad' x1='0%' y1='0%' x2='100%' y2='100%'>

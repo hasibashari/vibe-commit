@@ -40,7 +40,6 @@ export function QuestPanel({
   recentlyCompletedIds,
 }: QuestPanelProps) {
   const [expandedCategory, setExpandedCategory] = useState<string>('Main Quest');
-  const [isSummaryExpanded, setIsSummaryExpanded] = useState(false);
 
   const toggleCategory = (cat: string) => {
     setExpandedCategory(prev => (prev === cat ? '' : cat));
@@ -77,34 +76,17 @@ export function QuestPanel({
             </span>
           )}
         </div>
-        <div className='bg-indigo-950/30 p-3 rounded-md border border-indigo-500/10 transition-colors'>
-          <p
-            className={`text-xs leading-relaxed text-slate-300 transition-colors ${isSummaryExpanded ? '' : 'line-clamp-2'}`}
-          >
-            {latestDump
-              ? `"${latestDump.summary}"`
-              : 'Tulis apa yang lo pikirkan biar AI buatkan plan-nya...'}
+        <div className='bg-indigo-950/30 p-3 rounded-md border border-indigo-500/10 transition-colors flex items-center justify-between'>
+          <p className='text-xs leading-relaxed text-slate-300'>
+            Tulis apa yang lo pikirkan biar AI buatkan plan-nya...
           </p>
 
-          <div className='flex items-center justify-between mt-2 pt-2 border-t border-indigo-500/10'>
-            {latestDump && latestDump.summary.length > 100 ? (
-              <button
-                onClick={() => setIsSummaryExpanded(!isSummaryExpanded)}
-                className='text-xs font-medium text-indigo-400 hover:text-indigo-300 flex items-center gap-1'
-              >
-                {isSummaryExpanded ? 'Sembunyikan' : 'Baca Selengkapnya'}
-              </button>
-            ) : (
-              <div></div>
-            )}
-
-            <button
-              onClick={onOpenBrainDump}
-              className='text-xs font-medium bg-indigo-900/40 text-indigo-300 hover:text-white hover:bg-indigo-500/40 px-3 py-1.5 rounded transition-colors flex items-center gap-1'
-            >
-              Buka Brain Dump <ChevronRight className='w-3.5 h-3.5' />
-            </button>
-          </div>
+          <button
+            onClick={onOpenBrainDump}
+            className='text-xs font-medium bg-indigo-900/40 text-indigo-300 hover:text-white hover:bg-indigo-500/40 px-3 py-1.5 rounded transition-colors flex items-center gap-1 shrink-0 ml-4'
+          >
+            Buka Brain Dump <ChevronRight className='w-3.5 h-3.5' />
+          </button>
         </div>
       </div>
 
@@ -121,16 +103,16 @@ export function QuestPanel({
           </div>
         </div>
 
-        {/* Mobile Brain Dump Status - Clickable action + Read More */}
-        {latestDump && (
-          <div className='md:hidden w-full flex flex-col p-3 mb-4 bg-indigo-950/20 rounded-md border border-indigo-500/20 text-left'>
-            <div className='flex items-start justify-between gap-2 mb-2'>
-              <div className='flex items-center gap-1.5 min-w-0'>
-                <BrainCircuit className='w-4 h-4 text-indigo-400 shrink-0' />
-                <span className='text-xs font-bold tracking-widest uppercase text-indigo-300'>
-                  Brain Dump
-                </span>
-              </div>
+        {/* Mobile Brain Dump CTA */}
+        <div className='md:hidden w-full flex flex-col p-3 mb-4 bg-indigo-950/20 rounded-md border border-indigo-500/20 text-left'>
+          <div className='flex items-start justify-between gap-2 mb-2'>
+            <div className='flex items-center gap-1.5 min-w-0'>
+              <BrainCircuit className='w-4 h-4 text-indigo-400 shrink-0' />
+              <span className='text-xs font-bold tracking-widest uppercase text-indigo-300'>
+                Brain Dump
+              </span>
+            </div>
+            {latestDump && (
               <span
                 className={`text-xs font-mono uppercase px-2 py-0.5 rounded-full border shrink-0 ${
                   latestDump.anxietyScore > 7
@@ -140,28 +122,20 @@ export function QuestPanel({
               >
                 Lvl: {latestDump.anxietyLevel}
               </span>
-            </div>
-
-            <p
-              className={`text-xs text-slate-300 italic leading-relaxed ${isSummaryExpanded ? '' : 'line-clamp-2'}`}
-            >
-              "{latestDump.summary}"
-            </p>
-
-            <div className='flex items-center justify-between mt-3 gap-2'>
-              {latestDump.summary.length > 100 ? (
-                <button
-                  onClick={() => setIsSummaryExpanded(!isSummaryExpanded)}
-                  className='text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1 font-medium'
-                >
-                  {isSummaryExpanded ? 'Sembunyikan' : 'Baca Selengkapnya'}
-                </button>
-              ) : (
-                <div></div>
-              )}
-            </div>
+            )}
           </div>
-        )}
+
+          <p className='text-xs text-slate-300 leading-relaxed mb-3'>
+            Tulis apa yang lo pikirkan biar AI buatkan plan-nya...
+          </p>
+
+          <button
+            onClick={onOpenBrainDump}
+            className='w-full text-xs font-medium bg-indigo-900/40 text-indigo-300 hover:text-white hover:bg-indigo-500/40 px-3 py-2 rounded transition-colors flex items-center justify-center gap-1'
+          >
+            Buka Brain Dump <ChevronRight className='w-3.5 h-3.5' />
+          </button>
+        </div>
 
         {/* Main Quests */}
         <div className='flex flex-col gap-3 transition-all duration-300'>
