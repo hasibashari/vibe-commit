@@ -353,7 +353,7 @@ export function generateGlobalTimeSeriesData(
     // Rolling Window: log aktif dalam [current_day - windowDays, current_day]
     const windowMs = windowDays * 24 * 60 * 60 * 1000;
     const windowStartMs = endOfDayTimestamp - windowMs;
-    
+
     const activeLogs = allLogEvents.filter(
       e => e.timestampMs <= endOfDayTimestamp && e.timestampMs >= windowStartMs
     );

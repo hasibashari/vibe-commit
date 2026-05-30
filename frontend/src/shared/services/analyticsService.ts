@@ -15,7 +15,7 @@ export function calculateStochasticNudges(logs: { timestamp: string }[]) {
   });
 
   // Find the peak hour
-  const peakHour = Object.entries(hourMap).reduce((a, b) => 
+  const peakHour = Object.entries(hourMap).reduce((a, b) =>
     (b[1] > a[1] ? b : a), ["0", 0]
   );
 
@@ -46,7 +46,7 @@ export function analyzeBurnoutRisk(logs: Log[], goals: Goal[], offset: number = 
     return now.getTime();
   })();
   const ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
-  
+
   const recentLogs = logs.filter(l => nowTime - safeParseDate(l.timestamp).getTime() < ONE_WEEK);
   const historicalLogs = logs.filter(l => nowTime - safeParseDate(l.timestamp).getTime() >= ONE_WEEK);
 

@@ -31,6 +31,6 @@ export function authenticateToken(req: Request, res: Response, next: NextFunctio
     id: decoded.id,
     username: decoded.username
   };
-  
+
   next();
 }

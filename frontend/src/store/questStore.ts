@@ -5,6 +5,7 @@ import { useToastStore } from './toastStore';
 import { useDashboardStore } from './dashboardStore';
 import { useUIStore } from './uiStore';
 import { getExpNeededForLevel, MAX_LEVEL } from '../shared/utils/dateUtils';
+import { generateId } from '../shared/utils/uuid';
 
 const playVictoryOscillator = () => {
   try {
@@ -14,34 +15,34 @@ const playVictoryOscillator = () => {
     const audioCtx = new AudioContextClass();
     const osc = audioCtx.createOscillator();
     const gainNode = audioCtx.createGain();
-    
+
     osc.connect(gainNode);
     gainNode.connect(audioCtx.destination);
     osc.type = 'square';
-    
+
     const now = audioCtx.currentTime;
     osc.frequency.setValueAtTime(261.63, now); // C4
     osc.frequency.setValueAtTime(329.63, now + 0.1); // E4
     osc.frequency.setValueAtTime(392.00, now + 0.2); // G4
     osc.frequency.setValueAtTime(523.25, now + 0.3); // C5
-    
+
     gainNode.gain.setValueAtTime(0.05, now);
     gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
-    
+
     osc.start(now);
     osc.stop(now + 0.6);
-  } catch (e) {}
+  } catch (e) { }
 };
 
 const handleOptimisticRPGStats = (currentLevel: number, currentExp: number, expEarned: number) => {
   let level = currentLevel;
   let exp = currentExp + expEarned;
-  
+
   while (level < MAX_LEVEL && exp >= getExpNeededForLevel(level)) {
     exp -= getExpNeededForLevel(level);
     level += 1;
   }
-  
+
   return { level, exp };
 };
 
@@ -71,11 +72,11 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
     const { goals, setGoals, setExpPopups, user, setUser, fetchData } = useDashboardStore.getState();
     const { toast } = useToastStore.getState();
     const goal = goals.find(g => g.id === goalId);
-    
+
     let expEarned = 0;
     if (goal) {
       expEarned = Math.floor(goal.difficulty * 10 * goal.reward_alpha);
-      const popupId = crypto.randomUUID();
+      const popupId = generateId();
       const currentPopups = useDashboardStore.getState().expPopups;
       setExpPopups([...currentPopups, { id: popupId, exp: expEarned }]);
       setTimeout(() => {
@@ -87,7 +88,7 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
       playVictoryOscillator();
     }
 
-    const logId = crypto.randomUUID();
+    const logId = generateId();
 
     // Check online status
     if (!navigator.onLine) {
@@ -137,7 +138,7 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
           const pending = JSON.parse(pendingStr);
           pending.push({ type: 'LOG_QUEST', goalId, logId });
           localStorage.setItem('vibe_commit_pending_actions', JSON.stringify(pending));
-        } catch (err) {}
+        } catch (err) { }
 
         const updatedGoals = goals.map(g => {
           if (g.id === goalId) {
@@ -176,7 +177,7 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
     const { toast } = useToastStore.getState();
     const { setIsQuestEditorOpen } = useUIStore.getState();
 
-    const questId = questToEdit ? questToEdit.id : crypto.randomUUID();
+    const questId = questToEdit ? questToEdit.id : generateId();
 
     if (!navigator.onLine) {
       if (questToEdit) {
@@ -196,7 +197,7 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
           const pending = JSON.parse(pendingStr);
           pending.push({ type: 'UPDATE_QUEST', questId: questToEdit.id, questData });
           localStorage.setItem('vibe_commit_pending_actions', JSON.stringify(pending));
-        } catch (e) {}
+        } catch (e) { }
 
         toast({ title: "Quest Diperbarui (Offline)", type: 'success' });
       } else {
@@ -218,7 +219,7 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
           const pending = JSON.parse(pendingStr);
           pending.push({ type: 'CREATE_QUEST', id: questId, questData });
           localStorage.setItem('vibe_commit_pending_actions', JSON.stringify(pending));
-        } catch (e) {}
+        } catch (e) { }
 
         toast({ title: "Quest Baru Dibuat (Offline)", type: 'success' });
       }
@@ -260,7 +261,7 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
           const pending = JSON.parse(pendingStr);
           pending.push({ type: 'UPDATE_QUEST', questId: questToEdit.id, questData });
           localStorage.setItem('vibe_commit_pending_actions', JSON.stringify(pending));
-        } catch (err) {}
+        } catch (err) { }
 
         toast({ title: "Koneksi Bermasalah - Disimpan Lokal", type: 'info' });
       } else {
@@ -282,7 +283,7 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
           const pending = JSON.parse(pendingStr);
           pending.push({ type: 'CREATE_QUEST', id: questId, questData });
           localStorage.setItem('vibe_commit_pending_actions', JSON.stringify(pending));
-        } catch (err) {}
+        } catch (err) { }
 
         toast({ title: "Koneksi Bermasalah - Dibuat Lokal", type: 'info' });
       }
@@ -314,14 +315,14 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
         const pending = JSON.parse(pendingStr);
         pending.push({ type: 'DELETE_QUEST', questId: questToDelete });
         localStorage.setItem('vibe_commit_pending_actions', JSON.stringify(pending));
-      } catch (e) {}
+      } catch (e) { }
 
       return;
     }
 
     try {
       await deleteQuestApi(questToDelete);
-      
+
       if (selectedGoal?.id === questToDelete) {
         set({ selectedGoal: null });
       }
@@ -340,7 +341,7 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
         const pending = JSON.parse(pendingStr);
         pending.push({ type: 'DELETE_QUEST', questId: questToDelete });
         localStorage.setItem('vibe_commit_pending_actions', JSON.stringify(pending));
-      } catch (err) {}
+      } catch (err) { }
     }
   }
 }));

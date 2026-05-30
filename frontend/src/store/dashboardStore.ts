@@ -14,8 +14,8 @@ interface DashboardStore {
   achievements: Achievement[];
   latestDump: { summary: string; anxietyLevel: string; anxietyScore: number } | null;
   burnoutMonitor: BurnoutPrediction | null;
-  expPopups: {id: string, exp: number}[];
-  setExpPopups: (popups: {id: string, exp: number}[]) => void;
+  expPopups: { id: string, exp: number }[];
+  setExpPopups: (popups: { id: string, exp: number }[]) => void;
   nudge: { optimalHour: number; suggestion: string } | null;
   recentlyCompletedIds: string[];
   isLoading: boolean;
@@ -44,23 +44,25 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
 
   fetchData: async () => {
     const { toast } = useToastStore.getState();
-    
+
     let cachedDataLoaded = false;
     const cachedDataStr = localStorage.getItem('vibe_commit_dashboard_cache');
-    
+
     if (cachedDataStr) {
       try {
         const { goalsWithCounts, dumpsData, userData } = JSON.parse(cachedDataStr);
         const allLogs = goalsWithCounts.flatMap((g: any) => (g.logs || []).map((l: any) => ({ ...l, goal_id: g.id })));
         const calculatedUser = calculateRPGStats(allLogs, userData);
         const offset = userData?.sandbox_date_offset || 0;
-        
+
         set({
           goals: goalsWithCounts,
           recentlyCompletedIds: getCompletedIdsToday(goalsWithCounts, offset),
           nudge: calculateStochasticNudges(allLogs) || null,
           burnoutMonitor: analyzeBurnoutRisk(allLogs, goalsWithCounts, offset),
-          latestDump: dumpsData && dumpsData.length > 0 ? JSON.parse(dumpsData[0].analysis) : null,
+          latestDump: dumpsData && dumpsData.length > 0
+            ? (typeof dumpsData[0].analysis === 'string' ? JSON.parse(dumpsData[0].analysis) : dumpsData[0].analysis)
+            : null,
           user: calculatedUser,
           achievements: calculateAchievements(allLogs, calculatedUser.level),
           isLoading: false // Instantly clear the loading spinner
@@ -70,15 +72,15 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
         console.error('Error parsing dashboard cache', cacheErr);
       }
     }
-    
+
     // Only show the blocking loading spinner if we don't have any cached data to display
     if (!cachedDataLoaded) {
       set({ isLoading: true });
     }
-    
+
     try {
       const { goalsWithCounts, dumpsData, userData } = await fetchDashboardData();
-      
+
       try {
         localStorage.setItem('vibe_commit_dashboard_cache', JSON.stringify({
           goalsWithCounts,
@@ -88,17 +90,19 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
       } catch (err) {
         console.error('Failed to write local dashboard cache', err);
       }
-      
+
       const allLogs = goalsWithCounts.flatMap(g => (g.logs || []).map((l: any) => ({ ...l, goal_id: g.id })));
       const calculatedUser = calculateRPGStats(allLogs, userData);
       const offset = userData?.sandbox_date_offset || 0;
-      
+
       set({
         goals: goalsWithCounts,
         recentlyCompletedIds: getCompletedIdsToday(goalsWithCounts, offset),
         nudge: calculateStochasticNudges(allLogs) || null,
         burnoutMonitor: analyzeBurnoutRisk(allLogs, goalsWithCounts, offset),
-        latestDump: dumpsData && dumpsData.length > 0 ? JSON.parse(dumpsData[0].analysis) : null,
+        latestDump: dumpsData && dumpsData.length > 0
+          ? (typeof dumpsData[0].analysis === 'string' ? JSON.parse(dumpsData[0].analysis) : dumpsData[0].analysis)
+          : null,
         user: calculatedUser,
         achievements: calculateAchievements(allLogs, calculatedUser.level),
         isLoading: false
@@ -120,11 +124,11 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
     const { toast } = useToastStore.getState();
     try {
       const updatedUser = await updateProfileData(undefined, data);
-      
+
       const { goals, user } = get();
       const allLogs = goals.flatMap(g => (g.logs || []).map((l: any) => ({ ...l, goal_id: g.id })));
       const newStats = calculateRPGStats(allLogs, { ...user, ...updatedUser });
-      
+
       set({ user: newStats });
       if (!silent) toast({ title: "Profil Disimpan", type: 'success' });
     } catch (e: unknown) {
@@ -157,11 +161,11 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
       const { user, goals } = get();
       const data = await updateSandboxData(user.id, payload);
       const newUser = { ...user, ...data };
-      
+
       const allLogs = goals.flatMap(g => (g.logs || []).map((l: any) => ({ ...l, goal_id: g.id })));
       const offset = newUser.sandbox_date_offset || 0;
 
-      set({ 
+      set({
         user: newUser,
         recentlyCompletedIds: getCompletedIdsToday(goals, offset),
         burnoutMonitor: analyzeBurnoutRisk(allLogs, goals, offset),
@@ -180,10 +184,10 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
     try {
       const { user, goals } = get();
       const updatedUser = await buyItemAPI(user.id, itemId);
-      
+
       const allLogs = goals.flatMap(g => (g.logs || []).map((l: any) => ({ ...l, goal_id: g.id })));
       set({ user: calculateRPGStats(allLogs, { ...user, ...updatedUser }) });
-      
+
       toast({ title: "Pembelian Berhasil", type: 'success' });
       return true;
     } catch (e: any) {
@@ -208,7 +212,7 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
 
     if (pendingActions.length === 0) return;
 
-    const { logQuestActionApi, createQuestApi, updateQuestApi, deleteQuestApi, updateQuestDifficultyApi } = 
+    const { logQuestActionApi, createQuestApi, updateQuestApi, deleteQuestApi, updateQuestDifficultyApi } =
       await import('../features/quests/services/questApi');
 
     const failedActions: any[] = [];
@@ -232,7 +236,7 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
         // to prevent blockages in the queue. Keep 5xx or network errors to retry later.
         const isApiError = err && err.name === 'ApiError';
         const isClientError = err && typeof err.status === 'number' && err.status >= 400 && err.status < 500;
-        
+
         if (isClientError || isApiError) {
           console.warn(`[Sync Conflict] Discarding permanent conflict action of type ${action.type} due to HTTP status: ${err.status || 400}`);
         } else {

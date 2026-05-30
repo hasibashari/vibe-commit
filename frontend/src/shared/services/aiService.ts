@@ -21,12 +21,12 @@ export async function analyzeBrainDump(content: string): Promise<BrainDumpAnalys
     headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ content })
   });
-  
+
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
     throw new Error(errorData.error || 'Failed to analyze brain dump');
   }
-  
+
   return res.json();
 }
 
@@ -45,11 +45,11 @@ export async function chatWithAI(history: { role: 'user' | 'model', content: str
       headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ history, context })
     });
-    
+
     if (!res.ok) {
       throw new Error('Chat failed');
     }
-    
+
     const data = await res.json();
     return data.response;
   } catch (err) {

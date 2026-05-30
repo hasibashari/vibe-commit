@@ -31,19 +31,19 @@ export const useBrainDumpStore = create<BrainDumpStore>((set, get) => ({
     set({ isAnalyzing: true });
     try {
       const result = await analyzeBrainDump(draftContent);
-      
+
       await saveBrainDumpApi(draftContent, result);
       await saveQuestsFromBrainDumpApi(result.quests);
-      
+
       set({ analysisResult: result });
       await fetchData();
-      
+
       toast({
         title: "Analisis Berhasil",
         description: `Ditemukan ${result?.quests?.length || 0} quest dari pemikiranmu.`,
         type: 'success'
       });
-      
+
     } catch (e: unknown) {
       console.error(e);
       let desc = "Terjadi kesalahan saat memproses data.";
@@ -61,7 +61,7 @@ export const useBrainDumpStore = create<BrainDumpStore>((set, get) => ({
   handleChangeBrainDumpState: (open: boolean) => {
     const { isAnalyzing, analysisResult } = get();
     const { setIsBrainDumpOpen } = useUIStore.getState();
-    
+
     if (open) {
       setIsBrainDumpOpen(true);
     } else if (!isAnalyzing) {

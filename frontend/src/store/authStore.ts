@@ -22,7 +22,7 @@ interface AuthStore {
 export const useAuthStore = create<AuthStore>((set) => ({
   user: null,
   isLoading: true,
-  
+
   login: async (username, password) => {
     try {
       const res = await fetch('/api/auth/login', {
@@ -30,7 +30,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
       });
-      
+
       let resData: any = {};
       try {
         resData = await res.json();
@@ -47,7 +47,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
         displayName: user.username,
         email: `${user.username.toLowerCase()}@local`
       };
-      
+
       localStorage.setItem('vibe_commit_user', JSON.stringify(user));
       if (user.token) {
         localStorage.setItem('vibe_commit_token', user.token);
@@ -56,10 +56,10 @@ export const useAuthStore = create<AuthStore>((set) => ({
       useToastStore.getState().toast({ title: 'System Activated!', description: `Welcome back, Operative ${user.username}.`, type: 'success' });
     } catch (error: any) {
       console.error(error);
-      useToastStore.getState().toast({ 
-        title: 'Authentication Failed', 
-        description: error.message || 'Periksa kembali username dan password Anda.', 
-        type: 'error' 
+      useToastStore.getState().toast({
+        title: 'Authentication Failed',
+        description: error.message || 'Periksa kembali username dan password Anda.',
+        type: 'error'
       });
       throw error;
     }
@@ -72,7 +72,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
       });
-      
+
       let resData: any = {};
       try {
         resData = await res.json();
@@ -83,17 +83,17 @@ export const useAuthStore = create<AuthStore>((set) => ({
         throw new Error(resData.error || 'Gagal mendaftarkan akun');
       }
 
-      useToastStore.getState().toast({ 
-        title: 'Operative Created!', 
-        description: `Akun berhasil dibuat. Silakan login untuk melanjutkan.`, 
-        type: 'success' 
+      useToastStore.getState().toast({
+        title: 'Operative Created!',
+        description: `Akun berhasil dibuat. Silakan login untuk melanjutkan.`,
+        type: 'success'
       });
     } catch (error: any) {
       console.error(error);
-      useToastStore.getState().toast({ 
-        title: 'Failed to Register', 
-        description: error.message || 'Pastikan username unik dan minimal 2 karakter.', 
-        type: 'error' 
+      useToastStore.getState().toast({
+        title: 'Failed to Register',
+        description: error.message || 'Pastikan username unik dan minimal 2 karakter.',
+        type: 'error'
       });
       throw error;
     }
@@ -104,7 +104,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
       const res = await fetch('/api/auth/guest', {
         method: 'POST'
       });
-      
+
       let resData: any = {};
       try {
         resData = await res.json();
@@ -121,28 +121,28 @@ export const useAuthStore = create<AuthStore>((set) => ({
         displayName: user.username,
         email: `${user.username.toLowerCase()}@local`
       };
-      
+
       localStorage.setItem('vibe_commit_user', JSON.stringify(user));
       if (user.token) {
         localStorage.setItem('vibe_commit_token', user.token);
       }
       set({ user: mapped });
-      useToastStore.getState().toast({ 
-        title: 'Guest Session Initiated', 
-        description: `Welcome, ${user.username}. Progress is stored locally.`, 
-        type: 'info' 
+      useToastStore.getState().toast({
+        title: 'Guest Session Initiated',
+        description: `Welcome, ${user.username}. Progress is stored locally.`,
+        type: 'info'
       });
     } catch (error: any) {
       console.error(error);
-      useToastStore.getState().toast({ 
-        title: 'Guest Log In Failed', 
-        description: error.message || 'Kesalahan sistem saat membuat data tamu.', 
-        type: 'error' 
+      useToastStore.getState().toast({
+        title: 'Guest Log In Failed',
+        description: error.message || 'Kesalahan sistem saat membuat data tamu.',
+        type: 'error'
       });
       throw error;
     }
   },
-  
+
   logout: async () => {
     try {
       localStorage.removeItem('vibe_commit_user');
@@ -185,9 +185,9 @@ export const useAuthStore = create<AuthStore>((set) => ({
               if (resText) {
                 errorMsg = resText;
               }
-            } catch (txtErr) {}
+            } catch (txtErr) { }
           }
-          
+
           // Jika unauthorized atau forbidden (sesi tidak valid), bersihkan data lokal saja agar user tidak stuck
           if (res.status === 401 || res.status === 403) {
             console.warn(`Server authentication error (${res.status}): ${errorMsg}. Clearing local storage anyway.`);
@@ -201,11 +201,11 @@ export const useAuthStore = create<AuthStore>((set) => ({
           }
         }
       }
-      
+
       // Bersihkan total storage klien
       localStorage.clear();
       sessionStorage.clear();
-      
+
       // Hapus cache PWA service worker
       if ('caches' in window) {
         try {
@@ -215,25 +215,25 @@ export const useAuthStore = create<AuthStore>((set) => ({
           console.error('Failed to clear caches:', e);
         }
       }
-      
+
       set({ user: null });
-      useToastStore.getState().toast({ 
-        title: 'Account Permanently Deleted', 
-        description: 'Seluruh data Anda telah dihapus secara permanen dari server dan perangkat lokal.', 
-        type: 'success' 
+      useToastStore.getState().toast({
+        title: 'Account Permanently Deleted',
+        description: 'Seluruh data Anda telah dihapus secara permanen dari server dan perangkat lokal.',
+        type: 'success'
       });
     } catch (error: any) {
       console.error(error);
-      useToastStore.getState().toast({ 
-        title: 'Delete Account Failed', 
-        description: error.message || 'Gagal menghapus akun. Silakan coba kembali.', 
-        type: 'error' 
+      useToastStore.getState().toast({
+        title: 'Delete Account Failed',
+        description: error.message || 'Gagal menghapus akun. Silakan coba kembali.',
+        type: 'error'
       });
       throw error;
     }
   },
 
-  
+
   initAuth: () => {
     const localUserStr = localStorage.getItem('vibe_commit_user');
     if (localUserStr) {
@@ -253,7 +253,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
     } else {
       set({ user: null, isLoading: false });
     }
-    return () => {};
+    return () => { };
   }
 }));
 

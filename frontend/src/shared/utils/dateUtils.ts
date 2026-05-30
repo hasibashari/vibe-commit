@@ -59,7 +59,7 @@ export function parseLogTimestamp(timestamp: string): Date {
  */
 export function getLogDateString(timestamp: string): string {
   if (!timestamp) return '';
-  
+
   let cleanStr = timestamp.trim().replace(' ', 'T');
   if (cleanStr.includes('T') && !cleanStr.includes('Z') && !cleanStr.match(/[+-]\d{2}(:?\d{2})?$/)) {
     cleanStr += 'Z';
