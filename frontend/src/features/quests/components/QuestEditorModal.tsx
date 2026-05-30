@@ -124,7 +124,7 @@ export const QuestEditorModal: React.FC<QuestEditorModalProps> = ({
               <option value='Side Quest'>📌 Side Quest (Tugas Tambahan)</option>
             </select>
           </div>
-          
+
           <div className='space-y-1.5'>
             <label className='text-xs font-mono uppercase tracking-widest text-slate-400 mb-1.5 ml-1'>
               Tipe Quest

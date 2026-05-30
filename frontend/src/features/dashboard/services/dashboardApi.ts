@@ -22,7 +22,7 @@ export const fetchDashboardData = async () => {
 
     if (!logsRes.ok) throw new Error("Gagal memuat data Quest Log");
     const allLogsDataRaw = await logsRes.json();
-    
+
     // Map Snake Case vibe_score to Camel Case vibeScore expected by frontend types
     const allLogsData = allLogsDataRaw.map((log: any) => ({
       ...log,
@@ -59,7 +59,7 @@ export const fetchDashboardData = async () => {
 export const updateProfileData = async (
   _userIdStr?: string,
   data?: Partial<UserStats>
- ) => {
+) => {
   const user = getCurrentUser();
   if (!user) throw new Error("Not authenticated");
   const userId = user.uid;

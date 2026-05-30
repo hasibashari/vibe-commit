@@ -52,7 +52,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   let unlockedItems: string[] = [];
   try {
     if (user?.unlocked_items) unlockedItems = JSON.parse(user.unlocked_items);
-  } catch (e) {}
+  } catch (e) { }
 
   const colors = [
     {
@@ -225,11 +225,10 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                         key={c.id}
                         onClick={() => !isLocked && setAvatarColor(c.id)}
                         disabled={isLocked}
-                        className={`relative w-10 h-10 rounded-full ${c.hex} flex items-center justify-center ring-2 transition-all ${
-                          avatarColor === c.id
+                        className={`relative w-10 h-10 rounded-full ${c.hex} flex items-center justify-center ring-2 transition-all ${avatarColor === c.id
                             ? `${c.ring} ring-offset-2 ring-offset-surface scale-110`
                             : 'ring-transparent opacity-50'
-                        } ${isLocked ? 'grayscale opacity-30 cursor-not-allowed' : 'cursor-pointer hover:opacity-100'}`}
+                          } ${isLocked ? 'grayscale opacity-30 cursor-not-allowed' : 'cursor-pointer hover:opacity-100'}`}
                       >
                         {isLocked && <Lock className='w-4 h-4 text-white/70 absolute' />}
                       </button>

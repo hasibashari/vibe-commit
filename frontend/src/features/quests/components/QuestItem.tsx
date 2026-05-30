@@ -64,11 +64,10 @@ export function QuestItem({
       exit={{ opacity: 0, scale: 0.9 }}
       transition={{ duration: 0.2 }}
       onClick={onClick}
-      className={`group relative p-5 rounded-lg border transition-all cursor-pointer ${
-        isSelected && !isCompleted
+      className={`group relative p-5 rounded-lg border transition-all cursor-pointer ${isSelected && !isCompleted
           ? 'bg-accent-500/5 border-accent-800'
           : 'bg-slate-900/30 border-slate-800 hover:border-slate-700'
-      } ${isCompleted ? 'opacity-50 grayscale hover:opacity-80' : ''}`}
+        } ${isCompleted ? 'opacity-50 grayscale hover:opacity-80' : ''}`}
     >
       <div className='flex justify-between items-start gap-4'>
         <div className='space-y-2 flex-1'>
@@ -93,13 +92,12 @@ export function QuestItem({
             )}
           </div>
           <h3
-            className={`text-base font-bold tracking-tight transition-colors ${
-              isCompleted
+            className={`text-base font-bold tracking-tight transition-colors ${isCompleted
                 ? 'line-through text-slate-500'
                 : isSelected
                   ? 'text-accent-400'
                   : 'text-white'
-            }`}
+              }`}
           >
             {goal.title}
           </h3>
@@ -117,13 +115,12 @@ export function QuestItem({
               onLog();
             }}
             disabled={isCompleted}
-            className={`w-12 h-12 md:w-10 md:h-10 rounded border flex items-center justify-center transition-all shrink-0 ${
-              isCompleted
+            className={`w-12 h-12 md:w-10 md:h-10 rounded border flex items-center justify-center transition-all shrink-0 ${isCompleted
                 ? 'bg-emerald-500/20 text-emerald-500 border-emerald-500/50 cursor-default'
                 : isSelected
                   ? 'bg-accent-500 text-black border-accent-400 shadow-[0_0_15px_rgba(var(--theme-500-rgb),0.4)]'
                   : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500 hover:border-emerald-400 hover:text-black hover:shadow-[0_0_15px_rgba(16,185,129,0.4)]'
-            }`}
+              }`}
           >
             <Check className='w-6 h-6 md:w-5 md:h-5 stroke-[2.5]' />
           </motion.button>

@@ -66,11 +66,10 @@ export function QuestPanel({
           </h3>
           {latestDump && (
             <span
-              className={`text-xs font-mono uppercase px-2 py-0.5 rounded-full border ${
-                latestDump.anxietyScore > 7
-                  ? 'text-rose-400 border-rose-400/30 bg-rose-400/10'
-                  : 'text-indigo-400 border-indigo-400/30 bg-indigo-400/10'
-              }`}
+              className={`text-xs font-mono uppercase px-2 py-0.5 rounded-full border ${latestDump.anxietyScore > 7
+                ? 'text-rose-400 border-rose-400/30 bg-rose-400/10'
+                : 'text-indigo-400 border-indigo-400/30 bg-indigo-400/10'
+                }`}
             >
               Level: {latestDump.anxietyLevel}
             </span>
@@ -114,11 +113,10 @@ export function QuestPanel({
             </div>
             {latestDump && (
               <span
-                className={`text-xs font-mono uppercase px-2 py-0.5 rounded-full border shrink-0 ${
-                  latestDump.anxietyScore > 7
-                    ? 'text-rose-400 border-rose-400/30 bg-rose-400/10'
-                    : 'text-indigo-400 border-indigo-400/30 bg-indigo-400/10'
-                }`}
+                className={`text-xs font-mono uppercase px-2 py-0.5 rounded-full border shrink-0 ${latestDump.anxietyScore > 7
+                  ? 'text-rose-400 border-rose-400/30 bg-rose-400/10'
+                  : 'text-indigo-400 border-indigo-400/30 bg-indigo-400/10'
+                  }`}
               >
                 Lvl: {latestDump.anxietyLevel}
               </span>
