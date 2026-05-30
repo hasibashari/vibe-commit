@@ -102,38 +102,7 @@ export function QuestPanel({
           </div>
         </div>
 
-        {/* Mobile Brain Dump CTA */}
-        <div className='md:hidden w-full flex flex-col p-3 mb-4 bg-indigo-950/20 rounded-md border border-indigo-500/20 text-left'>
-          <div className='flex items-start justify-between gap-2 mb-2'>
-            <div className='flex items-center gap-1.5 min-w-0'>
-              <BrainCircuit className='w-4 h-4 text-indigo-400 shrink-0' />
-              <span className='text-xs font-bold tracking-widest uppercase text-indigo-300'>
-                Brain Dump
-              </span>
-            </div>
-            {latestDump && (
-              <span
-                className={`text-xs font-mono uppercase px-2 py-0.5 rounded-full border shrink-0 ${latestDump.anxietyScore > 7
-                  ? 'text-rose-400 border-rose-400/30 bg-rose-400/10'
-                  : 'text-indigo-400 border-indigo-400/30 bg-indigo-400/10'
-                  }`}
-              >
-                Lvl: {latestDump.anxietyLevel}
-              </span>
-            )}
-          </div>
 
-          <p className='text-xs text-slate-300 leading-relaxed mb-3'>
-            Tulis apa yang lo pikirkan biar AI buatkan plan-nya...
-          </p>
-
-          <button
-            onClick={onOpenBrainDump}
-            className='w-full text-xs font-medium bg-indigo-900/40 text-indigo-300 hover:text-white hover:bg-indigo-500/40 px-3 py-2 rounded transition-colors flex items-center justify-center gap-1'
-          >
-            Buka Brain Dump <ChevronRight className='w-3.5 h-3.5' />
-          </button>
-        </div>
 
         {/* Main Quests */}
         <div className='flex flex-col gap-3 transition-all duration-300'>

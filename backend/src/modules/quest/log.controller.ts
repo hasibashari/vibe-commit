@@ -96,9 +96,15 @@ export class LogController {
         }
 
         // Fetch user associated with this goal
-        const goalDataRes = await client.query('SELECT user_id, difficulty, reward_alpha, type FROM goals WHERE id = $1', [goalId]);
+        const goalDataRes = await client.query('SELECT user_id, difficulty, reward_alpha, type, status FROM goals WHERE id = $1', [goalId]);
         const goalData = goalDataRes.rows[0] as any;
         if (goalData) {
+          if (goalData.type === 'one-off' && goalData.status === 'completed') {
+            await client.query('ROLLBACK');
+            res.status(400).json({ error: 'Quest ini sudah diselesaikan sebelumnya.' });
+            return;
+          }
+
           const userRes = await client.query('SELECT id, hp, mana, level, exp, last_penalty_date FROM users WHERE id = $1', [goalData.user_id]);
           const user = userRes.rows[0] as any;
           if (user) {
@@ -146,7 +152,7 @@ export class LogController {
               FROM quest_logs 
               JOIN goals ON quest_logs.goal_id = goals.id 
               WHERE goals.user_id = $1 
-                AND DATE(quest_logs.timestamp) = DATE($2::timestamp)
+                AND DATE(quest_logs.timestamp AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta') = DATE($2::timestamp AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta')
             `, [user.id, timestampStr]);
             
             const todayLogs = todayLogsRes.rows[0] as { count: string | number };

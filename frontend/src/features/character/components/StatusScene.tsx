@@ -105,7 +105,7 @@ export const StatusScene: React.FC<StatsProps> = ({
           onClick={handleCharacterTap}
           whileTap={{ scale: 0.95 }}
           animate={tapCount > 20 ? { x: [-5, 5, -5, 5, 0], transition: { duration: 0.2 } } : {}}
-          className='cursor-pointer group-hover:scale-105 transition-transform duration-300 relative'
+          className='cursor-pointer group-hover:scale-105 transition-transform duration-300 relative shrink-0 aspect-square'
           title='Tap aku!'
         >
           <CharacterSprite

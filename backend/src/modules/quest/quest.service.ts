@@ -25,7 +25,7 @@ export class QuestService {
             AND EXISTS (
               SELECT 1 FROM quest_logs 
               WHERE quest_logs.goal_id = g.id 
-                AND DATE(quest_logs.timestamp) = CURRENT_DATE + (
+                AND DATE(quest_logs.timestamp AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta') = DATE(CURRENT_TIMESTAMP AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta') + (
                   COALESCE((SELECT sandbox_date_offset FROM users WHERE id = $1), 0) * INTERVAL '1 day'
                 )
             )
