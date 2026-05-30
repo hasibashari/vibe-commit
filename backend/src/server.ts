@@ -61,7 +61,7 @@ async function startServer() {
         styleSrc: ["'self'", "'unsafe-inline'", "fonts.googleapis.com"],
         fontSrc: ["'self'", "fonts.gstatic.com"],
         imgSrc: ["'self'", "data:", "blob:"],
-        connectSrc: ["'self'", "generativelanguage.googleapis.com"],
+        connectSrc: ["'self'", "generativelanguage.googleapis.com", "https://www.google.com"],
       }
     },
     crossOriginEmbedderPolicy: false,
