@@ -3,7 +3,6 @@ import { motion } from 'motion/react';
 import { Activity, TrendingUp, BarChart2, CheckCircle2, Zap, Target } from 'lucide-react';
 import { LifeCommitHeatmap } from '../../analytics/components/LifeCommitHeatmap';
 import { GlobalProbabilityTrend } from './GlobalProbabilityTrend';
-import { VariableCharts } from '../../character/components/VariableCharts';
 import type { Goal } from '../../../shared/types/goal';
 import { getTodayLocalString, getLogDateString } from '../../../shared/utils/dateUtils';
 import { EmptyState } from '../../../shared/components/EmptyState';
@@ -145,19 +144,6 @@ export function HubMonitoring({ goals }: HubMonitoringProps) {
                 </p>
               </div>
               <LifeCommitHeatmap logs={allLogs} sandboxDateOffset={sandboxDateOffset} />
-            </div>
-
-            {/* Quest Focus Distribution */}
-            <div className='flex flex-col gap-3 min-w-0'>
-              <div className='px-1'>
-                <h4 className='text-xs font-bold text-slate-300 tracking-widest uppercase flex items-center gap-2 mb-1.5'>
-                  <BarChart2 className='w-4 h-4 text-purple-500' /> Quest Focus Distribution
-                </h4>
-                <p className='text-xs font-mono text-slate-500 leading-relaxed'>
-                  Distribusi area fokus saat ini.
-                </p>
-              </div>
-              <VariableCharts goals={activeGoals} />
             </div>
           </div>
         </>

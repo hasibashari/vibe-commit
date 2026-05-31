@@ -13,7 +13,7 @@ export const fetchDashboardData = async () => {
     const [goalsRes, logsRes, dumpsRes, userRes] = await Promise.all([
       fetch(`/api/goals/${userId}`, { headers: getAuthHeaders() }),
       fetch(`/api/logs/user/${userId}`, { headers: getAuthHeaders() }),
-      fetch(`/api/brain-dump/${userId}`, { headers: getAuthHeaders() }),
+      Promise.resolve({ ok: true, json: async () => [] }) as Promise<any>,
       fetch(`/api/user/${userId}`, { headers: getAuthHeaders() })
     ]);
 

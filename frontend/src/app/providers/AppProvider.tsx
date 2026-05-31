@@ -1,16 +1,13 @@
 import { ReactNode } from 'react';
 import { DashboardProvider } from './DashboardProvider';
 import { QuestProvider } from './QuestProvider';
-import { BrainDumpProvider } from './BrainDumpProvider';
 import { useUIStore } from '../../store/uiStore';
 
 export function AppProvider({ children }: { children: ReactNode }) {
   return (
     <DashboardProvider>
       <QuestProvider>
-        <BrainDumpProvider>
-          {children}
-        </BrainDumpProvider>
+        {children}
       </QuestProvider>
     </DashboardProvider>
   );
@@ -21,16 +18,12 @@ export function useAppContext() {
   const setIsProfileOpen = useUIStore((state) => state.setIsProfileOpen);
   const isSettingsOpen = useUIStore((state) => state.isSettingsOpen);
   const setIsSettingsOpen = useUIStore((state) => state.setIsSettingsOpen);
-  const isAIChatOpen = useUIStore((state) => state.isAIChatOpen);
-  const setIsAIChatOpen = useUIStore((state) => state.setIsAIChatOpen);
 
   return {
     isProfileOpen,
     setIsProfileOpen,
     isSettingsOpen,
     setIsSettingsOpen,
-    isAIChatOpen,
-    setIsAIChatOpen,
   };
 }
 

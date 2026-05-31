@@ -202,85 +202,22 @@ export class UserService {
     return user;
   }
 
-  static saveBase64Image(userId: string, fieldName: string, base64Data: string | null | undefined): string | null {
-    if (base64Data === undefined) {
-      return null;
-    }
-    
-    const uploadsDir = path.join(process.cwd(), 'backend', 'public', 'uploads');
-    
-    if (!base64Data) {
-      const filePattern = `user_${userId}_${fieldName}`;
-      try {
-        if (fs.existsSync(uploadsDir)) {
-          const files = fs.readdirSync(uploadsDir);
-          for (const file of files) {
-            if (file.startsWith(filePattern)) {
-              fs.unlinkSync(path.join(uploadsDir, file));
-            }
-          }
-        }
-      } catch (err) {
-        console.error(`Failed to delete old image ${filePattern}:`, err);
-      }
-      return "";
-    }
-
-    if (base64Data.startsWith('data:image/')) {
-      const match = base64Data.match(/^data:image\/(\w+);base64,/);
-      if (!match) {
-        throw new Error('Invalid base64 image format');
-      }
-      
-      const ext = match[1] === 'jpeg' ? 'jpg' : match[1];
-      const base64Content = base64Data.replace(/^data:image\/\w+;base64,/, '');
-      const buffer = Buffer.from(base64Content, 'base64');
-      
-      const safeUserId = userId.replace(/[^a-zA-Z0-9_-]/g, '');
-      const safeFieldName = fieldName.replace(/[^a-zA-Z0-9_-]/g, '');
-      const filename = `user_${safeUserId}_${safeFieldName}.${ext}`;
-      const filePath = path.join(uploadsDir, filename);
-
-      if (!fs.existsSync(uploadsDir)) {
-        fs.mkdirSync(uploadsDir, { recursive: true });
-      }
-
-      fs.writeFileSync(filePath, buffer);
-      
-      return `/uploads/${filename}`;
-    }
-
-    return base64Data;
-  }
-
   static async updateUser(id: string, updates: any) {
-    const customMainBgValue = updates.custom_main_bg !== undefined
-      ? this.saveBase64Image(id, 'custom_main_bg', updates.custom_main_bg)
-      : undefined;
-
-    const customCharBgValue = updates.custom_char_bg !== undefined
-      ? this.saveBase64Image(id, 'custom_char_bg', updates.custom_char_bg)
-      : undefined;
-
     await db.query(`
       UPDATE users 
       SET name = COALESCE($1, name), 
           title = COALESCE($2, title),
           avatar_color = COALESCE($3, avatar_color),
           avatar_icon = COALESCE($4, avatar_icon),
-          custom_main_bg = COALESCE($5, custom_main_bg),
-          custom_char_bg = COALESCE($6, custom_char_bg),
-          theme_vibe = COALESCE($7, theme_vibe),
-          bgm_theme = COALESCE($8, bgm_theme),
-          bgm_muted = COALESCE($9, bgm_muted)
-      WHERE id = $10
+          theme_vibe = COALESCE($5, theme_vibe),
+          bgm_theme = COALESCE($6, bgm_theme),
+          bgm_muted = COALESCE($7, bgm_muted)
+      WHERE id = $8
     `, [
       updates.name ?? null, 
       updates.title ?? null, 
       updates.avatar_color ?? null, 
       updates.avatar_icon ?? null,
-      customMainBgValue !== undefined ? customMainBgValue : null, 
-      customCharBgValue !== undefined ? customCharBgValue : null, 
       updates.theme_vibe ?? null, 
       updates.bgm_theme ?? null, 
       updates.bgm_muted ?? null, 
@@ -415,7 +352,6 @@ export class UserService {
       await client.query('BEGIN');
       await client.query('DELETE FROM quest_logs WHERE goal_id IN (SELECT id FROM goals WHERE user_id = $1)', [userId]);
       await client.query('DELETE FROM goals WHERE user_id = $1', [userId]);
-      await client.query('DELETE FROM brain_dumps WHERE user_id = $1', [userId]);
       await client.query(`UPDATE users SET hp = 100, mana = 100, level = 1, exp = 0, spent_coins = 0, unlocked_items = '[]', shield_until = NULL WHERE id = $1`, [userId]);
       await client.query('COMMIT');
     } catch (err) {
@@ -432,7 +368,6 @@ export class UserService {
       await client.query('BEGIN');
       await client.query('DELETE FROM quest_logs WHERE goal_id IN (SELECT id FROM goals WHERE user_id = $1)', [userId]);
       await client.query('DELETE FROM goals WHERE user_id = $1', [userId]);
-      await client.query('DELETE FROM brain_dumps WHERE user_id = $1', [userId]);
       await client.query('DELETE FROM users WHERE id = $1', [userId]);
       await client.query('DELETE FROM accounts WHERE id = $1', [userId]);
       await client.query('COMMIT');
@@ -468,26 +403,22 @@ export class UserService {
           SET name = COALESCE($1, name), 
               title = COALESCE($2, title),
               avatar_color = COALESCE($3, avatar_color),
-              custom_main_bg = COALESCE($4, custom_main_bg),
-              custom_char_bg = COALESCE($5, custom_char_bg),
-              theme_vibe = COALESCE($6, theme_vibe),
-              bgm_theme = COALESCE($7, bgm_theme),
-              bgm_muted = COALESCE($8, bgm_muted),
-              hp = COALESCE($9, hp),
-              mana = COALESCE($10, mana),
-              level = COALESCE($11, level),
-              exp = COALESCE($12, exp),
-              spent_coins = COALESCE($13, spent_coins),
-              unlocked_items = COALESCE($14, unlocked_items),
-              shield_until = COALESCE($15, shield_until),
-              last_penalty_date = $16
-          WHERE id = $17
+              theme_vibe = COALESCE($4, theme_vibe),
+              bgm_theme = COALESCE($5, bgm_theme),
+              bgm_muted = COALESCE($6, bgm_muted),
+              hp = COALESCE($7, hp),
+              mana = COALESCE($8, mana),
+              level = COALESCE($9, level),
+              exp = COALESCE($10, exp),
+              spent_coins = COALESCE($11, spent_coins),
+              unlocked_items = COALESCE($12, unlocked_items),
+              shield_until = COALESCE($13, shield_until),
+              last_penalty_date = $14
+          WHERE id = $15
         `, [
           data.user.name ?? null, 
           data.user.title ?? null, 
           data.user.avatar_color ?? null, 
-          data.user.custom_main_bg ?? null, 
-          data.user.custom_char_bg ?? null, 
           data.user.theme_vibe ?? null, 
           data.user.bgm_theme ?? null, 
           data.user.bgm_muted ?? null, 

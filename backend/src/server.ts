@@ -13,8 +13,6 @@ import { ZodError } from 'zod';
 import userRoutes from './modules/user/user.routes.js';
 import questRoutes from './modules/quest/quest.routes.js';
 import logRoutes from './modules/quest/log.routes.js';
-import brainDumpRoutes from './modules/brain-dump/brain-dump.routes.js';
-import aiRoutes from './modules/ai/ai.routes.js';
 import authRoutes from './modules/auth/auth.routes.js';
 
 async function startServer() {
@@ -42,16 +40,6 @@ async function startServer() {
   });
   app.use(limiter);
 
-  // Stricter rate limit for expensive AI endpoints
-  const aiLimiter = rateLimit({
-    windowMs: 60 * 1000, // 1 minute
-    max: 5,
-    standardHeaders: true,
-    legacyHeaders: false,
-    message: { error: 'Terlalu banyak permintaan AI. Silakan coba lagi dalam 1 menit.' }
-  });
-  app.use('/api/ai', aiLimiter);
-
   // Security headers with proper CSP
   app.use(helmet({
     contentSecurityPolicy: {
@@ -61,7 +49,7 @@ async function startServer() {
         styleSrc: ["'self'", "'unsafe-inline'", "fonts.googleapis.com"],
         fontSrc: ["'self'", "fonts.gstatic.com"],
         imgSrc: ["'self'", "data:", "blob:"],
-        connectSrc: ["'self'", "generativelanguage.googleapis.com", "https://www.google.com"],
+        connectSrc: ["'self'", "https://www.google.com"],
       }
     },
     crossOriginEmbedderPolicy: false,
@@ -88,8 +76,6 @@ async function startServer() {
   app.use('/api/user', userRoutes);
   app.use('/api/goals', questRoutes);
   app.use('/api/logs', logRoutes);
-  app.use('/api/brain-dump', brainDumpRoutes);
-  app.use('/api/ai', aiRoutes);
 
   app.get('/api/health', (_req: Request, res: Response) => {
     res.status(200).json({ status: 'ok' });

@@ -263,7 +263,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           <div className='grid grid-cols-1 gap-3'>
             {[
               { id: 'custom_main_bg', label: 'Main Background', value: user.custom_main_bg },
-              { id: 'custom_char_bg', label: 'Character Background', value: user.custom_char_bg },
             ].map(item => (
               <div
                 key={item.id}
@@ -280,7 +279,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     <button
                       onClick={() =>
                         resetCustomization(
-                          item.id as 'custom_main_bg' | 'custom_char_bg',
+                          item.id as 'custom_main_bg',
                         )
                       }
                       className='text-xs text-rose-400 hover:text-rose-300 px-2 py-1 bg-rose-500/10 rounded'
@@ -295,7 +294,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       onChange={e =>
                         handleFileUpload(
                           e,
-                          item.id as 'custom_main_bg' | 'custom_char_bg',
+                          item.id as 'custom_main_bg',
                         )
                       }
                       className='absolute inset-0 w-full h-full opacity-0 cursor-pointer'

@@ -27,8 +27,6 @@ export class UserController {
         title: z.string().optional(),
         avatar_color: z.string().optional(),
         avatar_icon: z.string().optional(),
-        custom_main_bg: z.string().nullable().optional(),
-        custom_char_bg: z.string().nullable().optional(),
         theme_vibe: z.string().optional(),
         bgm_theme: z.string().optional(),
         bgm_muted: z.number().int().optional()
@@ -112,8 +110,6 @@ export class UserController {
           name: z.string().optional().nullable(),
           title: z.string().optional().nullable(),
           avatar_color: z.string().optional().nullable(),
-          custom_main_bg: z.string().optional().nullable(),
-          custom_char_bg: z.string().optional().nullable(),
           theme_vibe: z.string().optional().nullable(),
           bgm_theme: z.string().optional().nullable(),
           bgm_muted: z.number().int().optional().nullable(),

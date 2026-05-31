@@ -1,32 +1,27 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { TopBar } from './layouts/TopBar';
-import { StatusScene } from '../features/character/components/StatusScene';
 import { VibeEnvironment } from '../shared/components/VibeEnvironment';
 
 import { ExpPopupRenderer } from '../shared/components/ExpPopupRenderer';
 import { BottomBar } from './layouts/BottomBar';
 import { QuestPanel } from '../features/quests/components/QuestPanel';
-import { BurnoutWarning } from '../features/character/components/BurnoutWarning';
 import { MainLayout } from './layouts/MainLayout';
 import { DashboardLayout } from './layouts/DashboardLayout';
 
 const HubMonitoring = React.lazy(() => import('../features/dashboard/components/HubMonitoring').then(m => ({ default: m.HubMonitoring })));
 const QuestEditorModal = React.lazy(() => import('../features/quests/components/QuestEditorModal').then(m => ({ default: m.QuestEditorModal })));
-const BrainDumpModal = React.lazy(() => import('../features/brainDump/components/BrainDumpModal').then(m => ({ default: m.BrainDumpModal })));
 const FirstTimeOnboarding = React.lazy(() => import('../features/onboarding/components/FirstTimeOnboarding').then(m => ({ default: m.FirstTimeOnboarding })));
 const ProfileModal = React.lazy(() => import('../features/profile/components/ProfileModal').then(m => ({ default: m.ProfileModal })));
 const SettingsModal = React.lazy(() => import('../features/profile/components/SettingsModal').then(m => ({ default: m.SettingsModal })));
 const DeleteQuestModal = React.lazy(() => import('../features/quests/components/DeleteQuestModal').then(m => ({ default: m.DeleteQuestModal })));
 const DevSandboxPanel = React.lazy(() => import('../shared/components/DevSandboxPanel').then(m => ({ default: m.DevSandboxPanel })));
-const AIChatModal = React.lazy(() => import('../features/character/components/AIChatModal').then(m => ({ default: m.AIChatModal })));
 import { calculateStats } from '../shared/utils/vibeMath';
 import { getWeatherState } from '../shared/utils/weatherUtils';
 
 import { useAppContext } from './providers/AppProvider';
 import { useDashboardContext } from './providers/DashboardProvider';
 import { useQuestContext } from './providers/QuestProvider';
-import { useBrainDumpContext } from './providers/BrainDumpProvider';
 import { useAudio } from './providers/AudioProvider';
 import { useAuthStore } from '../store/authStore';
 import { useDashboardStore } from '../store/dashboardStore';
@@ -54,19 +49,17 @@ export default function App() {
     return () => unsubscribe();
   }, [initAuth]);
 
-  const { isProfileOpen, setIsProfileOpen, isSettingsOpen, setIsSettingsOpen, isAIChatOpen, setIsAIChatOpen } = useAppContext();
+  const { isProfileOpen, setIsProfileOpen, isSettingsOpen, setIsSettingsOpen } = useAppContext();
 
   const {
     goals,
     user,
     achievements,
     latestDump,
-    burnoutMonitor,
     expPopups,
     recentlyCompletedIds,
     updateProfile,
     resetProfile,
-    nudge,
     isLoading,
     updateSandbox,
     fetchData,
@@ -93,16 +86,6 @@ export default function App() {
     executeDeleteQuest,
   } = useQuestContext();
 
-  const {
-    isBrainDumpOpen,
-    setIsBrainDumpOpen,
-    draftContent,
-    setDraftContent,
-    isAnalyzing,
-    handleBrainDump,
-    analysisResult,
-  } = useBrainDumpContext();
-
   const prevCompletedCountRef = useRef(recentlyCompletedIds.length);
   useEffect(() => {
     if (recentlyCompletedIds.length > prevCompletedCountRef.current) {
@@ -121,8 +104,6 @@ export default function App() {
 
   const activeTab = tab || 'quests';
   const setActiveTab = (newTab: Tab) => navigate(`/${newTab}`);
-
-
 
   const handleExportData = async () => {
     try {
@@ -178,7 +159,6 @@ export default function App() {
   const uLevel = user?.level ?? 1;
   const uExp = user?.exp ?? 0;
   const uSpentCoins = user?.spent_coins ?? 0;
-  // Uses shared getAvailableCoins (same capped formula as backend & dashboardUtils)
   const baseCoins = user ? getAvailableCoins(uLevel, uExp, uSpentCoins) : 0;
 
   // --- DEV SANDBOX INJECTION ---
@@ -323,7 +303,6 @@ export default function App() {
           <BottomBar
             activeTab={activeTab}
             setActiveTab={setActiveTab}
-            onOpenBrainDump={() => setIsBrainDumpOpen(true)}
             onNewQuest={() => {
               setQuestToEdit(null);
               setIsQuestEditorOpen(true);
@@ -372,41 +351,11 @@ export default function App() {
               onClose={() => setQuestToDelete(null)}
               onConfirm={() => executeDeleteQuest()}
             />
-            <BrainDumpModal
-              isOpen={isBrainDumpOpen}
-              onClose={() => setIsBrainDumpOpen(false)}
-              isAnalyzing={isAnalyzing}
-              draftContent={draftContent}
-              setDraftContent={setDraftContent}
-              onSubmit={handleBrainDump}
-              analysisResult={analysisResult}
-            />
-            <AIChatModal
-              isOpen={isAIChatOpen}
-              onClose={() => setIsAIChatOpen(false)}
-              user={effectiveUser}
-              goals={goals}
-            />
           </React.Suspense>
         }
       >
         <DashboardLayout
           activeTab={activeTab}
-          rightSidebar={
-            <>
-              <StatusScene
-                hp={effectiveUser.hp}
-                mana={effectiveUser.mana}
-                level={effectiveUser.level}
-                goals={goals}
-                nudge={nudge}
-                userName={effectiveUser.name}
-                customCharBg={effectiveUser.custom_char_bg}
-                weather={effectiveWeather}
-              />
-              <BurnoutWarning burnoutMonitor={burnoutMonitor} />
-            </>
-          }
           mainContent={
             <React.Suspense fallback={
               <div className="h-full flex flex-col items-center justify-center text-slate-500 gap-2">
@@ -421,7 +370,6 @@ export default function App() {
             <QuestPanel
               goals={goals}
               selectedGoal={selectedGoal}
-              latestDump={latestDump}
               onSelectGoal={goal => {
                 setSelectedGoal(selectedGoal?.id === goal.id ? null : goal);
               }}
@@ -431,7 +379,6 @@ export default function App() {
                 setIsQuestEditorOpen(true);
               }}
               onDrop={confirmDeleteQuest}
-              onOpenBrainDump={() => setIsBrainDumpOpen(true)}
               onNewQuest={() => {
                 setQuestToEdit(null);
                 setIsQuestEditorOpen(true);

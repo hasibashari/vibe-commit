@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import {
   Target,
-  BrainCircuit,
-  ChevronRight,
   Crown,
   Calendar,
   Bookmark,
@@ -17,12 +15,10 @@ import { groupQuests, calculateExpMultiplier } from '../utils/questUtils';
 interface QuestPanelProps {
   goals: Goal[];
   selectedGoal: Goal | null;
-  latestDump: { summary: string; anxietyLevel: string; anxietyScore: number } | null;
   onSelectGoal: (goal: Goal) => void;
   onLogAction: (goalId: string) => void;
   onEdit: (goal: Goal) => void;
   onDrop: (goalId: string) => void;
-  onOpenBrainDump: () => void;
   onNewQuest: () => void;
   recentlyCompletedIds: string[];
 }
@@ -30,12 +26,10 @@ interface QuestPanelProps {
 export function QuestPanel({
   goals,
   selectedGoal,
-  latestDump,
   onSelectGoal,
   onLogAction,
   onEdit,
   onDrop,
-  onOpenBrainDump,
   onNewQuest,
   recentlyCompletedIds,
 }: QuestPanelProps) {
@@ -58,36 +52,6 @@ export function QuestPanel({
 
   return (
     <div className='flex flex-col gap-4 md:gap-6 pb-6'>
-      {/* Brain Dump Action Panel - Promoted to top for easier access */}
-      <div className='hidden md:flex bg-indigo-900/20 border border-indigo-500/30 p-4 md:p-5 rounded-lg flex-col shadow-lg shadow-indigo-900/10'>
-        <div className='flex items-center justify-between mb-3'>
-          <h3 className='text-xs font-bold text-indigo-300 uppercase tracking-widest decoration-indigo-500/50 flex items-center gap-2'>
-            <BrainCircuit className='w-3.5 h-3.5' /> Brain Dump
-          </h3>
-          {latestDump && (
-            <span
-              className={`text-xs font-mono uppercase px-2 py-0.5 rounded-full border ${latestDump.anxietyScore > 7
-                ? 'text-rose-400 border-rose-400/30 bg-rose-400/10'
-                : 'text-indigo-400 border-indigo-400/30 bg-indigo-400/10'
-                }`}
-            >
-              Level: {latestDump.anxietyLevel}
-            </span>
-          )}
-        </div>
-        <div className='bg-indigo-950/30 p-3 rounded-md border border-indigo-500/10 transition-colors flex items-center justify-between'>
-          <p className='text-xs leading-relaxed text-slate-300'>
-            Tulis apa yang lo pikirkan biar AI buatkan plan-nya...
-          </p>
-
-          <button
-            onClick={onOpenBrainDump}
-            className='text-xs font-medium bg-indigo-900/40 text-indigo-300 hover:text-white hover:bg-indigo-500/40 px-3 py-1.5 rounded transition-colors flex items-center gap-1 shrink-0 ml-4'
-          >
-            Buka Brain Dump <ChevronRight className='w-3.5 h-3.5' />
-          </button>
-        </div>
-      </div>
 
       <div className='bg-slate-900/50 border border-slate-800 p-4 md:p-5 rounded-lg flex flex-col gap-5'>
         <div className='flex items-center justify-between mb-2'>
@@ -239,7 +203,7 @@ export function QuestPanel({
         {/* Action Buttons */}
         <div className='mt-4 pt-4 border-t border-slate-800/50 space-y-3'>
           <Button variant='secondary' onClick={onNewQuest} className='w-full'>
-            + Buat Quest Manual
+            + Buat Quest
           </Button>
         </div>
       </div>
