@@ -81,7 +81,7 @@ export function Modal({
             aria-modal="true"
           >
             {(title || description) && (
-              <div className="flex-none px-6 py-4 border-b border-white/5 flex items-start justify-between">
+              <div className="flex-none px-4 sm:px-6 py-4 border-b border-white/5 flex items-start justify-between">
                 <div>
                   {title && <h2 className="text-xl font-display font-bold text-white tracking-tight">{title}</h2>}
                   {description && <p className="text-sm text-slate-400 mt-1">{description}</p>}

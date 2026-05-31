@@ -170,7 +170,7 @@ export const QuestEditorModal: React.FC<QuestEditorModalProps> = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={initialData ? 'Edit Quest' : 'Buat Quest Baru'}>
-      <div className='p-5 sm:p-6 space-y-6 bg-slate-950/10'>
+      <div className='p-4 sm:p-6 space-y-6 bg-slate-950/10'>
         
         {/* Input: Nama Quest */}
         <div>
@@ -190,7 +190,7 @@ export const QuestEditorModal: React.FC<QuestEditorModalProps> = ({
             value={formData.description}
             onChange={e => setFormData({ ...formData, description: e.target.value })}
             placeholder='Detail tugas atau kriteria biar quest dihitung sukses...'
-            className='bg-slate-900 border-slate-800/80 focus:border-cyan-500/60 focus:ring-1 focus:ring-cyan-500/20 hover:border-slate-700 transition-all duration-200 text-slate-300 placeholder-slate-600 h-24 shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.4)] rounded-xl'
+            className='bg-slate-900 border-slate-800/80 focus:border-cyan-500/60 focus:ring-1 focus:ring-cyan-500/20 hover:border-slate-700 transition-all duration-200 text-slate-300 placeholder-slate-600 h-28 sm:h-32 shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.4)] rounded-xl'
           />
         </div>
 
@@ -269,7 +269,7 @@ export const QuestEditorModal: React.FC<QuestEditorModalProps> = ({
           <label className='block text-xs font-mono uppercase tracking-widest text-slate-400 ml-1'>
             Kategori Quest
           </label>
-          <div className='grid grid-cols-3 gap-3'>
+          <div className='grid grid-cols-3 gap-2 sm:gap-3'>
             {categoryOptions.map(opt => {
               const IconComp = opt.icon;
               const isSelected = formData.category === opt.id;
@@ -278,7 +278,7 @@ export const QuestEditorModal: React.FC<QuestEditorModalProps> = ({
                   key={opt.id}
                   type='button'
                   onClick={() => setFormData({ ...formData, category: opt.id })}
-                  className={`flex flex-col items-center justify-center p-3 rounded-2xl border text-center transition-all duration-300 relative group overflow-hidden active:scale-95 ${
+                  className={`flex flex-col items-center justify-center p-2 sm:p-3 rounded-2xl border text-center transition-all duration-300 relative group overflow-hidden active:scale-95 min-w-0 w-full ${
                     isSelected ? opt.activeClass : opt.inactiveClass
                   }`}
                 >
@@ -289,7 +289,7 @@ export const QuestEditorModal: React.FC<QuestEditorModalProps> = ({
                     isSelected ? opt.accentColor : 'text-slate-400 group-hover:text-slate-300'
                   }`} />
                   
-                  <span className='text-xs font-bold tracking-wide block leading-tight'>
+                  <span className='text-[10px] sm:text-xs font-bold tracking-wide block leading-tight'>
                     {opt.label}
                   </span>
                   <span className='text-[9px] text-slate-500 group-hover:text-slate-400 block mt-0.5 leading-none transition-colors'>
@@ -306,7 +306,7 @@ export const QuestEditorModal: React.FC<QuestEditorModalProps> = ({
           <label className='block text-xs font-mono uppercase tracking-widest text-slate-400 ml-1'>
             Tipe Quest
           </label>
-          <div className='grid grid-cols-2 gap-3'>
+          <div className='grid grid-cols-2 gap-2 sm:gap-3'>
             {typeOptions.map(opt => {
               const IconComp = opt.icon;
               const isSelected = formData.type === opt.id;
@@ -315,22 +315,22 @@ export const QuestEditorModal: React.FC<QuestEditorModalProps> = ({
                   key={opt.id}
                   type='button'
                   onClick={() => setFormData({ ...formData, type: opt.id })}
-                  className={`flex items-center gap-3 p-3.5 rounded-2xl border transition-all duration-300 relative group overflow-hidden text-left active:scale-95 ${
+                  className={`flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3.5 rounded-2xl border transition-all duration-300 relative group overflow-hidden text-left active:scale-95 min-w-0 w-full ${
                     isSelected ? opt.activeClass : opt.inactiveClass
                   }`}
                 >
                   <div className='absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none' />
                   
-                  <div className={`p-2 rounded-xl transition-all duration-300 ${
+                  <div className={`p-1.5 sm:p-2 rounded-xl transition-all duration-300 ${
                     isSelected ? 'bg-white/10' : 'bg-slate-900 group-hover:bg-slate-800'
                   }`}>
-                    <IconComp className={`w-5 h-5 transition-transform duration-300 group-hover:rotate-6 ${
+                    <IconComp className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-300 group-hover:rotate-6 ${
                       isSelected ? opt.accentColor : 'text-slate-400 group-hover:text-slate-300'
                     }`} />
                   </div>
 
                   <div>
-                    <span className='text-xs font-bold tracking-wide block leading-tight'>
+                    <span className='text-[10px] sm:text-xs font-bold tracking-wide block leading-tight'>
                       {opt.label}
                     </span>
                     <span className='text-[9px] text-slate-500 group-hover:text-slate-400 block mt-0.5 leading-tight transition-colors'>
@@ -346,7 +346,7 @@ export const QuestEditorModal: React.FC<QuestEditorModalProps> = ({
       </div>
 
       {/* Action Footer */}
-      <div className='border-t border-white/5 p-4 bg-slate-950/80 flex justify-end gap-3 flex-wrap relative z-10'>
+      <div className='border-t border-white/5 px-4 sm:px-6 py-4 bg-slate-950/80 flex justify-end gap-3 flex-wrap relative z-10'>
         <Button variant='ghost' onClick={onClose} className='hover:bg-white/5 active:scale-95 transition-all text-slate-400 hover:text-white rounded-xl px-5'>
           Batal
         </Button>

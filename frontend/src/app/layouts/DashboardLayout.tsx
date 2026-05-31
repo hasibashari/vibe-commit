@@ -14,7 +14,7 @@ export function DashboardLayout({
   mainContent,
 }: DashboardLayoutProps) {
   return (
-    <div className='w-full h-full flex flex-col md:grid md:grid-cols-12 gap-0 md:gap-6 pb-24 md:pb-0 overflow-hidden'>
+    <div className='w-full h-full flex flex-col md:grid md:grid-cols-12 gap-0 md:gap-6 md:pb-0 overflow-hidden'>
       {/* Left Sidebar: Quest List (4 cols on lg, 5 on md) */}
       <aside
         className={cn(
@@ -38,7 +38,7 @@ export function DashboardLayout({
         )}
       >
         {/* On Desktop, show mainContent stacked or side-by-side depending on breakpoint. */}
-        <div className='flex flex-col lg:grid lg:grid-cols-8 gap-6 min-h-full'>
+        <div className='flex flex-col lg:grid lg:grid-cols-8 gap-6 min-h-full pb-28 md:pb-0'>
           <div
             className={cn(
               'flex flex-col gap-6 lg:col-span-8 flex-1 min-h-0',

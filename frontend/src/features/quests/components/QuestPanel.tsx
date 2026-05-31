@@ -51,7 +51,7 @@ export function QuestPanel({
   }, [selectedGoal?.id]);
 
   return (
-    <div className='flex flex-col gap-4 md:gap-6 pb-6'>
+    <div className='flex flex-col gap-4 md:gap-6 pb-28 md:pb-6'>
 
       <div className='bg-slate-900/50 border border-slate-800 p-4 md:p-5 rounded-lg flex flex-col gap-5'>
         <div className='flex items-center justify-between mb-2'>
