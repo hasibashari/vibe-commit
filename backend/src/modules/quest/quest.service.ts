@@ -14,6 +14,7 @@ export class QuestService {
       LEFT JOIN (
         SELECT goal_id, COUNT(*) AS cnt
         FROM quest_logs
+        WHERE goal_id IN (SELECT id FROM goals WHERE user_id = $1)
         GROUP BY goal_id
       ) lc ON lc.goal_id = g.id
       WHERE g.user_id = $1 

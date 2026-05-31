@@ -22,10 +22,10 @@ export const LifeCommitHeatmap: React.FC<HeatmapProps> = ({ logs, sandboxDateOff
     logs.forEach(log => {
       const d = safeParseDate(log.timestamp);
       d.setHours(0, 0, 0, 0);
-      
+
       const diffTime = now.getTime() - d.getTime();
       const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-      
+
       if (diffDays >= 0 && diffDays < days) {
         heat[days - 1 - diffDays]++; // newer days are towards the end
       }
@@ -46,7 +46,7 @@ export const LifeCommitHeatmap: React.FC<HeatmapProps> = ({ logs, sandboxDateOff
   };
 
   return (
-    <div className='w-full bg-slate-900/50 border border-slate-800 rounded-lg p-4 md:p-6 overflow-hidden'>
+    <div className='w-full bg-slate-900/50 border border-slate-800 rounded-lg p-4 md:p-6 overflow-hidden mb-17'>
       <div className='grid grid-rows-7 grid-flow-col gap-[3px] overflow-x-auto pb-4 custom-scrollbar'>
         {data.map((count, i) => (
           <div

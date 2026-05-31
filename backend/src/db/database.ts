@@ -99,6 +99,11 @@ export async function initDb() {
         ALTER TABLE brain_dumps ADD CONSTRAINT brain_dumps_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
       EXCEPTION WHEN duplicate_object THEN NULL;
       END $$;
+
+      CREATE INDEX IF NOT EXISTS idx_goals_user_id ON goals(user_id);
+      CREATE INDEX IF NOT EXISTS idx_quest_logs_goal_id ON quest_logs(goal_id);
+      CREATE INDEX IF NOT EXISTS idx_quest_logs_timestamp ON quest_logs(timestamp DESC);
+      CREATE INDEX IF NOT EXISTS idx_brain_dumps_user_id ON brain_dumps(user_id);
     `);
     console.log('PostgreSQL database initialized successfully.');
   } catch (err) {

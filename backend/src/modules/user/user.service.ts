@@ -131,12 +131,12 @@ export class UserService {
 
         const activeDatesSet = new Set(activeLogDays);
 
-        // Fetch all active goals for the user to determine if they had any active quests on a given day
         const activeGoalsRes = await targetDb.query(`
-          SELECT g.id, g.created_at, g.type, g.status,
-                 (SELECT MIN(ql.timestamp) FROM quest_logs ql WHERE ql.goal_id = g.id) as completed_at
+          SELECT g.id, g.created_at, g.type, g.status, MIN(ql.timestamp) as completed_at
           FROM goals g
+          LEFT JOIN quest_logs ql ON ql.goal_id = g.id
           WHERE g.user_id = $1 AND g.status != 'archived'
+          GROUP BY g.id
         `, [user.id]);
 
         const activeGoals = activeGoalsRes.rows;
