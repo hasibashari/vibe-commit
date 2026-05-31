@@ -12,8 +12,7 @@ pg.types.setTypeParser(1114, (strVal) => {
 const connectionString = process.env.DATABASE_URL;
 
 if (!connectionString) {
-  console.error('FATAL: DATABASE_URL is not set in environment variables!');
-  process.exit(1);
+  throw new Error('FATAL: DATABASE_URL is not set in environment variables! Please configure your PostgreSQL connection string in the Vercel Dashboard.');
 }
 
 const db = new Pool({

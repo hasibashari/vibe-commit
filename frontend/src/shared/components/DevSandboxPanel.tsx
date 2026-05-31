@@ -23,7 +23,7 @@ export const DevSandboxPanel: React.FC<DevSandboxPanelProps> = ({ overrides, set
 
   // Menyembunyikan opsi Dev Sandbox pada Production Deployment agar tidak bisa diakses
   // sandbox ini di-design hanya untuk testing lokal environment (pengembangan)
-  if (typeof process !== 'undefined' && process.env.NODE_ENV === 'production') {
+  if (import.meta.env.PROD) {
     return null;
   }
 

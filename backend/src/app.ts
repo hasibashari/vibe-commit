@@ -15,10 +15,14 @@ import authRoutes from './modules/auth/auth.routes.js';
 
 const app = express();
 
-// Ensure uploads directory exists
+// Ensure uploads directory exists (gracefully ignore read-only file system errors on Vercel serverless)
 const uploadsDir = path.join(process.cwd(), 'backend', 'public', 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
+try {
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+} catch (err) {
+  console.warn('Warning: Could not create uploads directory (might be a read-only serverless environment):', err);
 }
 
 // Trust proxy for secure headers on platforms like Vercel
