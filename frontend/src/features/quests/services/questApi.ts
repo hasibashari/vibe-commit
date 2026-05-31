@@ -1,80 +1,111 @@
-import { doc, setDoc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { db, auth } from '../../../shared/services/firebase';
+import { getCurrentUser, getAuthHeaders } from '../../../shared/services/session';
 import type { Goal } from '../../../shared/types/goal';
 
-function handleFirestoreError(error: unknown) {
-  console.error('Firestore Error:', error);
-  throw error;
+export class ApiError extends Error {
+  status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.status = status;
+    this.name = 'ApiError';
+  }
 }
 
+
+
 export const logQuestActionApi = async (goalId: string, logId: string) => {
-  const user = auth.currentUser;
+  const user = getCurrentUser();
   if (!user) throw new Error("Not authenticated");
   try {
-    await setDoc(doc(db, 'quest_logs', logId), {
-      goal_id: goalId,
-      user_id: user.uid,
-      timestamp: new Date().toISOString(),
-      vibeScore: 8,
-      notes: 'Auto-logged from dashboard'
+    const res = await fetch('/api/logs', {
+      method: 'POST',
+      headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({
+        id: logId,
+        goalId: goalId,
+        vibeScore: 8,
+        notes: 'Auto-logged from dashboard'
+      })
     });
+    if (!res.ok) throw new ApiError("Gagal menyimpan log quest", res.status);
+    return await res.json();
   } catch (err) {
-    handleFirestoreError(err);
+    throw err;
   }
 };
 
 export const updateQuestDifficultyApi = async (goalId: string, newDifficulty: number) => {
-  const user = auth.currentUser;
+  const user = getCurrentUser();
   if (!user) throw new Error("Not authenticated");
   try {
-    await updateDoc(doc(db, 'goals', goalId), {
-      difficulty: newDifficulty
+    const res = await fetch(`/api/goals/${goalId}/difficulty`, {
+      method: 'PATCH',
+      headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({
+        difficulty: newDifficulty
+      })
     });
+    if (!res.ok) throw new ApiError("Gagal memperbarui tingkat kesulitan quest", res.status);
   } catch (err) {
-    handleFirestoreError(err);
+    throw err;
   }
 };
 
 export const updateQuestApi = async (questId: string, questData: Partial<Goal>) => {
-  const user = auth.currentUser;
+  const user = getCurrentUser();
   if (!user) throw new Error("Not authenticated");
   try {
-    await updateDoc(doc(db, 'goals', questId), {
-      title: questData.title,
-      description: questData.description,
-      difficulty: questData.difficulty,
-      reward_alpha: questData.reward_alpha,
-      category: questData.category
+    const res = await fetch(`/api/goals/${questId}`, {
+      method: 'PUT',
+      headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({
+        title: questData.title,
+        description: questData.description,
+        difficulty: questData.difficulty,
+        rewardAlpha: questData.reward_alpha,
+        category: questData.category,
+        type: questData.type
+      })
     });
+    if (!res.ok) throw new ApiError("Gagal memperbarui quest", res.status);
   } catch (err) {
-    handleFirestoreError(err);
+    throw err;
   }
 };
 
 export const createQuestApi = async (questData: Partial<Goal>, id: string) => {
-  const user = auth.currentUser;
+  const user = getCurrentUser();
   if (!user) throw new Error("Not authenticated");
   try {
-    await setDoc(doc(db, 'goals', id), {
-      user_id: user.uid,
-      title: questData.title,
-      description: questData.description,
-      difficulty: questData.difficulty,
-      reward_alpha: questData.reward_alpha,
-      category: questData.category,
-      created_at: new Date().toISOString()
+    const res = await fetch('/api/goals', {
+      method: 'POST',
+      headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({
+        id,
+        userId: user.uid,
+        title: questData.title,
+        description: questData.description,
+        difficulty: questData.difficulty,
+        rewardAlpha: questData.reward_alpha,
+        category: questData.category,
+        type: questData.type
+      })
     });
+    if (!res.ok) throw new ApiError("Gagal membuat quest", res.status);
   } catch (err) {
-    handleFirestoreError(err);
+    throw err;
   }
 };
 
 export const deleteQuestApi = async (questId: string) => {
-  const user = auth.currentUser;
+  const user = getCurrentUser();
   if (!user) throw new Error("Not authenticated");
   try {
-    await deleteDoc(doc(db, 'goals', questId));
+    const res = await fetch(`/api/goals/${questId}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    });
+    if (!res.ok) throw new ApiError("Gagal menghapus quest", res.status);
   } catch (err) {
-    handleFirestoreError(err);
+    throw err;
   }
 };

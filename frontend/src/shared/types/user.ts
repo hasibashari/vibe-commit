@@ -6,7 +6,6 @@ export interface UserStats {
   avatar_icon?: string;
   custom_main_bg?: string;
   custom_char_bg?: string;
-  custom_character?: string;
   theme_vibe?: string;
   bgm_theme?: string;
   bgm_muted?: number | boolean;
@@ -18,4 +17,5 @@ export interface UserStats {
   last_penalty_date?: string | null;
   shield_until?: string | null;
   unlocked_items?: string;
+  sandbox_date_offset?: number;
 }

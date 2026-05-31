@@ -1,5 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
 @import "tailwindcss";
+
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
@@ -174,7 +174,7 @@
 
 @layer base {
   body {
-    @apply bg-[#0A0C10] text-slate-300 antialiased;
+    @apply bg-surface text-slate-300 antialiased;
   }
 }
 
@@ -205,5 +205,10 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.2);
+}
+
+/* Premium Mobile PWA Reset - Disable browser tap highlight flash */
+* {
+  -webkit-tap-highlight-color: transparent;
 }
 

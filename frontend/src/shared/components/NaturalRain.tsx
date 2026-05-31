@@ -20,7 +20,7 @@ export const NaturalRain: React.FC = () => {
       {drops.map((p, i) => (
         <motion.div
           key={i}
-          className="absolute w-[2px] bg-gradient-to-b from-transparent via-white/50 to-transparent rounded-full"
+          className="absolute w-[2px] bg-linear-to-b from-transparent via-white/50 to-transparent rounded-full"
           style={{ 
             left: `${p.x}%`,
             height: `${5 + p.size * 10}vh`

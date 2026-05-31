@@ -11,7 +11,7 @@ interface ModalProps {
   description?: string;
   children: React.ReactNode;
   variant?: 'default' | 'danger' | 'fullscreen';
-  position?: 'center' | 'bottom';
+  position?: 'center' | 'bottom' | 'top';
   className?: string;
   preventBackdropClose?: boolean;
   disableInternalScroll?: boolean;
@@ -54,8 +54,12 @@ export function Modal({
     <AnimatePresence>
       {isOpen && (
         <div className={cn(
-          "fixed inset-0 z-[100] flex justify-center p-4 sm:p-6",
-          position === 'center' ? "items-center" : "items-end sm:items-center pb-24 sm:pb-6"
+          "fixed inset-0 z-100 flex justify-center p-4 sm:p-6",
+          position === 'center' 
+            ? "items-center" 
+            : position === 'top'
+              ? "items-start pt-12 sm:items-center sm:pt-0"
+              : "items-end sm:items-center pb-24 sm:pb-6"
         )}>
           <motion.div 
             initial={{ opacity: 0 }}
@@ -69,7 +73,7 @@ export function Modal({
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 20 }}
             className={cn(
-              "relative bg-[#0A0C10] border border-white/10 shadow-2xl overflow-hidden flex flex-col max-h-full",
+              "relative bg-surface border border-white/10 shadow-2xl overflow-hidden flex flex-col max-h-full",
               variants[variant],
               className
             )}
@@ -87,7 +91,7 @@ export function Modal({
                     variant="ghost"
                     size="icon"
                     onClick={onClose}
-                    className="w-9 h-9 !p-0 -mr-2"
+                    className="w-9 h-9 p-0! -mr-2"
                     aria-label="Close dialog"
                   >
                     <X className="w-5 h-5" />

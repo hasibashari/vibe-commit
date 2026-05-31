@@ -1,4 +1,4 @@
-import { calculateStats } from "../utils/vibeMath";
+import { calculateStats, safeParseDate } from "../utils/vibeMath";
 
 /**
  * Stochastic Nudges: Smart reminders sent during focus peaks.
@@ -10,12 +10,12 @@ export function calculateStochasticNudges(logs: { timestamp: string }[]) {
   // Track frequency of logs by hour of day
   const hourMap: Record<number, number> = {};
   logs.forEach(log => {
-    const hour = new Date(log.timestamp).getHours();
+    const hour = safeParseDate(log.timestamp).getHours();
     hourMap[hour] = (hourMap[hour] || 0) + 1;
   });
 
   // Find the peak hour
-  const peakHour = Object.entries(hourMap).reduce((a, b) => 
+  const peakHour = Object.entries(hourMap).reduce((a, b) =>
     (b[1] > a[1] ? b : a), ["0", 0]
   );
 
@@ -37,12 +37,18 @@ export interface BurnoutPrediction {
 import type { Log } from '../types/log';
 import type { Goal } from '../types/goal';
 
-export function analyzeBurnoutRisk(logs: Log[], goals: Goal[]): BurnoutPrediction {
-  const now = new Date().getTime();
+export function analyzeBurnoutRisk(logs: Log[], goals: Goal[], offset: number = 0): BurnoutPrediction {
+  const nowTime = (() => {
+    const now = new Date();
+    if (offset !== 0) {
+      now.setDate(now.getDate() + offset);
+    }
+    return now.getTime();
+  })();
   const ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
-  
-  const recentLogs = logs.filter(l => now - new Date(l.timestamp).getTime() < ONE_WEEK);
-  const historicalLogs = logs.filter(l => now - new Date(l.timestamp).getTime() >= ONE_WEEK);
+
+  const recentLogs = logs.filter(l => nowTime - safeParseDate(l.timestamp).getTime() < ONE_WEEK);
+  const historicalLogs = logs.filter(l => nowTime - safeParseDate(l.timestamp).getTime() >= ONE_WEEK);
 
   let recentSigma = 0, historicalSigma = 0;
   let recentHighDiff = 0, historicalHighDiffAvg = 0;
@@ -57,9 +63,16 @@ export function analyzeBurnoutRisk(logs: Log[], goals: Goal[]): BurnoutPredictio
     });
 
     recentHighDiff = getHighDiffLogs(recentLogs).length;
-    const historicalHighDiffCount = getHighDiffLogs(historicalLogs).length;
-    // Calculate expected number of high diff logs in the recent period based on historical rate
-    historicalHighDiffAvg = (historicalHighDiffCount / historicalLogs.length) * recentLogs.length;
+
+    // Temukan timestamp log historis paling awal
+    const histTimestamps = historicalLogs.map(l => safeParseDate(l.timestamp).getTime());
+    const earliestHistMs = Math.min(...histTimestamps);
+
+    // Hitung jumlah minggu historis riil (aman dari pembagian tidak valid, minimal 1 minggu)
+    const histWeeks = Math.max(1, (nowTime - earliestHistMs) / (7 * 24 * 60 * 60 * 1000));
+
+    // Dapatkan rata-rata murni log kesulitan tinggi per minggu historis
+    historicalHighDiffAvg = getHighDiffLogs(historicalLogs).length / histWeeks;
   } else if (logs.length > 5) {
     const overallStats = calculateStats(logs);
     if (overallStats.sigma > 2.0) {

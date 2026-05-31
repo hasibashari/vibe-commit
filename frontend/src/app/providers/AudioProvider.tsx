@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useEffect, useRef, useState, ReactNode, useMemo } from 'react';
-import { useDashboardStore } from '../../store/dashboardStore';
+import { createContext, useContext, useEffect, useRef, useState, ReactNode, useMemo } from 'react';
+import { useDashboardContext } from './DashboardProvider';
 
 interface AudioContextType {
   playVictorySound: () => void;
@@ -31,7 +31,7 @@ function getAudioContext() {
 }
 
 export function AudioProvider({ children }: { children: ReactNode }) {
-  const { user, updateProfile, latestDump } = useDashboardStore();
+  const { user, updateProfile, latestDump } = useDashboardContext();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isMuted, setIsMuted] = useState(false);
   const isMutedRef = useRef(isMuted);
@@ -102,7 +102,8 @@ export function AudioProvider({ children }: { children: ReactNode }) {
 
   const currentTheme = useMemo(() => {
      if (!user) return 'nature';
-     if (user.bgm_theme && user.bgm_theme !== 'dynamic') return user.bgm_theme;
+     const theme = user.bgm_theme || 'nature';
+     if (theme !== 'dynamic') return theme;
      const anxiety = latestDump?.anxietyScore || 5;
      if (anxiety > 7) return 'cyber';
      if (anxiety > 4) return 'coffee';

@@ -1,6 +1,6 @@
 node_modules
-dist
 .env
+*.db
+dist
 firebase-applet-config.json
-firebase-blueprint.json
-vibe_commit.db
+dev-dist
