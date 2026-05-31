@@ -4,8 +4,6 @@ import { motion, AnimatePresence } from 'motion/react';
 import type { UserStats } from '../types/user';
 
 export type DevOverrides = {
-  anxietyScore: number | null;
-  sigmaVariance: number | null;
   themeVibe: string | null;
   unlockAllBadges: boolean;
   unlockAllShop: boolean;
@@ -206,47 +204,10 @@ export const DevSandboxPanel: React.FC<DevSandboxPanelProps> = ({ overrides, set
                   </div>
                 </div>
               </div>
-
-              {/* VIBE ATMOSPHERE OVERRIDE */}
+              {/* FORCE ENVIRONMENT THEME */}
               <div className="space-y-4">
-                <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Vibe Atmosphere (Cuaca & Efek)</h4>
-                
+                <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Force Tema Lingkungan</h4>
                 <div className="space-y-2">
-                  <div className="flex justify-between text-xs text-slate-300">
-                    <span>Anxiety Score (Tingkat Kecemasan)</span>
-                    <span>{overrides.anxietyScore !== null ? overrides.anxietyScore : 'Default'}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input 
-                      type="range" min="1" max="10" 
-                      value={overrides.anxietyScore !== null ? overrides.anxietyScore : ''}
-                      onChange={(e) => updateOverride('anxietyScore', parseInt(e.target.value))}
-                      className="w-full accent-fuchsia-500"
-                    />
-                    <button onClick={() => updateOverride('anxietyScore', null)} className="text-[10px] text-fuchsia-400 px-2 py-1 bg-fuchsia-400/10 rounded">Reset</button>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex justify-between text-xs text-slate-300">
-                    <span>Sigma/Fog (Konsistensi Fokus)</span>
-                    <span>{overrides.sigmaVariance !== null ? overrides.sigmaVariance.toFixed(1) : 'Default'}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input 
-                      type="range" min="0" max="6" step="0.1"
-                      value={overrides.sigmaVariance !== null ? overrides.sigmaVariance : ''}
-                      onChange={(e) => updateOverride('sigmaVariance', parseFloat(e.target.value))}
-                      className="w-full accent-fuchsia-500"
-                    />
-                    <button onClick={() => updateOverride('sigmaVariance', null)} className="text-[10px] text-fuchsia-400 px-2 py-1 bg-fuchsia-400/10 rounded">Reset</button>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex justify-between text-xs text-slate-300">
-                    <span>Force Tema Lingkungan</span>
-                  </div>
                   <div className="flex items-center gap-2">
                     <select 
                       value={overrides.themeVibe || ''} 

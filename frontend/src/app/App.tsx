@@ -165,8 +165,6 @@ export default function App() {
   const [devOverrides, setDevOverrides] = useState<
     import('../shared/components/DevSandboxPanel').DevOverrides
   >({
-    anxietyScore: null,
-    sigmaVariance: null,
     themeVibe: null,
     unlockAllBadges: false,
     unlockAllShop: false,
@@ -188,10 +186,8 @@ export default function App() {
   }
 
   const effectiveCoins = baseCoins;
-  const effectiveAnxietyScore =
-    devOverrides.anxietyScore !== null ? devOverrides.anxietyScore : latestDump?.anxietyScore || 5;
-  const effectiveSigmaVariance =
-    devOverrides.sigmaVariance !== null ? devOverrides.sigmaVariance : stats.sigma;
+  const effectiveAnxietyScore = latestDump?.anxietyScore || 5;
+  const effectiveSigmaVariance = stats.sigma;
 
   const effectiveWeather = getWeatherState(effectiveAnxietyScore, effectiveSigmaVariance);
 

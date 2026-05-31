@@ -168,7 +168,17 @@ export class LogController {
         const manaBase = isFirstQuestToday ? Math.min(100, user.mana + 30) : user.mana;
         const newMana = Math.max(0, manaBase - 10);
 
-        const todayStr = `${logTime.getFullYear()}-${String(logTime.getMonth() + 1).padStart(2, '0')}-${String(logTime.getDate()).padStart(2, '0')}`;
+        const formatter = new Intl.DateTimeFormat('en-US', {
+          timeZone: 'Asia/Jakarta',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        });
+        const parts = formatter.formatToParts(logTime);
+        const year = parts.find(p => p.type === 'year')?.value;
+        const month = parts.find(p => p.type === 'month')?.value;
+        const day = parts.find(p => p.type === 'day')?.value;
+        const todayStr = `${year}-${month}-${day}`;
 
         await client.query('UPDATE users SET hp = $1, mana = $2, level = $3, exp = $4, last_penalty_date = $5 WHERE id = $6', [
           newHp,

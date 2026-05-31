@@ -57,7 +57,7 @@ export class UserService {
     const user = userRes.rows[0];
 
     if (!user) {
-      const today = new Date().toISOString().split('T')[0];
+      const today = getTodayLocalString();
       await targetDb.query(
         'INSERT INTO users (id, name, title, avatar_color, hp, mana, level, exp, last_penalty_date) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)',
         [id, 'Explorer', 'Novice Operative', 'indigo', 100, 100, 1, 0, today]
@@ -332,8 +332,7 @@ export class UserService {
 
       if (payload.sandbox_date_offset === 0) {
         setClauses.push(`last_penalty_date = $${paramCount++}`);
-        const now = new Date();
-        const realToday = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        const realToday = getTodayLocalString();
         queryArgs.push(realToday);
       }
     }
@@ -386,7 +385,7 @@ export class UserService {
       await client.query('DELETE FROM goals WHERE user_id = $1', [userId]);
 
       if (data.user) {
-        const todayStr = new Date().toISOString().split('T')[0];
+        const todayStr = getTodayLocalString();
         const importedHp = data.user.hp !== undefined && data.user.hp !== null ? Math.min(100, Math.max(0, data.user.hp)) : null;
         const importedMana = data.user.mana !== undefined && data.user.mana !== null ? Math.min(100, Math.max(0, data.user.mana)) : null;
         

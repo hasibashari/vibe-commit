@@ -41,6 +41,8 @@
 //   - Ebbinghaus, H. (1885). Über das Gedächtnis. [Forgetting Curve]
 // ═══════════════════════════════════════════════════════════════════════════
 
+import { getLogDateString } from './dateUtils';
+
 /**
  * Parse a timestamp safely across all browsers (including Safari).
  * SQLite defaults to 'YYYY-MM-DD HH:MM:SS' which causes Safari to return NaN.
@@ -223,6 +225,12 @@ export function generateTimeSeriesData(
     (a, b) => safeParseDate(a.timestamp).getTime() - safeParseDate(b.timestamp).getTime()
   );
 
+  const logsWithLocalDate = sortedLogs.map(log => ({
+    ...log,
+    localDateStr: getLogDateString(log.timestamp),
+    timestampMs: safeParseDate(log.timestamp).getTime()
+  }));
+
   const data = [];
   let currentDate = new Date(start);
 
@@ -231,8 +239,8 @@ export function generateTimeSeriesData(
     const currentMs = currentDate.getTime();
 
     // 2. Filter log yang terjadi HINGGA (dan termasuk) currentDate
-    const pastLogs = sortedLogs.filter(
-      l => safeParseDate(l.timestamp).getTime() <= currentMs
+    const pastLogs = logsWithLocalDate.filter(
+      l => l.timestampMs <= currentMs
     );
 
     const repetitionCount = pastLogs.length;
@@ -240,7 +248,7 @@ export function generateTimeSeriesData(
     // 3. Hitung decay (hari sejak log terakhir yang valid di masa lalu)
     let daysSinceLast = 0;
     if (repetitionCount > 0) {
-      const lastLogMs = safeParseDate(pastLogs[pastLogs.length - 1].timestamp).getTime();
+      const lastLogMs = pastLogs[pastLogs.length - 1].timestampMs;
       daysSinceLast = (currentMs - lastLogMs) / (1000 * 60 * 60 * 24);
     } else if (startDateStr) {
       const createdMs = safeParseDate(startDateStr).getTime();
@@ -255,15 +263,24 @@ export function generateTimeSeriesData(
     const variance = calculateBetaVariance(alpha, beta);
     const sigma = Math.sqrt(variance);
 
+    // Format local currentDateStr (YYYY-MM-DD)
+    const y = currentDate.getFullYear();
+    const m = String(currentDate.getMonth() + 1).padStart(2, '0');
+    const d = String(currentDate.getDate()).padStart(2, '0');
+    const currentDateStr = `${y}-${m}-${d}`;
+
+    // Count logs completed on this specific local date
+    const dailyReps = logsWithLocalDate.filter(l => l.localDateStr === currentDateStr).length;
+
     data.push({
-      date: currentDate.toISOString().split('T')[0], // YYYY-MM-DD
+      date: currentDateStr,
       prob: Math.round(p * 100),
       // Confidence band [P - σ, P + σ]
       lower: Math.max(0, Math.round((p - sigma) * 100)),
       upper: Math.min(100, Math.round((p + sigma) * 100)),
       alpha: Math.round(alpha),
       beta: Math.round(beta * 10) / 10,
-      reps: repetitionCount,
+      reps: dailyReps,
     });
 
     // Maju 1 hari
@@ -321,6 +338,7 @@ export function generateGlobalTimeSeriesData(
   interface GlobalLogEvent {
     timestampMs: number;
     difficulty: number;
+    localDateStr: string;
   }
   const allLogEvents: GlobalLogEvent[] = [];
 
@@ -328,7 +346,11 @@ export function generateGlobalTimeSeriesData(
     for (const log of goal.logs || []) {
       const ms = safeParseDate(log.timestamp).getTime();
       if (!isNaN(ms)) {
-        allLogEvents.push({ timestampMs: ms, difficulty: goal.difficulty });
+        allLogEvents.push({ 
+          timestampMs: ms, 
+          difficulty: goal.difficulty,
+          localDateStr: getLogDateString(log.timestamp)
+        });
       }
     }
   }
@@ -393,12 +415,21 @@ export function generateGlobalTimeSeriesData(
     const variance = (alpha * beta) / (s * s * (s + 1));
     const sigma = Math.sqrt(variance);
 
+    // Format local currentDateStr (YYYY-MM-DD)
+    const y = currentDate.getFullYear();
+    const m = String(currentDate.getMonth() + 1).padStart(2, '0');
+    const d = String(currentDate.getDate()).padStart(2, '0');
+    const currentDateStr = `${y}-${m}-${d}`;
+
+    // Count logs completed on this specific local date
+    const dailyReps = allLogEvents.filter(e => e.localDateStr === currentDateStr).length;
+
     data.push({
-      date: currentDate.toISOString().split('T')[0], // YYYY-MM-DD
+      date: currentDateStr,
       prob: Math.round(p * 100),
       lower: Math.max(0, Math.round((p - sigma) * 100)),
       upper: Math.min(100, Math.round((p + sigma) * 100)),
-      reps: n, // total log aktif di window
+      reps: dailyReps,
     });
 
     currentDate.setDate(currentDate.getDate() + 1);

@@ -22,7 +22,7 @@ interface DashboardStore {
   allLogs: Log[];
   isLoading: boolean;
 
-  fetchData: () => Promise<void>;
+  fetchData: (options?: { skipCache?: boolean }) => Promise<void>;
   updateProfile: (data: Partial<UserStats>, silent?: boolean) => Promise<void>;
   resetProfile: () => Promise<void>;
   updateSandbox: (payload: { hp?: number | null; mana?: number | null; level?: number | null; coins_delta?: number | null; sandbox_date_offset?: number | null }) => Promise<void>;
@@ -45,11 +45,11 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
   allLogs: [],
   isLoading: true,
 
-  fetchData: async () => {
+  fetchData: async (options?: { skipCache?: boolean }) => {
     const { toast } = useToastStore.getState();
 
     let cachedDataLoaded = false;
-    const cachedDataStr = localStorage.getItem('vibe_commit_dashboard_cache');
+    const cachedDataStr = !options?.skipCache ? localStorage.getItem('vibe_commit_dashboard_cache') : null;
 
     if (cachedDataStr) {
       try {
@@ -198,7 +198,7 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
         set({ achievements: calculateAchievements(allLogs, data.level) });
       }
 
-      await get().fetchData();
+      await get().fetchData({ skipCache: true });
     } catch (e) {
       console.error(e);
     }
@@ -286,6 +286,6 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
       });
     }
 
-    await get().fetchData();
+    await get().fetchData({ skipCache: true });
   }
 }));
