@@ -65,8 +65,8 @@ export function QuestItem({
       transition={{ duration: 0.2 }}
       onClick={onClick}
       className={`group relative p-5 rounded-lg border transition-all cursor-pointer ${isSelected && !isCompleted
-          ? 'bg-accent-500/5 border-accent-800'
-          : 'bg-slate-900/30 border-slate-800 hover:border-slate-700'
+        ? 'bg-accent-500/5 border-accent-800'
+        : 'bg-slate-900/30 border-slate-800 hover:border-slate-700'
         } ${isCompleted ? 'opacity-50 grayscale hover:opacity-80' : ''}`}
     >
       <div className='flex justify-between items-start gap-4'>
@@ -93,10 +93,10 @@ export function QuestItem({
           </div>
           <h3
             className={`text-base font-bold tracking-tight transition-colors ${isCompleted
-                ? 'line-through text-slate-500'
-                : isSelected
-                  ? 'text-accent-400'
-                  : 'text-white'
+              ? 'line-through text-slate-500'
+              : isSelected
+                ? 'text-accent-400'
+                : 'text-white'
               }`}
           >
             {goal.title}
@@ -116,10 +116,10 @@ export function QuestItem({
             }}
             disabled={isCompleted}
             className={`w-12 h-12 md:w-10 md:h-10 rounded border flex items-center justify-center transition-all shrink-0 ${isCompleted
-                ? 'bg-emerald-500/20 text-emerald-500 border-emerald-500/50 cursor-default'
-                : isSelected
-                  ? 'bg-accent-500 text-black border-accent-400 shadow-[0_0_15px_rgba(var(--theme-500-rgb),0.4)]'
-                  : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500 hover:border-emerald-400 hover:text-black hover:shadow-[0_0_15px_rgba(16,185,129,0.4)]'
+              ? 'bg-emerald-500/20 text-emerald-500 border-emerald-500/50 cursor-default'
+              : isSelected
+                ? 'bg-accent-500 text-black border-accent-400 shadow-[0_0_15px_rgba(var(--theme-500-rgb),0.4)]'
+                : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500 hover:border-emerald-400 hover:text-black hover:shadow-[0_0_15px_rgba(16,185,129,0.4)]'
               }`}
           >
             <Check className='w-6 h-6 md:w-5 md:h-5 stroke-[2.5]' />
@@ -150,15 +150,19 @@ export function QuestItem({
                   Reward
                 </span>
                 <span className={`text-xs font-mono tabular-nums ${isCompleted ? 'text-slate-600' : 'text-accent-400'}`}>
-                  +{Math.floor(goal.difficulty * 10 * goal.reward_alpha)}
+                  {goal.type === 'one-off'
+                    ? `+${Math.floor(goal.difficulty * 10 * 1.5)}-${Math.floor(goal.difficulty * 10 * 3.0)}`
+                    : `+${Math.floor(goal.difficulty * 10 * goal.reward_alpha)}`}
                 </span>
               </div>
               <div className='flex flex-col'>
                 <span className='text-xs text-slate-600 font-bold uppercase tracking-[0.2em] mb-0.5'>
-                  Bonus EXP
+                  Multiplier
                 </span>
                 <span className={`text-xs font-mono tabular-nums ${isCompleted ? 'text-slate-600' : 'text-purple-400'}`}>
-                  +{(goal.reward_alpha * 100).toFixed(0)}%
+                  {goal.type === 'one-off'
+                    ? '1.5x - 3.0x ⚡'
+                    : `${(goal.reward_alpha).toFixed(2)}x`}
                 </span>
               </div>
               {goal.type !== 'one-off' && (

@@ -1,7 +1,5 @@
 import db from '../../db/database.js';
 import crypto from 'node:crypto';
-import fs from 'node:fs';
-import path from 'node:path';
 
 const ITEM_PRICES: Record<string, number> = {
   'hp_elixir': 150,
