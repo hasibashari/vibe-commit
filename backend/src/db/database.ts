@@ -20,7 +20,10 @@ const db = new Pool({
   ssl: connectionString?.includes('neon.tech') ? { rejectUnauthorized: false } : undefined
 });
 
+let isDbInitialized = false;
+
 export async function initDb() {
+  if (isDbInitialized) return;
   try {
     await db.query(`
       CREATE TABLE IF NOT EXISTS accounts (
@@ -103,8 +106,10 @@ export async function initDb() {
       CREATE INDEX IF NOT EXISTS idx_goals_user_id ON goals(user_id);
       CREATE INDEX IF NOT EXISTS idx_quest_logs_goal_id ON quest_logs(goal_id);
       CREATE INDEX IF NOT EXISTS idx_quest_logs_timestamp ON quest_logs(timestamp DESC);
+      CREATE INDEX IF NOT EXISTS idx_quest_logs_tz_date ON quest_logs (DATE(timestamp AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta'));
       CREATE INDEX IF NOT EXISTS idx_brain_dumps_user_id ON brain_dumps(user_id);
     `);
+    isDbInitialized = true;
     console.log('PostgreSQL database initialized successfully.');
   } catch (err) {
     console.error('Failed to initialize PostgreSQL database:', err);

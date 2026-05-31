@@ -1,33 +1,54 @@
 import db from '../../db/database.js';
 import crypto from 'node:crypto';
+import { promisify } from 'node:util';
+import bcrypt from 'bcryptjs';
 import { UserService } from '../user/user.service.js';
 import { JwtUtil } from './jwt.util.js';
 
+const pbkdf2Async = promisify(crypto.pbkdf2);
 const PBKDF2_ITERATIONS = 600_000;
 const PBKDF2_LEGACY_ITERATIONS = 1000;
 
 export class AuthService {
-  // Hash password using PBKDF2 with SHA-512 (OWASP 2023: minimum 600,000 iterations)
-  static hashPassword(password: string, salt: string, iterations = PBKDF2_ITERATIONS): string {
-    return crypto.pbkdf2Sync(password, salt, iterations, 64, 'sha512').toString('hex');
+  // Hash password using bcrypt asynchronously
+  static async hashPassword(password: string): Promise<string> {
+    return bcrypt.hash(password, 10);
   }
 
-  static verifyPassword(password: string, storedValue: string): { valid: boolean; needsRehash: boolean } {
-    const parts = storedValue.split(':');
-
-    // New format: v2:salt:hash (600K iterations)
-    if (parts.length === 3 && parts[0] === 'v2') {
-      const [, salt, hash] = parts;
-      const inputHash = this.hashPassword(password, salt, PBKDF2_ITERATIONS);
-      return { valid: crypto.timingSafeEqual(Buffer.from(hash, 'hex'), Buffer.from(inputHash, 'hex')), needsRehash: false };
+  // Verify password, with support for legacy PBKDF2 hashes
+  static async verifyPassword(password: string, storedValue: string): Promise<{ valid: boolean; needsRehash: boolean }> {
+    // Check if the stored hash is a bcrypt hash
+    if (storedValue.startsWith('$2a$') || storedValue.startsWith('$2b$')) {
+      const valid = await bcrypt.compare(password, storedValue);
+      return { valid, needsRehash: false };
     }
 
-    // Legacy format: salt:hash (1K iterations) — flag for re-hash
+    const parts = storedValue.split(':');
+
+    // New PBKDF2 format: v2:salt:hash (600K iterations)
+    if (parts.length === 3 && parts[0] === 'v2') {
+      const [, salt, hash] = parts;
+      try {
+        const derivedKey = await pbkdf2Async(password, salt, PBKDF2_ITERATIONS, 64, 'sha512');
+        const inputHash = derivedKey.toString('hex');
+        const valid = crypto.timingSafeEqual(Buffer.from(hash, 'hex'), Buffer.from(inputHash, 'hex'));
+        return { valid, needsRehash: valid }; // needs upgrade to bcrypt
+      } catch {
+        return { valid: false, needsRehash: false };
+      }
+    }
+
+    // Legacy PBKDF2 format: salt:hash (1K iterations)
     if (parts.length === 2) {
       const [salt, hash] = parts;
-      const inputHash = this.hashPassword(password, salt, PBKDF2_LEGACY_ITERATIONS);
-      const valid = crypto.timingSafeEqual(Buffer.from(hash, 'hex'), Buffer.from(inputHash, 'hex'));
-      return { valid, needsRehash: valid };
+      try {
+        const derivedKey = await pbkdf2Async(password, salt, PBKDF2_LEGACY_ITERATIONS, 64, 'sha512');
+        const inputHash = derivedKey.toString('hex');
+        const valid = crypto.timingSafeEqual(Buffer.from(hash, 'hex'), Buffer.from(inputHash, 'hex'));
+        return { valid, needsRehash: valid }; // needs upgrade to bcrypt
+      } catch {
+        return { valid: false, needsRehash: false };
+      }
     }
 
     return { valid: false, needsRehash: false };
@@ -47,9 +68,7 @@ export class AuthService {
     }
 
     const id = crypto.randomUUID();
-    const salt = crypto.randomBytes(16).toString('hex');
-    const hash = this.hashPassword(password, salt);
-    const passwordHash = `v2:${salt}:${hash}`;
+    const passwordHash = await this.hashPassword(password);
 
     const client = await db.connect();
     try {
@@ -89,16 +108,14 @@ export class AuthService {
       throw new Error('Username atau Password salah');
     }
 
-    const { valid, needsRehash } = this.verifyPassword(password, account.password_hash);
+    const { valid, needsRehash } = await this.verifyPassword(password, account.password_hash);
     if (!valid) {
       throw new Error('Username atau Password salah');
     }
 
-    // Transparently upgrade legacy hashes (1K → 600K iterations) on successful login
+    // Transparently upgrade legacy PBKDF2 hashes to bcrypt on successful login
     if (needsRehash) {
-      const newSalt = crypto.randomBytes(16).toString('hex');
-      const newHash = this.hashPassword(password, newSalt);
-      const newPasswordHash = `v2:${newSalt}:${newHash}`;
+      const newPasswordHash = await this.hashPassword(password);
       await db.query('UPDATE accounts SET password_hash = $1 WHERE id = $2', [newPasswordHash, account.id]);
     }
 

@@ -28,6 +28,14 @@ function getCumulativeExp(level: number, exp: number): number {
   return sum + exp;
 }
 
+// Cache the DateTimeFormat instance globally to avoid expensive re-creation on every call
+const JAKARTA_DATE_FORMATTER = new Intl.DateTimeFormat('en-US', {
+  timeZone: 'Asia/Jakarta',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit'
+});
+
 /** Returns today's date as YYYY-MM-DD in the Asia/Jakarta timezone, accounting for sandbox offset. */
 function getTodayLocalString(user?: any): string {
   const now = new Date();
@@ -35,14 +43,7 @@ function getTodayLocalString(user?: any): string {
     now.setDate(now.getDate() + user.sandbox_date_offset);
   }
   
-  // Format specifically in Asia/Jakarta timezone
-  const formatter = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'Asia/Jakarta',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
-  });
-  const parts = formatter.formatToParts(now);
+  const parts = JAKARTA_DATE_FORMATTER.formatToParts(now);
   const year = parts.find(p => p.type === 'year')?.value;
   const month = parts.find(p => p.type === 'month')?.value;
   const day = parts.find(p => p.type === 'day')?.value;

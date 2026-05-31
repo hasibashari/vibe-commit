@@ -185,34 +185,13 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
 
     const questId = questToEdit ? questToEdit.id : generateId();
 
-    if (!navigator.onLine) {
-      if (questToEdit) {
-        const updatedGoals = goals.map(g => {
-          if (g.id === questToEdit.id) {
-            return { ...g, ...questData } as Goal;
-          }
-          return g;
-        });
-        setGoals(updatedGoals);
-        if (selectedGoal?.id === questToEdit.id) {
-          set({ selectedGoal: { ...selectedGoal, ...questData } as Goal });
-        }
+    // Construct the optimistic quest and goal list
+    const previousGoals = [...goals];
+    const previousSelectedGoal = selectedGoal;
 
-        const pendingStr = localStorage.getItem('vibe_commit_pending_actions') || '[]';
-        try {
-          const pending = JSON.parse(pendingStr);
-          const existingIdx = pending.findIndex((a: any) => a.type === 'UPDATE_QUEST' && a.questId === questToEdit.id);
-          if (existingIdx !== -1) {
-            pending[existingIdx].questData = { ...pending[existingIdx].questData, ...questData };
-          } else {
-            pending.push({ type: 'UPDATE_QUEST', questId: questToEdit.id, questData });
-          }
-          localStorage.setItem('vibe_commit_pending_actions', JSON.stringify(pending));
-        } catch (e) { }
-
-        toast({ title: "Quest Diperbarui (Offline)", type: 'success' });
-      } else {
-        const newGoal: Goal = {
+    const optimisticQuest: Goal = questToEdit
+      ? ({ ...questToEdit, ...questData } as Goal)
+      : {
           id: questId,
           title: questData.title || 'Untitled Quest',
           description: questData.description || '',
@@ -224,95 +203,88 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
           logs: [],
           status: 'active'
         };
-        setGoals([...goals, newGoal]);
 
-        const pendingStr = localStorage.getItem('vibe_commit_pending_actions') || '[]';
-        try {
-          const pending = JSON.parse(pendingStr);
+    const optimisticGoals = questToEdit
+      ? goals.map(g => (g.id === questToEdit.id ? { ...g, ...questData } as Goal : g))
+      : [...goals, optimisticQuest];
+
+    // Check offline status
+    if (!navigator.onLine) {
+      // Offline local optimistic update
+      setGoals(optimisticGoals);
+      if (questToEdit && selectedGoal?.id === questToEdit.id) {
+        set({ selectedGoal: optimisticQuest });
+      }
+
+      const pendingStr = localStorage.getItem('vibe_commit_pending_actions') || '[]';
+      try {
+        const pending = JSON.parse(pendingStr);
+        if (questToEdit) {
+          const existingIdx = pending.findIndex((a: any) => a.type === 'UPDATE_QUEST' && a.questId === questToEdit.id);
+          if (existingIdx !== -1) {
+            pending[existingIdx].questData = { ...pending[existingIdx].questData, ...questData };
+          } else {
+            pending.push({ type: 'UPDATE_QUEST', questId: questToEdit.id, questData });
+          }
+        } else {
           const isDuplicate = pending.some((a: any) => a.type === 'CREATE_QUEST' && a.id === questId);
           if (!isDuplicate) {
             pending.push({ type: 'CREATE_QUEST', id: questId, questData });
-            localStorage.setItem('vibe_commit_pending_actions', JSON.stringify(pending));
           }
-        } catch (e) { }
+        }
+        localStorage.setItem('vibe_commit_pending_actions', JSON.stringify(pending));
+      } catch (e) { }
 
-        toast({ title: "Quest Baru Dibuat (Offline)", type: 'success' });
-      }
-
+      toast({ title: questToEdit ? "Quest Diperbarui (Offline)" : "Quest Baru Dibuat (Offline)", type: 'success' });
       setIsQuestEditorOpen(false);
       set({ questToEdit: null });
       return;
     }
 
+    // Online optimistic update
+    setGoals(optimisticGoals);
+    if (questToEdit && selectedGoal?.id === questToEdit.id) {
+      set({ selectedGoal: optimisticQuest });
+    }
+    setIsQuestEditorOpen(false);
+    set({ questToEdit: null });
+
     try {
       if (questToEdit) {
         await updateQuestApi(questToEdit.id, questData);
-        if (selectedGoal?.id === questToEdit.id) {
-          set({ selectedGoal: { ...selectedGoal, ...questData } as Goal });
-        }
         toast({ title: "Quest Diperbarui", type: 'success' });
       } else {
         await createQuestApi(questData, questId);
         toast({ title: "Quest Baru Dibuat", type: 'success' });
       }
-      setIsQuestEditorOpen(false);
-      set({ questToEdit: null });
-      await fetchData();
+      // Silently sync database in the background to ensure consistency
+      fetchData().catch(() => {});
     } catch (e: unknown) {
-      if (questToEdit) {
-        const updatedGoals = goals.map(g => {
-          if (g.id === questToEdit.id) {
-            return { ...g, ...questData } as Goal;
-          }
-          return g;
-        });
-        setGoals(updatedGoals);
-        if (selectedGoal?.id === questToEdit.id) {
-          set({ selectedGoal: { ...selectedGoal, ...questData } as Goal });
-        }
+      // Rollback optimistic state
+      setGoals(previousGoals);
+      set({ selectedGoal: previousSelectedGoal });
 
-        const pendingStr = localStorage.getItem('vibe_commit_pending_actions') || '[]';
-        try {
-          const pending = JSON.parse(pendingStr);
+      // Save to offline queue so user doesn't lose their data
+      const pendingStr = localStorage.getItem('vibe_commit_pending_actions') || '[]';
+      try {
+        const pending = JSON.parse(pendingStr);
+        if (questToEdit) {
           const existingIdx = pending.findIndex((a: any) => a.type === 'UPDATE_QUEST' && a.questId === questToEdit.id);
           if (existingIdx !== -1) {
             pending[existingIdx].questData = { ...pending[existingIdx].questData, ...questData };
           } else {
             pending.push({ type: 'UPDATE_QUEST', questId: questToEdit.id, questData });
           }
-          localStorage.setItem('vibe_commit_pending_actions', JSON.stringify(pending));
-        } catch (err) { }
-
-        toast({ title: "Koneksi Bermasalah - Disimpan Lokal", type: 'info' });
-      } else {
-        const newGoal: Goal = {
-          id: questId,
-          title: questData.title || 'Untitled Quest',
-          description: questData.description || '',
-          category: questData.category || 'productivity',
-          difficulty: questData.difficulty ?? 1.0,
-          reward_alpha: questData.reward_alpha ?? 0.5,
-          type: questData.type || 'daily',
-          repetition_count: 0,
-          logs: [],
-          status: 'active'
-        };
-        setGoals([...goals, newGoal]);
-
-        const pendingStr = localStorage.getItem('vibe_commit_pending_actions') || '[]';
-        try {
-          const pending = JSON.parse(pendingStr);
+        } else {
           const isDuplicate = pending.some((a: any) => a.type === 'CREATE_QUEST' && a.id === questId);
           if (!isDuplicate) {
             pending.push({ type: 'CREATE_QUEST', id: questId, questData });
-            localStorage.setItem('vibe_commit_pending_actions', JSON.stringify(pending));
           }
-        } catch (err) { }
+        }
+        localStorage.setItem('vibe_commit_pending_actions', JSON.stringify(pending));
+      } catch (err) { }
 
-        toast({ title: "Koneksi Bermasalah - Dibuat Lokal", type: 'info' });
-      }
-      setIsQuestEditorOpen(false);
-      set({ questToEdit: null });
+      toast({ title: "Koneksi Bermasalah - Disimpan Lokal", type: 'info' });
     }
   },
 
@@ -323,55 +295,56 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
   executeDeleteQuest: async () => {
     const { questToDelete, selectedGoal } = get();
     const { fetchData, goals, setGoals } = useDashboardStore.getState();
-
+    const { toast } = useToastStore.getState();
 
     if (!questToDelete) return;
 
-    if (!navigator.onLine) {
-      if (selectedGoal?.id === questToDelete) {
-        set({ selectedGoal: null });
-      }
-      setGoals(goals.map((g: any) => g.id === questToDelete ? { ...g, status: 'archived' } : g));
-      set({ questToDelete: null });
+    const previousGoals = [...goals];
+    const previousSelectedGoal = selectedGoal;
+    const deletedId = questToDelete;
 
+    // Optimistic UI update
+    if (selectedGoal?.id === deletedId) {
+      set({ selectedGoal: null });
+    }
+    setGoals(goals.map((g: any) => g.id === deletedId ? { ...g, status: 'archived' } : g));
+    set({ questToDelete: null });
+
+    if (!navigator.onLine) {
       const pendingStr = localStorage.getItem('vibe_commit_pending_actions') || '[]';
       try {
         const pending = JSON.parse(pendingStr);
-        const isDuplicate = pending.some((a: any) => a.type === 'DELETE_QUEST' && a.questId === questToDelete);
+        const isDuplicate = pending.some((a: any) => a.type === 'DELETE_QUEST' && a.questId === deletedId);
         if (!isDuplicate) {
-          pending.push({ type: 'DELETE_QUEST', questId: questToDelete });
+          pending.push({ type: 'DELETE_QUEST', questId: deletedId });
           localStorage.setItem('vibe_commit_pending_actions', JSON.stringify(pending));
         }
       } catch (e) { }
-
+      toast({ title: "Quest Dihapus (Offline)", type: 'success' });
       return;
     }
 
     try {
-      await deleteQuestApi(questToDelete);
-
-      if (selectedGoal?.id === questToDelete) {
-        set({ selectedGoal: null });
-      }
-      setGoals(goals.map((g: any) => g.id === questToDelete ? { ...g, status: 'archived' } : g));
-      set({ questToDelete: null });
-      await fetchData();
+      await deleteQuestApi(deletedId);
+      // Silently sync database in the background to ensure consistency
+      fetchData().catch(() => {});
     } catch (e: unknown) {
-      if (selectedGoal?.id === questToDelete) {
-        set({ selectedGoal: null });
-      }
-      setGoals(goals.map((g: any) => g.id === questToDelete ? { ...g, status: 'archived' } : g));
-      set({ questToDelete: null });
+      // Rollback optimistic state
+      setGoals(previousGoals);
+      set({ selectedGoal: previousSelectedGoal });
 
+      // Save to offline queue so user doesn't lose their deletion intent
       const pendingStr = localStorage.getItem('vibe_commit_pending_actions') || '[]';
       try {
         const pending = JSON.parse(pendingStr);
-        const isDuplicate = pending.some((a: any) => a.type === 'DELETE_QUEST' && a.questId === questToDelete);
+        const isDuplicate = pending.some((a: any) => a.type === 'DELETE_QUEST' && a.questId === deletedId);
         if (!isDuplicate) {
-          pending.push({ type: 'DELETE_QUEST', questId: questToDelete });
+          pending.push({ type: 'DELETE_QUEST', questId: deletedId });
           localStorage.setItem('vibe_commit_pending_actions', JSON.stringify(pending));
         }
       } catch (err) { }
+
+      toast({ title: "Koneksi Bermasalah - Dihapus Lokal", type: 'info' });
     }
   }
 }));
