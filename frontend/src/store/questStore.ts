@@ -75,7 +75,12 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
 
     let expEarned = 0;
     if (goal) {
-      expEarned = Math.floor(goal.difficulty * 10 * goal.reward_alpha);
+      if (goal.type === 'one-off') {
+        const gachaMultiplier = 1.5 + Math.random() * 1.5;
+        expEarned = Math.floor((goal.difficulty || 1.0) * 10 * gachaMultiplier);
+      } else {
+        expEarned = Math.floor((goal.difficulty || 1.0) * 10 * (goal.reward_alpha || 0.5));
+      }
       const popupId = generateId();
       const currentPopups = useDashboardStore.getState().expPopups;
       setExpPopups([...currentPopups, { id: popupId, exp: expEarned }]);
