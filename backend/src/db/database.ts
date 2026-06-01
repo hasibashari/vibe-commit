@@ -26,6 +26,8 @@ export async function initDb() {
   if (isDbInitialized) return;
   try {
     await db.query(`
+      DROP TABLE IF EXISTS brain_dumps CASCADE;
+
       CREATE TABLE IF NOT EXISTS accounts (
         id TEXT PRIMARY KEY,
         username VARCHAR(255) UNIQUE NOT NULL,
@@ -78,13 +80,7 @@ export async function initDb() {
         FOREIGN KEY(goal_id) REFERENCES goals(id) ON DELETE CASCADE
       );
 
-      CREATE TABLE IF NOT EXISTS brain_dumps (
-        id TEXT PRIMARY KEY,
-        user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
-        raw_content TEXT,
-        analysis JSONB,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
+
 
       -- Migration: Add type column to existing goals (silently skip if already exists)
       DO $$ BEGIN
@@ -98,16 +94,12 @@ export async function initDb() {
       EXCEPTION WHEN duplicate_object THEN NULL;
       END $$;
 
-      DO $$ BEGIN
-        ALTER TABLE brain_dumps ADD CONSTRAINT brain_dumps_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
-      EXCEPTION WHEN duplicate_object THEN NULL;
-      END $$;
+
 
       CREATE INDEX IF NOT EXISTS idx_goals_user_id ON goals(user_id);
       CREATE INDEX IF NOT EXISTS idx_quest_logs_goal_id ON quest_logs(goal_id);
       CREATE INDEX IF NOT EXISTS idx_quest_logs_timestamp ON quest_logs(timestamp DESC);
       CREATE INDEX IF NOT EXISTS idx_quest_logs_tz_date ON quest_logs (DATE(timestamp AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta'));
-      CREATE INDEX IF NOT EXISTS idx_brain_dumps_user_id ON brain_dumps(user_id);
     `);
     isDbInitialized = true;
     console.log('PostgreSQL database initialized successfully.');
