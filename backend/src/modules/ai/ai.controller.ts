@@ -5,28 +5,21 @@ import * as QuestService from '../quest/quest.service.js';
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-const BASE_SYSTEM_INSTRUCTION = `Anda adalah seorang ahli Game Master Edukasi untuk LMS bertema RPG. Tugas Anda adalah merancang quest berdasarkan Ilmu Kognitif dan Psikologi Perilaku.
+const BASE_SYSTEM_INSTRUCTION = `Anda adalah seorang ahli Game Master Edukasi untuk LMS bertema RPG. Tugas utama Anda adalah merancang quest berdasarkan Ilmu Kognitif dan Psikologi Perilaku.
 
-Saat membuat quest dari perintah pengguna, ikuti kerangka ilmiah berikut:
-1. TITLE (Judul): Gunakan kata kerja aksi yang memberdayakan dan memicu motivasi intrinsik (Teori Determinasi Diri).
-2. DESCRIPTION (Deskripsi): Buat tujuan yang bersifat SMART (Specific, Measurable, Achievable, Relevant). Pecah tugas kompleks menjadi 2-3 langkah kecil yang jelas untuk mengurangi beban kognitif yang tidak perlu. Definisikan dengan pasti apa syarat agar quest ini "selesai".
-3. DIFFICULTY (Kesulitan, 1.0 - 5.0): Kalibrasikan menggunakan Taksonomi Bloom. 
-   - 1.0-2.0 untuk tugas mengingat/memahami (remembering/understanding).
-   - 3.0-4.0 untuk menerapkan/menganalisis (applying/analyzing).
-   - 4.5-5.0 untuk mengevaluasi/membuat sistem kompleks (evaluating/creating).
-4. REWARD ALPHA (0.5 - 2.0): Terapkan Teori Ekuitas (Equity Theory). Kesulitan yang tinggi HARUS menghasilkan reward yang tinggi. 
-5. CATEGORY (Kategori): Harus memilih salah satu secara persis: 'Main Quest', 'Daily Quest', atau 'Side Quest'.
-6. TYPE (Tipe): Pilih 'daily' untuk tugas membangun kebiasaan, atau 'one-off' untuk proyek mendalam/sekali jalan.
+SISTEM PENILAIAN & FORMAT QUEST:
+1. TITLE: Gunakan kata kerja aksi yang jelas, tegas, dan berorientasi tindakan dalam Bahasa Indonesia. DILARANG menggunakan metafora RPG yang berlebihan/kabur (Contoh bagus: "Selesaikan Modul React Router", BUKAN "Mengarungi Badai Router").
+2. DESCRIPTION: Instruksi wajib *to the point* dan memenuhi kaidah SMART (Specific, Measurable, Achievable, Relevant). Definisikan kriteria selesai (Definition of Done) dengan sangat eksplisit.
+3. DIFFICULTY (Float, 1.0 - 5.0): Kalibrasikan secara ketat dengan Taksonomi Bloom:
+   - 1.0 - 2.0: Mengingat / Memahami (Remembering / Understanding)
+   - 3.0 - 4.0: Menerapkan / Menganalisis (Applying / Analyzing)
+   - 4.5 - 5.0: Mengevaluasi / Membuat sistem kompleks (Evaluating / Creating)
+4. REWARD ALPHA (Float, 0.5 - 2.0): Gunakan Equity Theory. Kesulitan tinggi WAJIB menghasilkan reward tinggi. Rumus mental: Difficulty tinggi = RewardAlpha mendekati 2.0.
+5. CATEGORY: Wajib memilih salah satu dari: 'Main Quest', 'Daily Quest', atau 'Side Quest'.
+6. TYPE: Wajib memilih 'daily' (pembentukan kebiasaan/rutinitas) atau 'one-off' (proyek sekali jalan).
 
-Anda HANYA boleh mengembalikan objek JSON dengan struktur berikut:
-{
-  "title": "String, judul yang memberdayakan dalam Bahasa Indonesia",
-  "description": "String, tujuan SMART dengan langkah-langkah jelas",
-  "difficulty": "Number antara 1.0 dan 5.0",
-  "rewardAlpha": "Number antara 0.5 dan 2.0",
-  "category": "String, persis 'Main Quest', 'Daily Quest', atau 'Side Quest'",
-  "type": "String, persis 'daily' atau 'one-off'"
-}`;
+ATURAN OUTPUT:
+Otoritas Anda hanya terbatas pada memproduksi objek JSON valid. Jangan berikan teks pembuka atau penutup di luar JSON. Gunakan tipe data yang tepat (jangan bungkus Number dengan tanda kutip).`;
 
 function buildTimeContext(clientHour?: number) {
   const hour = clientHour !== undefined ? clientHour : new Date().getHours();
@@ -52,7 +45,7 @@ async function buildUserContext(userId: string, prompt: string, clientHour?: num
   const dailyCount = activeGoals.filter(g => g.category === 'Daily Quest').length;
   const mainCount = activeGoals.filter(g => g.category === 'Main Quest').length;
   const sideCount = activeGoals.filter(g => g.category === 'Side Quest').length;
-  
+
   const { hour, timePhase, timeRules } = buildTimeContext(clientHour);
 
   const contextKeywords = ['sesuai', 'berkaitan', 'quest yang ada', 'pekerjaan saya', 'tugas saya', 'proyek saya', 'lanjutkan', 'hubungkan'];
@@ -62,19 +55,16 @@ async function buildUserContext(userId: string, prompt: string, clientHour?: num
   let alignmentRule = "";
 
   if (hour >= 5 && hour < 12 && userWantsContext) {
-    // Fase PEAK: Pengguna secara spesifik meminta dihubungkan dengan quest yang ada
-    goalTitles = activeGoals.length > 0 
+    goalTitles = activeGoals.length > 0
       ? activeGoals.map(g => `- [${g.category}] ${g.title}`).join('\n')
       : '- Belum ada quest aktif.';
-    alignmentRule = `3. PENTING: Pengguna meminta quest ini dikaitkan dengan pekerjaannya. Sesuaikan relevansi quest baru agar melengkapi "Daftar Quest aktif saat ini", TETAPI pastikan bebannya sesuai dengan ritme sirkadian saat ini.`;
+    alignmentRule = `1. WAJIB KORELASI: Pengguna ingin menghubungkan tugas baru dengan pekerjaannya saat ini. Buat quest baru yang melengkapi atau menjadi langkah logis selanjutnya dari "Daftar Quest aktif saat ini". Tetap sesuaikan beban kerja dengan fase PEAK sirkadian.`;
   } else if (hour >= 5 && hour < 12 && !userWantsContext) {
-    // Fase PEAK: Pengguna TIDAK meminta konteks, jadi sembunyikan untuk mencegah Over-anchoring
-    goalTitles = "- [DAFTAR QUEST DISEMBUNYIKAN (OPT-IN CONTEXT). JANGAN KAITKAN DENGAN PEKERJAAN LAIN]";
-    alignmentRule = `3. PENTING: Buatlah quest yang murni merespons perintah pengguna saat ini secara independen. Jangan mengaitkannya dengan pekerjaan masa lalu.`;
+    goalTitles = "- [DAFTAR QUEST DISEMBUNYIKAN UNTUK MENCEGAH OVER-ANCHORING]";
+    alignmentRule = `2. ISOLASI MANDIRI: Buat quest yang murni merespons perintah baru secara independen. DILARANG mengaitkan atau berasumsi tentang pekerjaan masa lalu pengguna.`;
   } else {
-    // Fase TROUGH & RECOVERY: Mutlak disembunyikan agar otak bisa istirahat
-    goalTitles = "- [DAFTAR QUEST DISEMBUNYIKAN DEMI PSYCHOLOGICAL DETACHMENT (PEMULIHAN MENTAL)]";
-    alignmentRule = `3. PENTING: Karena ini adalah fase TROUGH/RECOVERY, buatlah quest yang sepenuhnya tidak terkait dengan pekerjaan berat/teknis. Fokus pada *Psychological Detachment* (istirahat, relaksasi, wellness), kecuali pengguna secara tegas meminta quest pekerjaan teknis.`;
+    goalTitles = "- [DAFTAR QUEST DISEMBUNYIKAN DEMI PSYCHOLOGICAL DETACHMENT]";
+    alignmentRule = `3. RECOVERY & WELLNESS MODE: Karena berada di fase TROUGH/RECOVERY, Anda DILARANG membuat quest teknis berat, pemrograman rumit, atau analisis mendalam, KECUALI pengguna memintanya dengan sangat spesifik. Fokuskan deskripsi quest pada aspek *Psychological Detachment*, istirahat kreatif, refleksi, atau persiapan ringan untuk esok hari.`;
   }
 
   return `\n\nKONTEKS PENGGUNA SAAT INI:
@@ -90,8 +80,22 @@ ATURAN WAJIB BERDASARKAN KONTEKS:
 1. Jika Daily Quest saat ini >= 5 dan pengguna meminta rutinitas baru, DILARANG KERAS membuat 'Daily Quest'. Ubah secara paksa kategorinya menjadi 'Side Quest' (sebagai Habit Backlog).
 2. Jangan membuat quest yang duplikat dengan "Daftar Quest aktif saat ini".
 ${alignmentRule}
-4. TUGAS ADAPTIF BERBASIS KRONOBIOLOGI: Anda HARUS memperhatikan 'WAKTU LOKAL SAAT INI'. Panduan fase saat ini: ${timeRules}. Jangan berikan tugas yang bertentangan dengan sains sirkadian ini kecuali diperintahkan secara spesifik oleh pengguna!`;
+3. TUGAS ADAPTIF BERBASIS KRONOBIOLOGI: Anda HARUS memperhatikan 'WAKTU LOKAL SAAT INI'. Panduan fase saat ini: ${timeRules}. Jangan berikan tugas yang bertentangan dengan sains sirkadian ini kecuali diperintahkan secara spesifik oleh pengguna!`;
 }
+
+// Definisikan schema menggunakan Zod (atau Object Schema bawaan Gemini)
+const questResponseSchema = {
+  type: "object",
+  properties: {
+    title: { type: "string" },
+    description: { type: "string" },
+    difficulty: { type: "number", description: "Float antara 1.0 - 5.0" },
+    rewardAlpha: { type: "number", description: "Float antara 0.5 - 2.0" },
+    category: { type: "string", enum: ["Main Quest", "Daily Quest", "Side Quest"] },
+    type: { type: "string", enum: ["daily", "one-off"] }
+  },
+  required: ["title", "description", "difficulty", "rewardAlpha", "category", "type"]
+};
 
 async function callAIModel(prompt: string, systemInstruction: string) {
   const response = await ai.models.generateContent({
@@ -100,6 +104,7 @@ async function callAIModel(prompt: string, systemInstruction: string) {
     config: {
       systemInstruction,
       responseMimeType: 'application/json',
+      responseSchema: questResponseSchema as any,
     }
   });
 
@@ -120,7 +125,7 @@ export const generateQuest = async (req: Request, res: Response, next: NextFunct
 
     const { prompt, localHour } = schema.parse(req.body);
     const userId = (req as any).user?.id;
-    
+
     let finalSystemInstruction = BASE_SYSTEM_INSTRUCTION;
 
     if (userId) {
