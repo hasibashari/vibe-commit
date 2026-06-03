@@ -47,17 +47,35 @@ function buildTimeContext(clientHour?: number) {
   return { hour, timePhase, timeRules };
 }
 
-async function buildUserContext(userId: string, clientHour?: number): Promise<string> {
+async function buildUserContext(userId: string, prompt: string, clientHour?: number): Promise<string> {
   const activeGoals = await QuestService.getGoalsForUser(userId);
   const dailyCount = activeGoals.filter(g => g.category === 'Daily Quest').length;
   const mainCount = activeGoals.filter(g => g.category === 'Main Quest').length;
   const sideCount = activeGoals.filter(g => g.category === 'Side Quest').length;
-
-  const goalTitles = activeGoals.length > 0 
-    ? activeGoals.map(g => `- [${g.category}] ${g.title}`).join('\n')
-    : '- Belum ada quest aktif.';
   
   const { hour, timePhase, timeRules } = buildTimeContext(clientHour);
+
+  const contextKeywords = ['sesuai', 'berkaitan', 'quest yang ada', 'pekerjaan saya', 'tugas saya', 'proyek saya', 'lanjutkan', 'hubungkan'];
+  const userWantsContext = contextKeywords.some(keyword => prompt.toLowerCase().includes(keyword));
+
+  let goalTitles = "";
+  let alignmentRule = "";
+
+  if (hour >= 5 && hour < 12 && userWantsContext) {
+    // Fase PEAK: Pengguna secara spesifik meminta dihubungkan dengan quest yang ada
+    goalTitles = activeGoals.length > 0 
+      ? activeGoals.map(g => `- [${g.category}] ${g.title}`).join('\n')
+      : '- Belum ada quest aktif.';
+    alignmentRule = `3. PENTING: Pengguna meminta quest ini dikaitkan dengan pekerjaannya. Sesuaikan relevansi quest baru agar melengkapi "Daftar Quest aktif saat ini", TETAPI pastikan bebannya sesuai dengan ritme sirkadian saat ini.`;
+  } else if (hour >= 5 && hour < 12 && !userWantsContext) {
+    // Fase PEAK: Pengguna TIDAK meminta konteks, jadi sembunyikan untuk mencegah Over-anchoring
+    goalTitles = "- [DAFTAR QUEST DISEMBUNYIKAN (OPT-IN CONTEXT). JANGAN KAITKAN DENGAN PEKERJAAN LAIN]";
+    alignmentRule = `3. PENTING: Buatlah quest yang murni merespons perintah pengguna saat ini secara independen. Jangan mengaitkannya dengan pekerjaan masa lalu.`;
+  } else {
+    // Fase TROUGH & RECOVERY: Mutlak disembunyikan agar otak bisa istirahat
+    goalTitles = "- [DAFTAR QUEST DISEMBUNYIKAN DEMI PSYCHOLOGICAL DETACHMENT (PEMULIHAN MENTAL)]";
+    alignmentRule = `3. PENTING: Karena ini adalah fase TROUGH/RECOVERY, buatlah quest yang sepenuhnya tidak terkait dengan pekerjaan berat/teknis. Fokus pada *Psychological Detachment* (istirahat, relaksasi, wellness), kecuali pengguna secara tegas meminta quest pekerjaan teknis.`;
+  }
 
   return `\n\nKONTEKS PENGGUNA SAAT INI:
 - Daily Quest aktif: ${dailyCount} (Batas ideal: 5)
@@ -71,7 +89,7 @@ ${goalTitles}
 ATURAN WAJIB BERDASARKAN KONTEKS:
 1. Jika Daily Quest saat ini >= 5 dan pengguna meminta rutinitas baru, DILARANG KERAS membuat 'Daily Quest'. Ubah secara paksa kategorinya menjadi 'Side Quest' (sebagai Habit Backlog).
 2. Jangan membuat quest yang duplikat dengan "Daftar Quest aktif saat ini".
-3. Sesuaikan relevansi quest baru agar melengkapi quest yang sudah ada, TETAPI pastikan bebannya sesuai dengan ritme sirkadian saat ini.
+${alignmentRule}
 4. TUGAS ADAPTIF BERBASIS KRONOBIOLOGI: Anda HARUS memperhatikan 'WAKTU LOKAL SAAT INI'. Panduan fase saat ini: ${timeRules}. Jangan berikan tugas yang bertentangan dengan sains sirkadian ini kecuali diperintahkan secara spesifik oleh pengguna!`;
 }
 
@@ -106,7 +124,7 @@ export const generateQuest = async (req: Request, res: Response, next: NextFunct
     let finalSystemInstruction = BASE_SYSTEM_INSTRUCTION;
 
     if (userId) {
-      const userContext = await buildUserContext(userId, localHour);
+      const userContext = await buildUserContext(userId, prompt, localHour);
       finalSystemInstruction += userContext;
     }
 
