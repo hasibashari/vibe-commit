@@ -28,8 +28,8 @@ Anda HANYA boleh mengembalikan objek JSON dengan struktur berikut:
   "type": "String, persis 'daily' atau 'one-off'"
 }`;
 
-function buildTimeContext() {
-  const hour = new Date().getHours();
+function buildTimeContext(clientHour?: number) {
+  const hour = clientHour !== undefined ? clientHour : new Date().getHours();
   let timePhase = "";
   let timeRules = "";
 
@@ -47,7 +47,7 @@ function buildTimeContext() {
   return { hour, timePhase, timeRules };
 }
 
-async function buildUserContext(userId: string): Promise<string> {
+async function buildUserContext(userId: string, clientHour?: number): Promise<string> {
   const activeGoals = await QuestService.getGoalsForUser(userId);
   const dailyCount = activeGoals.filter(g => g.category === 'Daily Quest').length;
   const mainCount = activeGoals.filter(g => g.category === 'Main Quest').length;
@@ -57,7 +57,7 @@ async function buildUserContext(userId: string): Promise<string> {
     ? activeGoals.map(g => `- [${g.category}] ${g.title}`).join('\n')
     : '- Belum ada quest aktif.';
   
-  const { hour, timePhase, timeRules } = buildTimeContext();
+  const { hour, timePhase, timeRules } = buildTimeContext(clientHour);
 
   return `\n\nKONTEKS PENGGUNA SAAT INI:
 - Daily Quest aktif: ${dailyCount} (Batas ideal: 5)
@@ -96,16 +96,17 @@ async function callAIModel(prompt: string, systemInstruction: string) {
 export const generateQuest = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const schema = z.object({
-      prompt: z.string().min(1)
+      prompt: z.string().min(1),
+      localHour: z.number().optional()
     });
 
-    const { prompt } = schema.parse(req.body);
+    const { prompt, localHour } = schema.parse(req.body);
     const userId = (req as any).user?.id;
     
     let finalSystemInstruction = BASE_SYSTEM_INSTRUCTION;
 
     if (userId) {
-      const userContext = await buildUserContext(userId);
+      const userContext = await buildUserContext(userId, localHour);
       finalSystemInstruction += userContext;
     }
 

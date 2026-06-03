@@ -29,7 +29,7 @@ export const AiQuestChatModal: React.FC<AiQuestChatModalProps> = ({
       const res = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ prompt, localHour: new Date().getHours() }),
       });
       if (!res.ok) throw new Error('Failed to generate quest');
       const data = await res.json();
