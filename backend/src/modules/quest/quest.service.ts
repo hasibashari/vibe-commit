@@ -1,7 +1,6 @@
 import db from '../../db/database.js';
 
-export class QuestService {
-  static async getGoalsForUser(userId: string) {
+export const getGoalsForUser = async (userId: string) => {
     // Embed repetition_count directly so the frontend never needs to recount.
     // Using COALESCE so goals with zero logs still return 0 (not NULL).
     // Filter logic:
@@ -34,10 +33,10 @@ export class QuestService {
         )
       ORDER BY g.created_at ASC
     `, [userId]);
-    return res.rows;
-  }
+  return res.rows;
+};
 
-  static async createGoal(data: { id: string; userId: string; title: string; description?: string | null; difficulty: number; rewardAlpha: number; category?: string | null; type?: 'daily' | 'one-off' }) {
+export const createGoal = async (data: { id: string; userId: string; title: string; description?: string | null; difficulty: number; rewardAlpha: number; category?: string | null; type?: 'daily' | 'one-off' }) => {
     await db.query(`
       INSERT INTO goals (id, user_id, title, description, difficulty, reward_alpha, category, type)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
@@ -51,10 +50,10 @@ export class QuestService {
       data.category ?? null,
       data.type ?? 'daily'
     ]);
-    return { success: true };
-  }
+  return { success: true };
+};
 
-  static async updateGoal(id: string, data: { title: string; description?: string | null; difficulty: number; rewardAlpha: number; category?: string | null; type?: 'daily' | 'one-off' }) {
+export const updateGoal = async (id: string, data: { title: string; description?: string | null; difficulty: number; rewardAlpha: number; category?: string | null; type?: 'daily' | 'one-off' }) => {
     await db.query(`
       UPDATE goals 
       SET title = $1, description = $2, difficulty = $3, reward_alpha = $4, category = $5, type = $6
@@ -68,10 +67,10 @@ export class QuestService {
       data.type ?? 'daily',
       id
     ]);
-    return { success: true };
-  }
+  return { success: true };
+};
 
-  static async deleteGoal(id: string) {
+export const deleteGoal = async (id: string) => {
     const logsRes = await db.query('SELECT COUNT(*) FROM quest_logs WHERE goal_id = $1', [id]);
     const logCount = parseInt(logsRes.rows[0].count, 10);
 
@@ -80,11 +79,10 @@ export class QuestService {
     } else {
       await db.query("UPDATE goals SET status = 'archived' WHERE id = $1", [id]);
     }
-    return { success: true };
-  }
+  return { success: true };
+};
 
-  static async updateDifficulty(id: string, difficulty: number) {
+export const updateDifficulty = async (id: string, difficulty: number) => {
     await db.query('UPDATE goals SET difficulty = $1 WHERE id = $2', [difficulty, id]);
-    return { success: true };
-  }
-}
+  return { success: true };
+};

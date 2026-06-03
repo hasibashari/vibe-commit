@@ -7,6 +7,8 @@ interface UIState {
   setIsSettingsOpen: (isOpen: boolean) => void;
   isQuestEditorOpen: boolean;
   setIsQuestEditorOpen: (isOpen: boolean) => void;
+  isAiQuestModalOpen: boolean;
+  setIsAiQuestModalOpen: (isOpen: boolean) => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -16,4 +18,6 @@ export const useUIStore = create<UIState>((set) => ({
   setIsSettingsOpen: (isOpen) => set({ isSettingsOpen: isOpen }),
   isQuestEditorOpen: false,
   setIsQuestEditorOpen: (isOpen) => set({ isQuestEditorOpen: isOpen }),
+  isAiQuestModalOpen: false,
+  setIsAiQuestModalOpen: (isOpen) => set({ isAiQuestModalOpen: isOpen }),
 }));

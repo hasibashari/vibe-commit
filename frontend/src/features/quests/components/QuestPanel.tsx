@@ -20,6 +20,7 @@ interface QuestPanelProps {
   onEdit: (goal: Goal) => void;
   onDrop: (goalId: string) => void;
   onNewQuest: () => void;
+  onNewAiQuest: () => void;
   recentlyCompletedIds: string[];
 }
 
@@ -31,6 +32,7 @@ export function QuestPanel({
   onEdit,
   onDrop,
   onNewQuest,
+  onNewAiQuest,
   recentlyCompletedIds,
 }: QuestPanelProps) {
   const [expandedCategory, setExpandedCategory] = useState<string>('Main Quest');
@@ -201,10 +203,19 @@ export function QuestPanel({
         </div>
 
         {/* Action Buttons */}
-        <div className='mt-4 pt-4 border-t border-slate-800/50 space-y-3'>
-          <Button variant='secondary' onClick={onNewQuest} className='w-full'>
-            + Buat Quest
-          </Button>
+        <div className='mt-4 pt-4 border-t border-slate-800/50 space-y-3 hidden md:block'>
+          <div className='flex gap-2 w-full'>
+            <Button variant='secondary' onClick={onNewQuest} className='flex-1'>
+              + Buat Quest
+            </Button>
+            <Button 
+              variant='primary' 
+              onClick={onNewAiQuest} 
+              className='flex-1 bg-gradient-to-r from-purple-500 to-indigo-500 text-white border-none hover:from-purple-400 hover:to-indigo-400'
+            >
+              ✨ Buat dgn AI
+            </Button>
+          </div>
         </div>
       </div>
     </div>

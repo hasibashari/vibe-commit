@@ -12,6 +12,7 @@ import userRoutes from './modules/user/user.routes.js';
 import questRoutes from './modules/quest/quest.routes.js';
 import logRoutes from './modules/quest/log.routes.js';
 import authRoutes from './modules/auth/auth.routes.js';
+import aiRoutes from './modules/ai/ai.routes.js';
 
 const app = express();
 
@@ -73,6 +74,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/goals', questRoutes);
 app.use('/api/logs', logRoutes);
+app.use('/api/ai', aiRoutes);
 
 app.get('/api/health', (_req: Request, res: Response) => {
   res.status(200).json({ status: 'ok', environment: process.env.NODE_ENV });

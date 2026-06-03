@@ -50,8 +50,7 @@ function getTodayLocalString(user?: any): string {
   return `${year}-${month}-${day}`;
 }
 
-export class UserService {
-  static async getUser(id: string, client?: any) {
+export const getUser = async (id: string, client?: any) => {
     const targetDb = client || db;
     const userRes = await targetDb.query('SELECT * FROM users WHERE id = $1', [id]);
     const user = userRes.rows[0];
@@ -67,11 +66,11 @@ export class UserService {
     }
     
     // State machine: Apply daily rollover
-    return this.applyTimeEffects(user, client);
-  }
+  return applyTimeEffects(user, client);
+};
 
-  static async applyTimeEffects(user: any, client?: any) {
-    const targetDb = client || db;
+export const applyTimeEffects = async (user: any, client?: any) => {
+  const targetDb = client || db;
     const todayStr = getTodayLocalString(user);
 
     if (user.last_penalty_date && user.last_penalty_date !== todayStr) {
@@ -198,11 +197,11 @@ export class UserService {
       await targetDb.query('UPDATE users SET last_penalty_date = $1 WHERE id = $2', [todayStr, user.id]);
       user.last_penalty_date = todayStr;
     }
-    return user;
-  }
+  return user;
+};
 
-  static async updateUser(id: string, updates: any) {
-    await db.query(`
+export const updateUser = async (id: string, updates: any) => {
+  await db.query(`
       UPDATE users 
       SET name = COALESCE($1, name), 
           title = COALESCE($2, title),
@@ -222,11 +221,11 @@ export class UserService {
       updates.bgm_muted ?? null, 
       id
     ]);
-    return this.getUser(id);
-  }
+  return getUser(id);
+};
 
-  static async buyItem(userId: string, itemId: string) {
-    if (!(itemId in ITEM_PRICES)) {
+export const buyItem = async (userId: string, itemId: string) => {
+  if (!(itemId in ITEM_PRICES)) {
       throw new Error('Invalid item');
     }
     const cost = ITEM_PRICES[itemId];
@@ -271,7 +270,7 @@ export class UserService {
           userId
         ]);
         await client.query('COMMIT');
-        return await this.getUser(userId); 
+        return await getUser(userId); 
       } else if (itemId.startsWith('aesthetic_')) {
         if (newUnlockedItems.includes(itemId)) {
           throw new Error('Item already owned');
@@ -298,11 +297,11 @@ export class UserService {
     } finally {
       client.release();
     }
-    return this.getUser(userId);
-  }
+  return getUser(userId);
+};
 
-  static async sandboxUpdate(userId: string, payload: { hp?: number; mana?: number; level?: number; coins_delta?: number; sandbox_date_offset?: number }) {
-    const userRes = await db.query('SELECT * FROM users WHERE id = $1', [userId]);
+export const sandboxUpdate = async (userId: string, payload: { hp?: number; mana?: number; level?: number; coins_delta?: number; sandbox_date_offset?: number }) => {
+  const userRes = await db.query('SELECT * FROM users WHERE id = $1', [userId]);
     const user = userRes.rows[0];
     if (!user) throw new Error('User not found');
     
@@ -340,12 +339,12 @@ export class UserService {
     if (setClauses.length > 0) {
       queryArgs.push(userId);
       await db.query(`UPDATE users SET ${setClauses.join(', ')} WHERE id = $${paramCount}`, queryArgs);
-    }
-    return this.getUser(userId);
   }
+  return getUser(userId);
+};
 
-  static async resetUser(userId: string) {
-    const client = await db.connect();
+export const resetUser = async (userId: string) => {
+  const client = await db.connect();
     try {
       await client.query('BEGIN');
       await client.query('DELETE FROM quest_logs WHERE goal_id IN (SELECT id FROM goals WHERE user_id = $1)', [userId]);
@@ -357,11 +356,11 @@ export class UserService {
       throw err;
     } finally {
       client.release();
-    }
   }
+};
 
-  static async deleteAccount(userId: string) {
-    const client = await db.connect();
+export const deleteAccount = async (userId: string) => {
+  const client = await db.connect();
     try {
       await client.query('BEGIN');
       await client.query('DELETE FROM quest_logs WHERE goal_id IN (SELECT id FROM goals WHERE user_id = $1)', [userId]);
@@ -374,11 +373,11 @@ export class UserService {
       throw err;
     } finally {
       client.release();
-    }
   }
+};
 
-  static async importData(userId: string, data: { user?: any, goals?: any[] }) {
-    const client = await db.connect();
+export const importData = async (userId: string, data: { user?: any, goals?: any[] }) => {
+  const client = await db.connect();
     try {
       await client.query('BEGIN');
       await client.query('DELETE FROM quest_logs WHERE goal_id IN (SELECT id FROM goals WHERE user_id = $1)', [userId]);
@@ -470,6 +469,5 @@ export class UserService {
       throw err;
     } finally {
       client.release();
-    }
   }
-}
+};

@@ -2,8 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import db from '../../db/database.js';
 
-export class LogController {
-  static async getLogsForUser(req: Request, res: Response, next: NextFunction) {
+export const getLogsForUser = async (req: Request, res: Response, next: NextFunction) => {
     if (req.params.userId !== (req as any).user?.id) {
       res.status(403).json({ error: 'Forbidden: Access denied to other user logs' });
       return;
@@ -19,10 +18,10 @@ export class LogController {
       res.json(logsRes.rows);
     } catch (err) {
       next(err);
-    }
   }
+};
 
-  static async getLogsForGoal(req: Request, res: Response, next: NextFunction) {
+export const getLogsForGoal = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const goalRes = await db.query('SELECT user_id FROM goals WHERE id = $1', [req.params.goalId]);
       const goal = goalRes.rows[0] as { user_id: string } | undefined;
@@ -39,10 +38,10 @@ export class LogController {
       res.json(logsRes.rows);
     } catch (err) {
       next(err);
-    }
   }
+};
 
-  static async createLog(req: Request, res: Response, next: NextFunction) {
+export const createLog = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const schema = z.object({
         id: z.string(),
@@ -199,6 +198,5 @@ export class LogController {
       }
     } catch (err) {
       next(err);
-    }
   }
-}
+};

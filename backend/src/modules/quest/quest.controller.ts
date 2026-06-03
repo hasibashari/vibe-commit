@@ -1,10 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
-import { QuestService } from './quest.service.js';
+import * as QuestService from './quest.service.js';
 import db from '../../db/database.js';
 
-export class QuestController {
-  static async getGoalsForUser(req: Request, res: Response, next: NextFunction) {
+export const getGoalsForUser = async (req: Request, res: Response, next: NextFunction) => {
     if (req.params.userId !== (req as any).user?.id) {
       res.status(403).json({ error: 'Forbidden: Access denied to other user quests' });
       return;
@@ -14,10 +13,10 @@ export class QuestController {
       res.json(goals);
     } catch (err) {
       next(err);
-    }
   }
+};
 
-  static async createGoal(req: Request, res: Response, next: NextFunction) {
+export const createGoal = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const schema = z.object({
         id: z.string(),
@@ -40,10 +39,10 @@ export class QuestController {
       res.json(result);
     } catch (err) {
       next(err);
-    }
   }
+};
 
-  static async updateGoal(req: Request, res: Response, next: NextFunction) {
+export const updateGoal = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const goalRes = await db.query('SELECT user_id FROM goals WHERE id = $1', [req.params.id]);
       const goal = goalRes.rows[0] as { user_id: string } | undefined;
@@ -69,10 +68,10 @@ export class QuestController {
       res.json(result);
     } catch (err) {
       next(err);
-    }
   }
+};
 
-  static async deleteGoal(req: Request, res: Response, next: NextFunction) {
+export const deleteGoal = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const goalRes = await db.query('SELECT user_id FROM goals WHERE id = $1', [req.params.id]);
       const goal = goalRes.rows[0] as { user_id: string } | undefined;
@@ -89,10 +88,10 @@ export class QuestController {
       res.json(result);
     } catch (error) {
       next(error);
-    }
   }
+};
 
-  static async updateDifficulty(req: Request, res: Response, next: NextFunction) {
+export const updateDifficulty = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const goalRes = await db.query('SELECT user_id FROM goals WHERE id = $1', [req.params.id]);
       const goal = goalRes.rows[0] as { user_id: string } | undefined;
@@ -113,6 +112,5 @@ export class QuestController {
       res.json(result);
     } catch (err) {
       next(err);
-    }
   }
-}
+};

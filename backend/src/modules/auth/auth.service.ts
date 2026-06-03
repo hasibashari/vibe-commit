@@ -2,23 +2,22 @@ import db from '../../db/database.js';
 import crypto from 'node:crypto';
 import { promisify } from 'node:util';
 import bcrypt from 'bcryptjs';
-import { UserService } from '../user/user.service.js';
+import * as UserService from '../user/user.service.js';
 import { JwtUtil } from './jwt.util.js';
 
 const pbkdf2Async = promisify(crypto.pbkdf2);
 const PBKDF2_ITERATIONS = 600_000;
 const PBKDF2_LEGACY_ITERATIONS = 1000;
 
-export class AuthService {
-  // Hash password using bcrypt asynchronously
-  static async hashPassword(password: string): Promise<string> {
-    return bcrypt.hash(password, 10);
-  }
+// Hash password using bcrypt asynchronously
+export const hashPassword = async (password: string): Promise<string> => {
+  return bcrypt.hash(password, 10);
+};
 
-  // Verify password, with support for legacy PBKDF2 hashes
-  static async verifyPassword(password: string, storedValue: string): Promise<{ valid: boolean; needsRehash: boolean }> {
-    // Check if the stored hash is a bcrypt hash
-    if (storedValue.startsWith('$2a$') || storedValue.startsWith('$2b$')) {
+// Verify password, with support for legacy PBKDF2 hashes
+export const verifyPassword = async (password: string, storedValue: string): Promise<{ valid: boolean; needsRehash: boolean }> => {
+  // Check if the stored hash is a bcrypt hash
+  if (storedValue.startsWith('$2a$') || storedValue.startsWith('$2b$')) {
       const valid = await bcrypt.compare(password, storedValue);
       return { valid, needsRehash: false };
     }
@@ -51,11 +50,11 @@ export class AuthService {
       }
     }
 
-    return { valid: false, needsRehash: false };
-  }
+  return { valid: false, needsRehash: false };
+};
 
-  static async register(username: string, password: string) {
-    const normalizedUsername = username.trim().toLowerCase();
+export const register = async (username: string, password: string) => {
+  const normalizedUsername = username.trim().toLowerCase();
     if (!normalizedUsername || password.length < 4) {
       throw new Error('Username tidak boleh kosong dan Password minimal 4 karakter');
     }
@@ -67,10 +66,10 @@ export class AuthService {
       throw new Error('Username sudah digunakan');
     }
 
-    const id = crypto.randomUUID();
-    const passwordHash = await this.hashPassword(password);
+  const id = crypto.randomUUID();
+  const passwordHash = await hashPassword(password);
 
-    const client = await db.connect();
+  const client = await db.connect();
     try {
       await client.query('BEGIN');
       
@@ -96,35 +95,35 @@ export class AuthService {
       client.release();
     }
 
-    return { id, username };
-  }
+  return { id, username };
+};
 
-  static async login(username: string, password: string) {
-    const normalizedUsername = username.trim().toLowerCase();
+export const login = async (username: string, password: string) => {
+  const normalizedUsername = username.trim().toLowerCase();
     const accountRes = await db.query('SELECT * FROM accounts WHERE LOWER(username) = $1', [normalizedUsername]);
     const account: any = accountRes.rows[0];
     
-    if (!account) {
-      throw new Error('Username atau Password salah');
-    }
-
-    const { valid, needsRehash } = await this.verifyPassword(password, account.password_hash);
-    if (!valid) {
-      throw new Error('Username atau Password salah');
-    }
-
-    // Transparently upgrade legacy PBKDF2 hashes to bcrypt on successful login
-    if (needsRehash) {
-      const newPasswordHash = await this.hashPassword(password);
-      await db.query('UPDATE accounts SET password_hash = $1 WHERE id = $2', [newPasswordHash, account.id]);
-    }
-
-    const token = JwtUtil.sign({ id: account.id, username: account.username });
-    return { id: account.id, username: account.username, token };
+  if (!account) {
+    throw new Error('Username atau Password salah');
   }
 
-  static async loginAsGuest() {
-    const randSuffix = crypto.randomBytes(3).toString('hex');
+  const { valid, needsRehash } = await verifyPassword(password, account.password_hash);
+  if (!valid) {
+      throw new Error('Username atau Password salah');
+    }
+
+  // Transparently upgrade legacy PBKDF2 hashes to bcrypt on successful login
+  if (needsRehash) {
+    const newPasswordHash = await hashPassword(password);
+    await db.query('UPDATE accounts SET password_hash = $1 WHERE id = $2', [newPasswordHash, account.id]);
+    }
+
+  const token = JwtUtil.sign({ id: account.id, username: account.username });
+  return { id: account.id, username: account.username, token };
+};
+
+export const loginAsGuest = async () => {
+  const randSuffix = crypto.randomBytes(3).toString('hex');
     const guestUsername = `Guest_${randSuffix}`;
     const id = `guest_${randSuffix}`;
     
@@ -157,7 +156,6 @@ export class AuthService {
       client.release();
     }
 
-    const token = JwtUtil.sign({ id, username: guestUsername });
-    return { id, username: guestUsername, token };
-  }
-}
+  const token = JwtUtil.sign({ id, username: guestUsername });
+  return { id, username: guestUsername, token };
+};

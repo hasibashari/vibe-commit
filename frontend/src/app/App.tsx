@@ -11,6 +11,7 @@ import { DashboardLayout } from './layouts/DashboardLayout';
 
 const HubMonitoring = React.lazy(() => import('../features/dashboard/components/HubMonitoring').then(m => ({ default: m.HubMonitoring })));
 const QuestEditorModal = React.lazy(() => import('../features/quests/components/QuestEditorModal').then(m => ({ default: m.QuestEditorModal })));
+const AiQuestChatModal = React.lazy(() => import('../features/quests/components/AiQuestChatModal').then(m => ({ default: m.AiQuestChatModal })));
 const FirstTimeOnboarding = React.lazy(() => import('../features/onboarding/components/FirstTimeOnboarding').then(m => ({ default: m.FirstTimeOnboarding })));
 const ProfileModal = React.lazy(() => import('../features/profile/components/ProfileModal').then(m => ({ default: m.ProfileModal })));
 const SettingsModal = React.lazy(() => import('../features/profile/components/SettingsModal').then(m => ({ default: m.SettingsModal })));
@@ -80,6 +81,8 @@ export default function App() {
     setQuestToDelete,
     questToEdit,
     setQuestToEdit,
+    isAiQuestModalOpen,
+    setIsAiQuestModalOpen,
     handleLogAction,
     handleSaveQuest,
     confirmDeleteQuest,
@@ -303,6 +306,7 @@ export default function App() {
               setQuestToEdit(null);
               setIsQuestEditorOpen(true);
             }}
+            onNewAiQuest={() => setIsAiQuestModalOpen(true)}
           />
         }
         modals={
@@ -342,6 +346,11 @@ export default function App() {
               onSave={handleSaveQuest}
               initialData={questToEdit}
             />
+            <AiQuestChatModal
+              isOpen={isAiQuestModalOpen}
+              onClose={() => setIsAiQuestModalOpen(false)}
+              onSave={handleSaveQuest}
+            />
             <DeleteQuestModal
               questId={questToDelete}
               onClose={() => setQuestToDelete(null)}
@@ -378,6 +387,9 @@ export default function App() {
               onNewQuest={() => {
                 setQuestToEdit(null);
                 setIsQuestEditorOpen(true);
+              }}
+              onNewAiQuest={() => {
+                setIsAiQuestModalOpen(true);
               }}
               recentlyCompletedIds={recentlyCompletedIds}
             />

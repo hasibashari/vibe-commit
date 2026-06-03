@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { LogController } from './log.controller.js';
+import * as LogController from './log.controller.js';
 import { authenticateToken } from '../auth/auth.middleware.js';
 
 const router = Router();

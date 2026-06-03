@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { QuestController } from './quest.controller.js';
+import * as QuestController from './quest.controller.js';
 import { authenticateToken } from '../auth/auth.middleware.js';
 
 const router = Router();

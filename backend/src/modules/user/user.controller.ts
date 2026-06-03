@@ -1,10 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
-import { UserService } from './user.service.js';
+import * as UserService from './user.service.js';
 
-export class UserController {
-  static async getUser(req: Request, res: Response, next: NextFunction) {
-    if (req.params.id !== (req as any).user?.id) {
+export const getUser = async (req: Request, res: Response, next: NextFunction) => {
+  if (req.params.id !== (req as any).user?.id) {
       res.status(403).json({ error: 'Forbidden: Access denied to other user data' });
       return;
     }
@@ -13,11 +12,11 @@ export class UserController {
       res.json(result);
     } catch (err) {
       next(err);
-    }
   }
+};
 
-  static async updateUser(req: Request, res: Response, next: NextFunction) {
-    if (req.params.id !== (req as any).user?.id) {
+export const updateUser = async (req: Request, res: Response, next: NextFunction) => {
+  if (req.params.id !== (req as any).user?.id) {
       res.status(403).json({ error: 'Forbidden: Access denied to other user data' });
       return;
     }
@@ -36,11 +35,11 @@ export class UserController {
       res.json(result);
     } catch (err) {
       next(err);
-    }
   }
+};
 
-  static async buyItem(req: Request, res: Response, next: NextFunction) {
-    if (req.params.id !== (req as any).user?.id) {
+export const buyItem = async (req: Request, res: Response, next: NextFunction) => {
+  if (req.params.id !== (req as any).user?.id) {
       res.status(403).json({ error: 'Forbidden: Access denied to other user data' });
       return;
     }
@@ -51,11 +50,11 @@ export class UserController {
       res.json(result);
     } catch (err: any) {
       next(err);
-    }
   }
+};
 
-  static async sandboxUpdate(req: Request, res: Response, _next: NextFunction) {
-    if (req.params.id !== (req as any).user?.id) {
+export const sandboxUpdate = async (req: Request, res: Response, _next: NextFunction) => {
+  if (req.params.id !== (req as any).user?.id) {
       res.status(403).json({ error: 'Forbidden: Access denied to other user data' });
       return;
     }
@@ -70,11 +69,11 @@ export class UserController {
       res.json(result);
     } catch(err: any) {
       res.status(400).json({ error: err.message });
-    }
   }
+};
 
-  static async resetUser(req: Request, res: Response, next: NextFunction) {
-    if (req.params.id !== (req as any).user?.id) {
+export const resetUser = async (req: Request, res: Response, next: NextFunction) => {
+  if (req.params.id !== (req as any).user?.id) {
       res.status(403).json({ error: 'Forbidden: Access denied to other user data' });
       return;
     }
@@ -83,11 +82,11 @@ export class UserController {
       res.json({ success: true });
     } catch (err) {
       next(err);
-    }
   }
+};
 
-  static async deleteAccount(req: Request, res: Response, next: NextFunction) {
-    if (req.params.id !== (req as any).user?.id) {
+export const deleteAccount = async (req: Request, res: Response, next: NextFunction) => {
+  if (req.params.id !== (req as any).user?.id) {
       res.status(403).json({ error: 'Forbidden: Access denied to other user data' });
       return;
     }
@@ -96,11 +95,11 @@ export class UserController {
       res.json({ success: true });
     } catch (err) {
       next(err);
-    }
   }
+};
 
-  static async importData(req: Request, res: Response, next: NextFunction) {
-    if (req.params.id !== (req as any).user?.id) {
+export const importData = async (req: Request, res: Response, next: NextFunction) => {
+  if (req.params.id !== (req as any).user?.id) {
       res.status(403).json({ error: 'Forbidden: Access denied to other user data' });
       return;
     }
@@ -126,6 +125,5 @@ export class UserController {
       res.json({ success: true });
     } catch (err) {
       next(err);
-    }
   }
-}
+};
