@@ -31,19 +31,19 @@ export default defineConfig(({ mode }) => {
           orientation: 'portrait',
           icons: [
             {
-              src: '/time.png',
+              src: '/logo.png',
               sizes: '192x192',
               type: 'image/png',
               purpose: 'any'
             },
             {
-              src: '/time.png',
+              src: '/logo.png',
               sizes: '192x192',
               type: 'image/png',
               purpose: 'maskable'
             },
             {
-              src: '/time-512.png',
+              src: '/logo-512.png',
               sizes: '512x512',
               type: 'image/png',
               purpose: 'any'
